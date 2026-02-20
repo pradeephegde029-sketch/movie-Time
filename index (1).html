@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reel to Deal — Movie Ticket Booking</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.1/tesseract.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0806;--surface:#120e0a;--surface2:#1a1410;
+  --orange:#f07020;--ob:#ff8c3a;--og:rgba(240,112,32,.15);--og2:rgba(240,112,32,.05);
+  --text:#f0e8d8;--muted:#8a7a6a;--border:rgba(240,112,32,.2);
+  --green:#4caf82;--red:#e05050;--film:#1e1810;--yellow:#f0c040;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;cursor:none;}
+
+/* GRAIN */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:9998;opacity:.4;animation:grain .5s steps(2) infinite;}
+@keyframes grain{0%{transform:translate(0,0)}25%{transform:translate(-2px,1px)}50%{transform:translate(1px,-2px)}75%{transform:translate(-1px,1px)}}
+
+/* LOAD SCREEN */
+#ls{position:fixed;inset:0;z-index:10000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .6s,visibility .6s;}
+#ls.out{opacity:0;visibility:hidden;}
+.ls-logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,7vw,3.5rem);letter-spacing:10px;color:var(--orange);text-shadow:0 0 60px rgba(240,112,32,.7);animation:lsLogo .9s cubic-bezier(.16,1,.3,1) both;}
+@keyframes lsLogo{from{opacity:0;letter-spacing:30px}to{opacity:1;letter-spacing:10px}}
+.ls-sub{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:4px;color:var(--muted);animation:fup .6s ease .4s both;}
+.ls-bar{width:180px;height:2px;background:rgba(240,112,32,.2);border-radius:2px;overflow:hidden;}
+.ls-fill{height:100%;background:linear-gradient(90deg,var(--orange),var(--ob));animation:lsFill 1s cubic-bezier(.4,0,.2,1) .2s both;}
+@keyframes lsFill{from{width:0}to{width:100%}}
+.ls-steps{display:flex;gap:8px;align-items:center;animation:fup .5s ease .7s both;}
+.ls-step{width:6px;height:6px;border-radius:50%;background:var(--border);animation:lsStepPop .3s cubic-bezier(.34,1.56,.64,1) both;}
+.ls-step:nth-child(1){animation-delay:.8s;background:var(--orange)}
+.ls-step:nth-child(2){animation-delay:.95s}
+.ls-step:nth-child(3){animation-delay:1.1s}
+@keyframes lsStepPop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes fup{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+
+/* CURSOR */
+#cur{position:fixed;width:12px;height:12px;background:var(--orange);border-radius:50%;pointer-events:none;z-index:99999;transform:translate(-50%,-50%);mix-blend-mode:screen;transition:width .15s,height .15s;}
+#curRing{position:fixed;width:38px;height:38px;border:1.5px solid rgba(240,112,32,.5);border-radius:50%;pointer-events:none;z-index:99998;transform:translate(-50%,-50%);transition:width .2s,height .2s,border-color .2s;}
+
+/* PARTICLES */
+#pCv{position:fixed;inset:0;pointer-events:none;z-index:0;}
+
+/* AMBIENT */
+.amb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(90px);opacity:.07;}
+.a1{width:500px;height:500px;background:var(--orange);top:-120px;left:-120px;animation:orb1 10s ease-in-out infinite;}
+.a2{width:350px;height:350px;background:#e05800;bottom:-80px;right:-80px;animation:orb2 13s ease-in-out infinite;}
+.a3{width:220px;height:220px;background:var(--yellow);top:50%;left:65%;opacity:.04;animation:orb3 8s ease-in-out infinite;}
+@keyframes orb1{0%,100%{transform:translate(0,0)}50%{transform:translate(30px,-40px)}}
+@keyframes orb2{0%,100%{transform:translate(0,0)}50%{transform:translate(-25px,25px)}}
+@keyframes orb3{0%,100%{transform:translate(0,0)}50%{transform:translate(-20px,-30px)}}
+
+/* SPARKLE */
+.sparkle{position:fixed;pointer-events:none;z-index:9997;animation:sparkleAnim var(--dur) ease-out var(--delay) both;}
+@keyframes sparkleAnim{0%{opacity:1;transform:translate(0,0) scale(1) rotate(0deg)}100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0) rotate(var(--rot))}}
+
+/* HEADER */
+header{padding:32px 20px;text-align:center;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(240,112,32,.08),transparent);position:relative;overflow:hidden;animation:hdrIn .8s cubic-bezier(.16,1,.3,1) .8s both;}
+@keyframes hdrIn{from{opacity:0;transform:translateY(-24px)}to{opacity:1;transform:translateY(0)}}
+header::after{content:'';position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);height:1px;background:var(--orange);box-shadow:0 0 20px var(--orange);animation:glowLine 3s ease-in-out infinite;}
+@keyframes glowLine{0%,100%{width:200px;opacity:1}50%{width:340px;opacity:.7}}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,6vw,3.5rem);letter-spacing:4px;color:var(--orange);text-shadow:0 0 40px rgba(240,112,32,.5);line-height:1;animation:logoR 1s cubic-bezier(.16,1,.3,1) .9s both;}
+@keyframes logoR{from{opacity:0;letter-spacing:20px}to{opacity:1;letter-spacing:4px}}
+.logo span{color:var(--text);}
+.tagline{font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:3px;color:var(--muted);margin-top:4px;text-transform:uppercase;animation:fi .8s ease 1.1s both;}
+.ev-badge{display:inline-flex;align-items:center;gap:8px;background:var(--og);border:1px solid var(--border);border-radius:100px;padding:6px 16px;font-size:.75rem;color:var(--orange);margin-top:12px;font-family:'Space Mono',monospace;letter-spacing:1px;animation:bdgIn .6s cubic-bezier(.34,1.56,.64,1) 1.3s both;position:relative;overflow:hidden;}
+@keyframes bdgIn{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+.ev-badge::before{content:'🎬';}
+.ev-badge::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(240,112,32,.18),transparent);transform:translateX(-100%);animation:shim 3s ease 1.5s infinite;}
+@keyframes shim{to{transform:translateX(100%)}}
+
+/* CONTAINER */
+.wrap{max-width:600px;margin:0 auto;padding:32px 16px 100px;position:relative;z-index:1;}
+
+/* COUNTDOWN */
+.cd-banner{background:linear-gradient(135deg,rgba(240,112,32,.1),rgba(240,112,32,.04));border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:24px;text-align:center;position:relative;overflow:hidden;}
+.cd-banner::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--orange),transparent);animation:scan 3s ease-in-out infinite;}
+@keyframes scan{0%,100%{opacity:.4;transform:scaleX(.6)}50%{opacity:1;transform:scaleX(1)}}
+.cd-label{font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:12px;}
+.cd-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:320px;margin:0 auto;}
+.cd-unit{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 6px;transition:border-color .3s,transform .3s;}
+.cd-unit:hover{border-color:var(--orange);transform:translateY(-2px);}
+.cd-num{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:var(--orange);line-height:1;text-shadow:0 0 20px rgba(240,112,32,.4);display:block;}
+.cd-num.flip{animation:flip .3s ease;}
+@keyframes flip{0%{transform:scaleY(1)}50%{transform:scaleY(.5);opacity:.4}100%{transform:scaleY(1)}}
+.cd-tag{font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-top:2px;display:block;}
+.cd-live{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:3px;color:var(--red);animation:pulse 1.5s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* STEPS */
+.steps{display:flex;align-items:center;justify-content:center;margin-bottom:40px;}
+.step-item{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.step-num{width:36px;height:36px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:.75rem;color:var(--muted);background:var(--surface);transition:all .5s cubic-bezier(.34,1.56,.64,1);position:relative;z-index:1;}
+.step-item.active .step-num{border-color:var(--orange);color:var(--orange);background:var(--og);box-shadow:0 0 20px rgba(240,112,32,.35),0 0 50px rgba(240,112,32,.1);transform:scale(1.12);}
+.step-item.done .step-num{border-color:var(--green);background:rgba(76,175,130,.15);color:var(--green);}
+.step-item.done .step-num::after{content:'✓';}
+.step-label{font-size:.6rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;font-family:'Space Mono',monospace;white-space:nowrap;transition:color .3s;}
+.step-item.active .step-label{color:var(--orange);}
+.step-con{width:60px;height:1px;background:var(--border);margin:0 4px;margin-bottom:22px;flex-shrink:0;transition:background .5s,box-shadow .5s;position:relative;overflow:hidden;}
+.step-con.done{background:var(--green);box-shadow:0 0 8px rgba(76,175,130,.4);}
+.step-con::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);transform:translateX(-100%);animation:conFlow 2s ease-in-out infinite;}
+@keyframes conFlow{0%,100%{transform:translateX(-100%)}50%{transform:translateX(100%)}}
+
+/* SECTION */
+.sec{display:none;}
+.sec.active{display:block;animation:secIn .5s cubic-bezier(.16,1,.3,1) both;}
+@keyframes secIn{from{opacity:0;transform:translateY(24px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 24px;margin-bottom:16px;position:relative;overflow:hidden;transition:border-color .3s,box-shadow .3s,transform .3s;}
+.card:hover{border-color:rgba(240,112,32,.38);box-shadow:0 10px 50px rgba(240,112,32,.07);transform:translateY(-2px);}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--orange),transparent);opacity:.5;}
+.card-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:2px;color:var(--orange);margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+
+/* TICKET DISPLAY */
+.t-display{background:var(--film);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px;text-align:center;position:relative;overflow:hidden;}
+.t-display::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(240,112,32,.06),transparent 70%);pointer-events:none;animation:breathe 4s ease-in-out infinite;}
+@keyframes breathe{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.06)}}
+.t-count{font-family:'Bebas Neue',sans-serif;font-size:5rem;color:var(--orange);line-height:1;text-shadow:0 0 40px rgba(240,112,32,.4);display:block;position:relative;z-index:1;}
+.t-count.bump{animation:bump .35s cubic-bezier(.34,1.56,.64,1);}
+@keyframes bump{0%{transform:scale(1)}50%{transform:scale(1.25)}100%{transform:scale(1)}}
+.t-label{font-size:.75rem;letter-spacing:3px;color:var(--muted);text-transform:uppercase;font-family:'Space Mono',monospace;position:relative;z-index:1;}
+.qty-ctrl{display:flex;align-items:center;justify-content:center;gap:20px;margin-top:16px;position:relative;z-index:1;}
+.qty-btn{width:48px;height:48px;border-radius:50%;border:2px solid var(--orange);background:transparent;color:var(--orange);font-size:1.5rem;cursor:none;transition:all .25s cubic-bezier(.34,1.56,.64,1);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.qty-btn::before{content:'';position:absolute;inset:0;background:var(--orange);border-radius:50%;transform:scale(0);transition:transform .3s;}
+.qty-btn:hover::before{transform:scale(1);}
+.qty-btn:hover{color:#fff;box-shadow:0 0 25px rgba(240,112,32,.45);transform:scale(1.12);}
+.qty-btn span{position:relative;z-index:1;}
+.qty-btn:disabled{opacity:.3;cursor:not-allowed;transform:none;box-shadow:none;}
+.qty-btn:disabled::before{display:none;}
+.price-bd{background:var(--surface2);border-radius:10px;padding:16px;margin-top:16px;}
+.pr-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:.9rem;color:var(--muted);}
+.pr-row.total{border-top:1px solid var(--border);margin-top:8px;padding-top:14px;color:var(--text);font-size:1.1rem;font-weight:600;}
+.pr-row.total span:last-child{color:var(--orange);font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:1px;transition:all .3s cubic-bezier(.34,1.56,.64,1);}
+.pAnm{animation:pPop .35s cubic-bezier(.34,1.56,.64,1);}
+@keyframes pPop{0%{transform:scale(1)}50%{transform:scale(1.18);color:var(--ob)}100%{transform:scale(1)}}
+
+/* FORM */
+.form-group{margin-bottom:20px;}
+label{display:block;font-size:.75rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;font-family:'Space Mono',monospace;}
+input[type="text"],input[type="email"],input[type="tel"]{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:1rem;transition:all .3s;outline:none;}
+input:focus{border-color:var(--orange);box-shadow:0 0 0 3px var(--og),0 4px 20px rgba(240,112,32,.1);transform:translateY(-1px);}
+input.error{border-color:var(--red);box-shadow:0 0 0 3px rgba(224,80,80,.08);animation:shake .4s ease;}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+input.valid{border-color:var(--green);}
+.ferr{color:var(--red);font-size:.75rem;margin-top:6px;display:none;font-family:'Space Mono',monospace;}
+.ferr.show{display:block;animation:errIn .3s ease;}
+@keyframes errIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+
+/* UPI BOX */
+.upi-box{background:linear-gradient(135deg,var(--film),var(--surface2));border:1px solid var(--orange);border-radius:14px;padding:24px;margin-bottom:20px;position:relative;overflow:hidden;animation:borderPulse 3s ease-in-out infinite;}
+@keyframes borderPulse{0%,100%{box-shadow:0 0 10px rgba(240,112,32,.1)}50%{box-shadow:0 0 30px rgba(240,112,32,.22)}}
+.amt-big{font-family:'Bebas Neue',sans-serif;font-size:4rem;color:var(--orange);text-shadow:0 0 40px rgba(240,112,32,.5);line-height:1;text-align:center;animation:amtGlow 2s ease-in-out infinite;}
+@keyframes amtGlow{0%,100%{text-shadow:0 0 40px rgba(240,112,32,.5)}50%{text-shadow:0 0 70px rgba(240,112,32,.9),0 0 120px rgba(240,112,32,.3)}}
+.amt-label{font-size:.7rem;letter-spacing:3px;color:var(--muted);text-transform:uppercase;font-family:'Space Mono',monospace;text-align:center;display:block;}
+.upi-row{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px;transition:border-color .2s;}
+.upi-row:hover{border-color:rgba(240,112,32,.4);}
+.upi-lbl{font-size:.7rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;font-family:'Space Mono',monospace;display:block;margin-bottom:4px;}
+.upi-val{font-family:'Space Mono',monospace;font-size:.95rem;color:var(--text);font-weight:700;}
+.copy-btn{background:var(--og);border:1px solid var(--orange);color:var(--orange);padding:8px 14px;border-radius:8px;font-size:.75rem;cursor:none;font-family:'Space Mono',monospace;letter-spacing:1px;transition:all .25s cubic-bezier(.34,1.56,.64,1);}
+.copy-btn:hover{background:rgba(240,112,32,.25);transform:scale(1.06);}
+.copy-btn.copied{border-color:var(--green);color:var(--green);background:rgba(76,175,130,.1);}
+
+/* TIMER */
+.tmr-box{display:flex;align-items:center;justify-content:center;gap:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:20px;position:relative;overflow:hidden;}
+.tmr-prog{position:absolute;bottom:0;left:0;height:2px;background:linear-gradient(90deg,var(--green),var(--orange),var(--red));transform-origin:left;animation:tProg 600s linear forwards;}
+@keyframes tProg{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+.tmr-num{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--orange);letter-spacing:2px;transition:color .3s;}
+.tmr-num.warn{color:var(--red);animation:tPulse 1s ease-in-out infinite;}
+@keyframes tPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.7;transform:scale(1.06)}}
+
+/* UPI APPS */
+.upi-apps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;}
+.app-btn{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 8px;text-align:center;cursor:none;transition:all .3s cubic-bezier(.34,1.56,.64,1);text-decoration:none;color:var(--text);display:block;position:relative;overflow:hidden;}
+.app-btn::before{content:'';position:absolute;inset:0;background:var(--og);transform:scale(0);border-radius:12px;transition:transform .3s;}
+.app-btn:hover::before{transform:scale(1);}
+.app-btn:hover{border-color:var(--orange);transform:translateY(-5px);box-shadow:0 10px 24px rgba(240,112,32,.18);}
+.app-icon{font-size:1.8rem;display:block;margin-bottom:4px;position:relative;z-index:1;transition:transform .3s cubic-bezier(.34,1.56,.64,1);}
+.app-btn:hover .app-icon{transform:scale(1.22) rotate(-5deg);}
+.app-name{font-size:.65rem;letter-spacing:1px;color:var(--muted);font-family:'Space Mono',monospace;position:relative;z-index:1;}
+
+/* UPLOAD */
+.upload-zone{border:2px dashed var(--border);border-radius:14px;padding:32px;text-align:center;cursor:none;transition:all .3s;position:relative;overflow:hidden;}
+.upload-zone::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,var(--og2),transparent 60%);opacity:0;transition:opacity .3s;}
+.upload-zone:hover::before,.upload-zone.dg::before{opacity:1;}
+.upload-zone:hover,.upload-zone.dg{border-color:var(--orange);border-style:solid;}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.up-icon{font-size:2.5rem;margin-bottom:10px;display:block;transition:transform .3s cubic-bezier(.34,1.56,.64,1);position:relative;z-index:1;}
+.upload-zone:hover .up-icon{transform:scale(1.25) translateY(-5px);}
+.up-text{color:var(--muted);font-size:.85rem;position:relative;z-index:1;}
+.up-text strong{color:var(--orange);}
+.up-prev{width:100%;max-height:200px;object-fit:cover;border-radius:10px;margin-top:16px;display:none;border:1px solid var(--border);animation:prevIn .4s ease;}
+.up-prev.show{display:block;}
+@keyframes prevIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.ocr-box{background:var(--surface2);border-radius:10px;padding:14px 16px;margin-top:12px;font-size:.8rem;font-family:'Space Mono',monospace;display:none;}
+.ocr-box.show{display:block;animation:fi .3s ease;}
+.ocr-item{display:flex;align-items:center;gap:8px;padding:4px 0;color:var(--muted);}
+.ocr-item.pass{color:var(--green);}
+.ocr-item.fail{color:var(--red);}
+.ocr-spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(240,112,32,.2);border-top-color:var(--orange);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* BUTTONS */
+.btn{width:100%;padding:16px 24px;border-radius:12px;font-size:1rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;font-family:'Space Mono',monospace;cursor:none;transition:all .3s cubic-bezier(.34,1.56,.64,1);border:none;position:relative;overflow:hidden;}
+.btn-p{background:linear-gradient(135deg,var(--orange),#e05800);color:#fff;}
+.btn-p::after{content:'';position:absolute;top:50%;left:-100%;transform:translateY(-50%);width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);transition:left .5s;}
+.btn-p:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(240,112,32,.5);}
+.btn-p:hover::after{left:150%;}
+.btn-p:disabled{opacity:.5;cursor:not-allowed;transform:none!important;box-shadow:none!important;}
+.btn-s{background:transparent;border:1px solid var(--border);color:var(--muted);margin-top:10px;}
+.btn-s:hover{border-color:var(--orange);color:var(--orange);background:var(--og2);transform:translateY(-2px);}
+.btn-g{background:linear-gradient(135deg,rgba(76,175,130,.3),rgba(76,175,130,.1));border:1px solid var(--green);color:var(--green);}
+.btn-g:hover{background:rgba(76,175,130,.25);transform:translateY(-3px);box-shadow:0 10px 30px rgba(76,175,130,.25);}
+.btn-wa{background:linear-gradient(135deg,rgba(37,211,102,.3),rgba(37,211,102,.1));border:1px solid #25d366;color:#25d366;}
+.btn-wa:hover{background:rgba(37,211,102,.22);transform:translateY(-3px);}
+
+/* STATUS */
+.smsg{border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:.85rem;font-family:'Space Mono',monospace;display:none;}
+.smsg.show{display:block;animation:msgIn .4s cubic-bezier(.16,1,.3,1);}
+@keyframes msgIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.smsg.error{background:rgba(224,80,80,.1);border:1px solid rgba(224,80,80,.3);color:var(--red);}
+.smsg.success{background:rgba(76,175,130,.1);border:1px solid rgba(76,175,130,.3);color:var(--green);}
+.smsg.info{background:var(--og);border:1px solid var(--border);color:var(--orange);}
+
+/* TICKET CARD */
+.tkt-card{background:var(--surface);border:1px solid var(--orange);border-radius:16px;overflow:hidden;position:relative;box-shadow:0 0 60px rgba(240,112,32,.15);animation:tktReveal .9s cubic-bezier(.16,1,.3,1) both;}
+.tkt-card.approved-glow{box-shadow:0 0 80px rgba(76,175,130,.25),0 0 30px rgba(76,175,130,.15);border-color:var(--green);}
+@keyframes tktReveal{from{opacity:0;transform:scale(.88) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.tkt-hdr{background:linear-gradient(135deg,rgba(240,112,32,.22),rgba(240,112,32,.05));padding:24px;text-align:center;border-bottom:1px dashed var(--border);position:relative;overflow:hidden;}
+.tkt-hdr::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(240,112,32,.09),transparent);animation:hdrSwp 4s ease-in-out infinite;}
+@keyframes hdrSwp{0%,100%{transform:translateX(-100%)}50%{transform:translateX(100%)}}
+.tkt-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:4px;color:var(--orange);position:relative;z-index:1;}
+.tkt-body{padding:24px;}
+.tkt-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.875rem;animation:rowIn .4s ease both;}
+@keyframes rowIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.tkt-row:last-child{border:none;}
+.tkt-k{color:var(--muted);font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:1px;text-transform:uppercase;}
+.tkt-v{font-weight:600;color:var(--text);}
+.tkt-qr{display:flex;justify-content:center;padding:20px;border-top:1px dashed var(--border);background:rgba(255,255,255,.02);}
+#qrcode{border-radius:8px;overflow:hidden;animation:qrIn .7s cubic-bezier(.34,1.56,.64,1) .5s both;}
+@keyframes qrIn{from{opacity:0;transform:scale(.6) rotate(-8deg)}to{opacity:1;transform:scale(1) rotate(0deg)}}
+.sbadge{display:inline-block;padding:4px 14px;border-radius:100px;font-size:.7rem;letter-spacing:2px;font-family:'Space Mono',monospace;text-transform:uppercase;font-weight:700;}
+.sbadge.pending{background:rgba(240,192,64,.15);color:var(--yellow);border:1px solid var(--yellow);}
+.sbadge.approved{background:rgba(76,175,130,.15);color:var(--green);border:1px solid var(--green);animation:glowBadge 2s ease-in-out infinite;}
+@keyframes glowBadge{0%,100%{box-shadow:0 0 5px rgba(76,175,130,.2)}50%{box-shadow:0 0 20px rgba(76,175,130,.5)}}
+
+/* DOWNLOAD ACTIONS */
+.dl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px;}
+.dl-grid .btn,.dl-grid button{font-size:.7rem;padding:13px 8px;margin:0;}
+.dl-grid .btn-row2{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+
+/* SOFT COPY MODAL */
+#softModal{position:fixed;inset:0;z-index:5000;display:none;align-items:center;justify-content:center;}
+#softModal.show{display:flex;animation:mdlBg .3s ease forwards;}
+@keyframes mdlBg{from{background:rgba(0,0,0,0);backdrop-filter:blur(0)}to{background:rgba(0,0,0,.9);backdrop-filter:blur(14px)}}
+.soft-card{background:var(--surface);border:1px solid rgba(240,112,32,.3);border-radius:20px;padding:24px;max-width:360px;width:92%;position:relative;animation:mdlIn .5s cubic-bezier(.34,1.56,.64,1);box-shadow:0 40px 100px rgba(0,0,0,.7);}
+@keyframes mdlIn{from{opacity:0;transform:scale(.85) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.soft-close{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.08);border:none;color:var(--muted);width:32px;height:32px;border-radius:50%;cursor:none;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:all .3s;}
+.soft-close:hover{background:rgba(224,80,80,.2);color:var(--red);transform:rotate(90deg);}
+.soft-ttl{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:2px;color:var(--orange);text-align:center;margin-bottom:16px;}
+#tktCanvas{width:100%;border-radius:12px;border:1px solid rgba(240,112,32,.2);display:block;margin-bottom:16px;box-shadow:0 8px 30px rgba(0,0,0,.5);}
+
+/* EMAIL MODAL */
+#emailModal{position:fixed;inset:0;z-index:5001;display:none;align-items:center;justify-content:center;}
+#emailModal.show{display:flex;animation:mdlBg .3s ease forwards;}
+.email-card{background:var(--surface);border:1px solid rgba(76,175,130,.3);border-radius:20px;padding:28px;max-width:400px;width:92%;position:relative;animation:mdlIn .5s cubic-bezier(.34,1.56,.64,1);}
+.email-card h2{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:2px;color:var(--green);margin-bottom:4px;}
+.email-card .sub{font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:2px;color:var(--muted);margin-bottom:20px;}
+.email-preview{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;font-family:'Space Mono',monospace;font-size:.75rem;line-height:1.8;color:var(--text);max-height:240px;overflow-y:auto;margin-bottom:16px;white-space:pre-wrap;}
+.email-preview::-webkit-scrollbar{width:4px;}
+.email-preview::-webkit-scrollbar-track{background:transparent;}
+.email-preview::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+/* FILM STRIP */
+.fstrip{display:flex;gap:4px;padding:8px 0;overflow:hidden;opacity:.15;pointer-events:none;}
+.fhole{width:16px;height:12px;border-radius:3px;background:var(--orange);flex-shrink:0;}
+
+/* SPINNER */
+.spn{width:20px;height:20px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;display:inline-block;vertical-align:middle;margin-right:8px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 20px;font-family:'Space Mono',monospace;font-size:.8rem;color:var(--text);z-index:10001;transition:transform .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;max-width:90vw;backdrop-filter:blur(10px);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.success{border-color:var(--green);color:var(--green);box-shadow:0 4px 20px rgba(76,175,130,.2);}
+.toast.error{border-color:var(--red);color:var(--red);box-shadow:0 4px 20px rgba(224,80,80,.2);}
+
+/* ADMIN LINK */
+.adm-lnk{text-align:center;margin-top:40px;padding-top:20px;border-top:1px solid var(--border);}
+.adm-lnk a{font-family:'Space Mono',monospace;font-size:.7rem;color:var(--muted);text-decoration:none;letter-spacing:2px;transition:color .2s;}
+.adm-lnk a:hover{color:var(--orange);}
+
+/* CONFETTI */
+.cf{position:fixed;pointer-events:none;z-index:9997;animation:cfFall var(--dur) ease-out var(--delay) both;}
+@keyframes cfFall{from{transform:translate(var(--x),-20px) rotate(0deg);opacity:1}to{transform:translate(calc(var(--x) + var(--drift)),100vh) rotate(720deg);opacity:0}}
+
+@media(max-width:480px){
+  .upi-apps{grid-template-columns:repeat(2,1fr);}
+  .step-con{width:30px;}
+  .card{padding:20px 16px;}
+  .amt-big{font-size:3rem;}
+  .dl-grid{grid-template-columns:1fr 1fr;}
+  .dl-grid>*:nth-child(3){grid-column:1/-1;}
+  .cd-num{font-size:1.8rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOAD SCREEN -->
+<div id="ls">
+  <div class="ls-logo">🎬 Reel &amp; Deal</div>
+  <div class="ls-bar"><div class="ls-fill"></div></div>
+  <div class="ls-sub">LOADING YOUR EXPERIENCE...</div>
+  <div class="ls-steps">
+    <div class="ls-step"></div>
+    <div class="ls-step"></div>
+    <div class="ls-step"></div>
+  </div>
+</div>
+
+<!-- CURSOR -->
+<div id="cur"></div>
+<div id="curRing"></div>
+
+<!-- PARTICLES -->
+<canvas id="pCv"></canvas>
+
+<!-- AMBIENT -->
+<div class="amb a1"></div>
+<div class="amb a2"></div>
+<div class="amb a3"></div>
+
+<header>
+  <div class="logo">Reel <span>&amp;</span> Deal</div>
+  <div class="tagline">The MBA Pitch Arena · From Plotlines to Profits</div>
+  <div class="ev-badge" id="evBadge">MBA 2025 FESTIVAL · FEB 17 · 1PM</div>
+</header>
+
+<div class="wrap">
+
+  <!-- COUNTDOWN -->
+  <div class="cd-banner" id="cdBanner">
+    <div class="cd-label">🎬 Event starts in</div>
+    <div class="cd-grid">
+      <div class="cd-unit"><span class="cd-num" id="cdD">00</span><span class="cd-tag">Days</span></div>
+      <div class="cd-unit"><span class="cd-num" id="cdH">00</span><span class="cd-tag">Hours</span></div>
+      <div class="cd-unit"><span class="cd-num" id="cdM">00</span><span class="cd-tag">Mins</span></div>
+      <div class="cd-unit"><span class="cd-num" id="cdS">00</span><span class="cd-tag">Secs</span></div>
+    </div>
+  </div>
+
+  <!-- STEPS -->
+  <div class="steps">
+    <div class="step-item active" id="s1"><div class="step-num">1</div><div class="step-label">Tickets</div></div>
+    <div class="step-con" id="sc1"></div>
+    <div class="step-item" id="s2"><div class="step-num">2</div><div class="step-label">Details</div></div>
+    <div class="step-con" id="sc2"></div>
+    <div class="step-item" id="s3"><div class="step-num">3</div><div class="step-label">Payment</div></div>
+    <div class="step-con" id="sc3"></div>
+    <div class="step-item" id="s4"><div class="step-num">4</div><div class="step-label">Ticket</div></div>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="sec active" id="sec1">
+    <div class="fstrip" id="fs1"></div>
+    <div class="card">
+      <div class="card-title">🎟 Select Tickets</div>
+      <div class="t-display">
+        <span class="t-count" id="tCount">1</span>
+        <div class="t-label">Ticket(s) Selected</div>
+        <div class="qty-ctrl">
+          <button class="qty-btn" id="btnMinus" onclick="chgQty(-1)"><span>−</span></button>
+          <button class="qty-btn" id="btnPlus" onclick="chgQty(1)"><span>+</span></button>
+        </div>
+      </div>
+      <div class="price-bd">
+        <div class="pr-row"><span>Price per ticket</span><span id="ppt">₹100</span></div>
+        <div class="pr-row"><span>Quantity</span><span id="qtyD">1</span></div>
+        <div class="pr-row total"><span>Total Amount</span><span id="totalD">₹100</span></div>
+      </div>
+    </div>
+    <button class="btn btn-p" onclick="goStep(2)" id="btn1">Continue →</button>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="sec" id="sec2">
+    <div class="card">
+      <div class="card-title">👤 Your Details</div>
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="fname" placeholder="Enter your full name">
+        <div class="ferr" id="fnameE">Please enter your full name (min 2 chars)</div>
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="femail" placeholder="you@example.com">
+        <div class="ferr" id="femailE">Please enter a valid email address</div>
+      </div>
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input type="tel" id="fphone" placeholder="10-digit mobile number" maxlength="10">
+        <div class="ferr" id="fphoneE">Please enter a valid 10-digit Indian number</div>
+      </div>
+    </div>
+    <button class="btn btn-p" onclick="validateAndProceed()">Proceed to Payment →</button>
+    <button class="btn btn-s" onclick="goStep(1)">← Back</button>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="sec" id="sec3">
+    <div class="tmr-box">
+      <span>⏱</span>
+      <div><div style="font-size:.7rem;color:var(--muted);letter-spacing:2px;font-family:'Space Mono',monospace;text-transform:uppercase;">Time remaining to complete payment</div><div class="tmr-num" id="tmrD">10:00</div></div>
+      <div class="tmr-prog" id="tmrProg"></div>
+    </div>
+    <div class="upi-box">
+      <div style="margin-bottom:20px;text-align:center;">
+        <span class="amt-label">Total Payable Amount</span>
+        <div class="amt-big" id="payAmt">₹100</div>
+        <span class="amt-label" id="payInfo">for 1 ticket</span>
+      </div>
+      <div class="upi-row">
+        <div><span class="upi-lbl">UPI ID</span><span class="upi-val" id="upiIdD"></span></div>
+        <button class="copy-btn" onclick="copyUPI(this)">COPY</button>
+      </div>
+      <div class="upi-row">
+        <div><span class="upi-lbl">Payee Name</span><span class="upi-val" id="payeeD"></span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">📱 Pay With App</div>
+      <div class="upi-apps" id="upiApps"></div>
+      <p style="font-size:.75rem;color:var(--muted);text-align:center;font-family:'Space Mono',monospace;margin-top:4px;">TAP AN APP TO OPEN DIRECTLY WITH CORRECT AMOUNT</p>
+    </div>
+    <div class="card">
+      <div class="card-title">✅ Payment Verification</div>
+      <div id="statusMsg" class="smsg"></div>
+      <div class="form-group">
+        <label>UTR / Transaction ID</label>
+        <input type="text" id="utrInput" placeholder="12-digit UTR or Paytm ID starting with T">
+        <div class="ferr" id="utrE">Invalid UTR format</div>
+      </div>
+      <div class="form-group">
+        <label>Payment Screenshot</label>
+        <div class="upload-zone" id="upZone">
+          <input type="file" id="ssFile" accept=".jpg,.jpeg,.png,.webp,.heic" onchange="handleFile(event)">
+          <span class="up-icon">📸</span>
+          <p class="up-text">Drop screenshot here or <strong>browse</strong></p>
+          <p style="font-size:.7rem;color:var(--muted);margin-top:6px;font-family:'Space Mono',monospace;">JPG · PNG · WEBP · HEIC · MAX 5MB</p>
+        </div>
+        <img class="up-prev" id="ssPrev" alt="Payment Screenshot">
+        <div class="ocr-box" id="ocrBox">
+          <div class="ocr-item" id="ocrP" style="color:var(--orange)"><div class="ocr-spin"></div> Analyzing screenshot...</div>
+          <div class="ocr-item" id="ocrA" style="display:none"></div>
+          <div class="ocr-item" id="ocrU" style="display:none"></div>
+        </div>
+        <div class="ferr" id="ssE">Screenshot is required</div>
+      </div>
+    </div>
+    <button class="btn btn-p" id="submitBtn" onclick="submitBooking()">Submit Booking</button>
+    <button class="btn btn-s" onclick="cancelPay()">Cancel</button>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="sec" id="sec4">
+    <div class="smsg success show" style="display:block;margin-bottom:20px;" id="successMsg">🎉 Booking submitted! Your ticket is ready.</div>
+
+    <div class="tkt-card" id="tktCard">
+      <div class="fstrip" id="fs2" style="padding:8px 12px;opacity:.2;"></div>
+      <div class="tkt-hdr">
+        <div style="font-size:.7rem;letter-spacing:3px;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:6px;position:relative;z-index:1;" id="tktLabel">REEL TO DEAL · MBA 2025</div>
+        <div class="tkt-title" id="tktName">🎬 Movie Ticket</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:6px;font-family:'Space Mono',monospace;position:relative;z-index:1;" id="tktDate">FEB 17, 2025 · 1:00 PM</div>
+      </div>
+      <div class="tkt-body" id="tktBody"></div>
+      <div class="tkt-qr"><div id="qrcode"></div></div>
+      <div class="fstrip" id="fs3" style="padding:8px 12px;opacity:.2;"></div>
+    </div>
+
+    <!-- ACTION BUTTONS -->
+    <div class="dl-grid">
+      <button class="btn btn-p" id="pdfBtn" onclick="dlPDF()">📄 PDF</button>
+      <button class="btn btn-g" onclick="showSoftCopy()">🖼 Soft Copy</button>
+      <button class="btn btn-g" style="background:linear-gradient(135deg,rgba(76,130,255,.3),rgba(76,130,255,.1));border-color:#4c82ff;color:#4c82ff;" onclick="showEmailModal()">✉️ Email</button>
+      <div class="btn-row2">
+        <button class="btn btn-wa" onclick="shareWA()" style="font-size:.7rem;">💬 WhatsApp</button>
+        <button class="btn btn-s" onclick="printTkt()" style="font-size:.7rem;">🖨 Print</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <p style="font-size:.8rem;color:var(--muted);line-height:1.8;font-family:'Space Mono',monospace;">
+        📌 <strong style="color:var(--orange)">PENDING?</strong> Your payment is being verified. You'll be notified once approved.<br><br>
+        ✅ <strong style="color:var(--green)">APPROVED?</strong> You're all set! Show this ticket at the entry gate.<br><br>
+        ✉️ Use the Email button above to send your ticket to your inbox.
+      </p>
+    </div>
+  </div>
+
+  <div class="adm-lnk"><a href="admin.html">Admin Panel →</a></div>
+</div>
+
+<!-- SOFT COPY MODAL -->
+<div id="softModal">
+  <div class="soft-card">
+    <button class="soft-close" onclick="closeSoftCopy()">✕</button>
+    <div class="soft-ttl">🎟 Digital Ticket</div>
+    <canvas id="tktCanvas"></canvas>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <button class="btn btn-g" onclick="dlImage()" style="font-size:.72rem;padding:12px 8px;margin:0;">⬇ Save Image</button>
+      <button class="btn btn-s" onclick="closeSoftCopy()" style="font-size:.72rem;padding:12px 8px;margin:0;">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- EMAIL MODAL -->
+<div id="emailModal">
+  <div class="email-card">
+    <button class="soft-close" onclick="closeEmailModal()" style="position:absolute;top:12px;right:12px;">✕</button>
+    <h2>✉️ Email Ticket</h2>
+    <div class="sub">PREVIEW · OPENS YOUR EMAIL APP</div>
+    <div class="email-preview" id="emailPreview"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <button class="btn btn-g" onclick="sendEmail()" style="font-size:.75rem;padding:13px 8px;margin:0;">Open Email App</button>
+      <button class="btn btn-s" onclick="closeEmailModal()" style="font-size:.75rem;padding:13px 8px;margin:0;">Cancel</button>
+    </div>
+    <p style="font-size:.65rem;color:var(--muted);margin-top:10px;font-family:'Space Mono',monospace;text-align:center;">This opens your default email client with the ticket pre-filled.</p>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════
+// CONFIG — synced with admin settings
+// ═══════════════════════════════════════════
+const DEFAULT_CONFIG = {
+  movieName: 'Reel to Deal',
+  eventDate: '2025-02-17T13:00:00',
+  eventDateDisplay: 'FEB 17, 2025 · 1:00 PM',
+  ticketPrice: 100,
+  maxTickets: 10,
+  upiId: 'hiteshhayagriv@okicici',
+  payeeName: 'REEL TO DEAL',
+  autoApprove: true,
+  venue: 'MBA Auditorium'
+};
+
+let CONFIG = {...DEFAULT_CONFIG};
+try { const s = localStorage.getItem('rtd_config'); if(s) Object.assign(CONFIG, JSON.parse(s)); } catch(e){}
+
+const SB_URL = 'https://yhrfpcwehtqsppoifhog.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlocmZwY3dlaHRxc3Bwb2lmaG9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1NzQ5MDAsImV4cCI6MjA4NzE1MDkwMH0.Ml1V2zc8j3XCZIuILuapy2Cs4jcBl0i6sHKxFFl6Sqo';
+
+let qty=1, step=1, tmrInt=null, tmrSecs=600;
+let bData={}, ssFile=null, ocrAmt=false, ocrUpi=false, rateTs=[];
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+window.addEventListener('load', () => {
+  applyConfig();
+  startCd();
+  buildStrips();
+  buildApps();
+  chgQty(0);
+  initValidation();
+  initDrag();
+  setTimeout(() => {
+    document.getElementById('ls').classList.add('out');
+    setTimeout(() => document.getElementById('ls').style.display='none', 600);
+    initParticles();
+    initCursor();
+    initSparkle();
+  }, 1500);
+});
+
+function applyConfig() {
+  document.getElementById('evBadge').textContent = CONFIG.movieName.toUpperCase() + ' · ' + CONFIG.eventDateDisplay;
+  document.getElementById('tktName').textContent = '🎬 ' + CONFIG.movieName;
+  document.getElementById('tktDate').textContent = CONFIG.eventDateDisplay;
+  document.getElementById('upiIdD').textContent = CONFIG.upiId;
+  document.getElementById('payeeD').textContent = CONFIG.payeeName;
+  document.getElementById('ppt').textContent = '₹' + CONFIG.ticketPrice;
+  updatePrice();
+}
+
+// ═══════════════════════════════════════════
+// CURSOR
+// ═══════════════════════════════════════════
+function initCursor() {
+  const c = document.getElementById('cur'), r = document.getElementById('curRing');
+  let mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; c.style.left=mx+'px'; c.style.top=my+'px'; });
+  (function anim(){ rx+=(mx-rx)*.1; ry+=(my-ry)*.1; r.style.left=rx+'px'; r.style.top=ry+'px'; requestAnimationFrame(anim); })();
+  document.querySelectorAll('button,a,.qty-btn,.copy-btn,.app-btn,.upload-zone').forEach(el => {
+    el.addEventListener('mouseenter', () => { c.style.width='20px'; c.style.height='20px'; r.style.width='52px'; r.style.height='52px'; r.style.borderColor='rgba(240,112,32,.8)'; });
+    el.addEventListener('mouseleave', () => { c.style.width='12px'; c.style.height='12px'; r.style.width='38px'; r.style.height='38px'; r.style.borderColor='rgba(240,112,32,.5)'; });
+  });
+}
+
+// ═══════════════════════════════════════════
+// SPARKLE ON BUTTON CLICKS
+// ═══════════════════════════════════════════
+function initSparkle() {
+  document.querySelectorAll('.btn-p, .btn-g').forEach(btn => {
+    btn.addEventListener('click', e => {
+      for(let i=0; i<8; i++) {
+        const s = document.createElement('div');
+        s.className='cf';
+        const colors=['#f07020','#ff8c3a','#f0c040','#4caf82','#fff'];
+        const angle = (i/8)*Math.PI*2;
+        const dist = 40+Math.random()*60;
+        s.style.cssText = `left:${e.clientX}px;top:${e.clientY}px;width:${4+Math.random()*5}px;height:${4+Math.random()*5}px;background:${colors[Math.floor(Math.random()*colors.length)]};border-radius:50%;--x:0px;--drift:0px;--dur:.6s;--delay:0s;transform:translate(-50%,-50%);animation:sparkOut .6s ease-out both;position:fixed;z-index:9999;pointer-events:none;`;
+        s.style.setProperty('--tx', Math.cos(angle)*dist+'px');
+        s.style.setProperty('--ty', Math.sin(angle)*dist+'px');
+        s.style.animation = `sparkOut .6s ease-out ${i*.04}s both`;
+        document.body.appendChild(s);
+        setTimeout(() => s.remove(), 800);
+      }
+    });
+  });
+}
+// add sparkle keyframe via JS
+const sparkStyle = document.createElement('style');
+sparkStyle.textContent = '@keyframes sparkOut{from{opacity:1;transform:translate(-50%,-50%) scale(1)}to{opacity:0;transform:translate(calc(-50% + var(--tx)),calc(-50% + var(--ty))) scale(0)}}';
+document.head.appendChild(sparkStyle);
+
+// ═══════════════════════════════════════════
+// PARTICLES
+// ═══════════════════════════════════════════
+function initParticles() {
+  const cv = document.getElementById('pCv'); if(!cv) return;
+  const ctx = cv.getContext('2d');
+  let W=cv.width=window.innerWidth, H=cv.height=window.innerHeight;
+  window.addEventListener('resize', () => { W=cv.width=window.innerWidth; H=cv.height=window.innerHeight; });
+  const pts = Array.from({length:55}, () => ({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,r:Math.random()*1.8+.4,op:Math.random()*.4+.1,ph:Math.random()*Math.PI*2}));
+  function draw() {
+    ctx.clearRect(0,0,W,H);
+    pts.forEach(p => { p.x+=p.vx; p.y+=p.vy; p.ph+=.018; if(p.x<0)p.x=W; if(p.x>W)p.x=0; if(p.y<0)p.y=H; if(p.y>H)p.y=0;
+      const o=p.op*(0.6+0.4*Math.sin(p.ph)); ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fillStyle=`rgba(240,112,32,${o})`; ctx.fill();
+    });
+    for(let i=0;i<pts.length;i++) for(let j=i+1;j<pts.length;j++) {
+      const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<90) { ctx.beginPath(); ctx.strokeStyle=`rgba(240,112,32,${(1-d/90)*.05})`; ctx.lineWidth=.5; ctx.moveTo(pts[i].x,pts[i].y); ctx.lineTo(pts[j].x,pts[j].y); ctx.stroke(); }
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ═══════════════════════════════════════════
+// COUNTDOWN
+// ═══════════════════════════════════════════
+function startCd() {
+  const target = new Date(CONFIG.eventDate).getTime();
+  function tick() {
+    const diff = target - Date.now();
+    if(diff <= 0) { document.getElementById('cdBanner').innerHTML='<div class="cd-live">🎬 EVENT IS LIVE NOW!</div>'; return; }
+    const d=Math.floor(diff/86400000),h=Math.floor((diff%86400000)/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);
+    [{id:'cdD',v:d},{id:'cdH',v:h},{id:'cdM',v:m},{id:'cdS',v:s}].forEach(({id,v}) => {
+      const el=document.getElementById(id); const vs=String(v).padStart(2,'0');
+      if(el.textContent!==vs){ el.classList.remove('flip'); void el.offsetWidth; el.classList.add('flip'); el.textContent=vs; }
+    });
+    setTimeout(tick, 1000);
+  }
+  tick();
+}
+
+// ═══════════════════════════════════════════
+// FILM STRIPS
+// ═══════════════════════════════════════════
+function buildStrips() {
+  ['fs1','fs2','fs3'].forEach(id => { const el=document.getElementById(id); if(el) el.innerHTML=Array(40).fill('<div class="fhole"></div>').join(''); });
+}
+
+// ═══════════════════════════════════════════
+// SUPABASE
+// ═══════════════════════════════════════════
+async function sbFetch(ep, opts={}) {
+  const url=`${SB_URL}/rest/v1/${ep}`;
+  const headers={'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':opts.prefer||'return=representation',...opts.headers};
+  const res = await fetch(url, {...opts, headers});
+  if(!res.ok){ const e=await res.json().catch(()=>({})); throw new Error(e.message||`HTTP ${res.status}`); }
+  if(res.status===204) return null;
+  return res.json();
+}
+async function sbUpload(bucket, path, file) {
+  const url=`${SB_URL}/storage/v1/object/${bucket}/${path}`;
+  const res=await fetch(url,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':file.type,'x-upsert':'true'},body:file});
+  if(!res.ok) throw new Error('Upload failed');
+  return `${SB_URL}/storage/v1/object/public/${bucket}/${path}`;
+}
+
+// ═══════════════════════════════════════════
+// QUANTITY
+// ═══════════════════════════════════════════
+function chgQty(d) {
+  qty = Math.max(1, Math.min(CONFIG.maxTickets, qty+d));
+  const el = document.getElementById('tCount');
+  el.textContent = qty; el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
+  updatePrice();
+  document.getElementById('btnMinus').disabled = qty<=1;
+  document.getElementById('btnPlus').disabled = qty>=CONFIG.maxTickets;
+}
+function updatePrice() {
+  document.getElementById('qtyD').textContent = qty;
+  const t = document.getElementById('totalD');
+  t.textContent = '₹'+(qty*CONFIG.ticketPrice);
+  t.classList.remove('pAnm'); void t.offsetWidth; t.classList.add('pAnm');
+}
+
+// ═══════════════════════════════════════════
+// STEPS
+// ═══════════════════════════════════════════
+function goStep(s) {
+  document.querySelectorAll('.sec').forEach((el,i) => el.classList.toggle('active', i+1===s));
+  for(let i=1;i<=4;i++) { const el=document.getElementById('s'+i); el.classList.remove('active','done'); if(i<s)el.classList.add('done'); if(i===s)el.classList.add('active'); }
+  for(let i=1;i<=3;i++) document.getElementById('sc'+i).classList.toggle('done', i<s);
+  step=s; window.scrollTo({top:0,behavior:'smooth'});
+  if(s===4) { launchConfetti(); setTimeout(()=>drawCanvas(bData), 800); }
+}
+
+// ═══════════════════════════════════════════
+// CONFETTI
+// ═══════════════════════════════════════════
+function launchConfetti() {
+  const clrs=['#f07020','#ff8c3a','#4caf82','#f0c040','#e05050','#f0e8d8'];
+  for(let i=0;i<80;i++){
+    const p=document.createElement('div'); p.className='cf';
+    p.style.cssText=`left:${Math.random()*100}vw;top:0;background:${clrs[Math.floor(Math.random()*clrs.length)]};--x:${(Math.random()-.5)*80}px;--drift:${(Math.random()-.5)*250}px;--dur:${.8+Math.random()*1.8}s;--delay:${Math.random()*.9}s;width:${4+Math.random()*8}px;height:${4+Math.random()*8}px;border-radius:${Math.random()>.5?'50%':'2px'};`;
+    document.body.appendChild(p); setTimeout(()=>p.remove(), 3500);
+  }
+}
+
+// ═══════════════════════════════════════════
+// VALIDATION
+// ═══════════════════════════════════════════
+function initValidation() {
+  ['fname','femail','fphone'].forEach(id => document.getElementById(id).addEventListener('input', () => valField(id)));
+  document.getElementById('utrInput').addEventListener('input', valUTR);
+}
+function initDrag() {
+  const z=document.getElementById('upZone');
+  z.addEventListener('dragover', e => { e.preventDefault(); z.classList.add('dg'); });
+  z.addEventListener('dragleave', () => z.classList.remove('dg'));
+  z.addEventListener('drop', e => { e.preventDefault(); z.classList.remove('dg'); const f=e.dataTransfer.files[0]; if(f) processFile(f); });
+}
+function valField(id) {
+  let ok=false;
+  if(id==='fname') ok=document.getElementById(id).value.trim().length>=2;
+  if(id==='femail') ok=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(document.getElementById(id).value.trim());
+  if(id==='fphone') ok=/^[6-9]\d{9}$/.test(document.getElementById(id).value.trim());
+  const el=document.getElementById(id); el.classList.toggle('error',!ok); el.classList.toggle('valid',ok);
+  document.getElementById(id+'E').classList.toggle('show',!ok); return ok;
+}
+function valUTR() {
+  const v=document.getElementById('utrInput').value.trim(), ok=isUTR(v);
+  document.getElementById('utrInput').classList.toggle('error',!ok&&v.length>0); document.getElementById('utrInput').classList.toggle('valid',ok);
+  document.getElementById('utrE').classList.toggle('show',!ok&&v.length>0); return ok;
+}
+function isUTR(v) { if(!v||/[^a-zA-Z0-9]/.test(v))return false; if(v.startsWith('T')&&v.length>=12&&v.length<=25)return true; return /^\d{12,25}$/.test(v); }
+function validateAndProceed() {
+  const n=valField('fname'), e=valField('femail'), p=valField('fphone');
+  if(n&&e&&p){
+    bData.name=document.getElementById('fname').value.trim();
+    bData.email=document.getElementById('femail').value.trim();
+    bData.phone=document.getElementById('fphone').value.trim();
+    bData.qty=qty; bData.amount=qty*CONFIG.ticketPrice;
+    document.getElementById('payAmt').textContent='₹'+bData.amount;
+    document.getElementById('payInfo').textContent='for '+bData.qty+' ticket'+(bData.qty>1?'s':'');
+    buildApps(); goStep(3); startTmr();
+  }
+}
+
+// ═══════════════════════════════════════════
+// UPI
+// ═══════════════════════════════════════════
+function buildApps() {
+  const apps=[{n:'Google Pay',i:'🟢'},{n:'PhonePe',i:'🟣'},{n:'Paytm',i:'🔵'},{n:'BHIM',i:'🏛'},{n:'Amazon Pay',i:'🟠'},{n:'Any UPI',i:'💳'}];
+  document.getElementById('upiApps').innerHTML = apps.map((a,i) => `<a class="app-btn" onclick="openApp()" href="javascript:void(0)" style="animation:secIn .4s ease ${i*.07}s both;"><span class="app-icon">${a.i}</span><span class="app-name">${a.n}</span></a>`).join('');
+}
+function openApp() { window.location.href=`upi://pay?pa=${CONFIG.upiId}&pn=${encodeURIComponent(CONFIG.payeeName)}&am=${bData.amount||qty*CONFIG.ticketPrice}&cu=INR&tn=${encodeURIComponent('Movie Ticket - '+CONFIG.movieName)}`; }
+function copyUPI(btn) { navigator.clipboard.writeText(CONFIG.upiId).then(() => { btn.textContent='COPIED!'; btn.classList.add('copied'); showToast('UPI ID copied!','success'); setTimeout(()=>{ btn.textContent='COPY'; btn.classList.remove('copied'); },2000); }); }
+
+// ═══════════════════════════════════════════
+// TIMER
+// ═══════════════════════════════════════════
+function startTmr() {
+  tmrSecs=600; clearInterval(tmrInt);
+  const p=document.getElementById('tmrProg'); if(p){p.style.animation='none';void p.offsetWidth;p.style.animation='tProg 600s linear forwards';}
+  tmrInt=setInterval(()=>{
+    tmrSecs--;
+    const m=Math.floor(tmrSecs/60),s=tmrSecs%60;
+    const d=document.getElementById('tmrD');
+    d.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    d.classList.toggle('warn',tmrSecs<=60);
+    if(tmrSecs<=0){clearInterval(tmrInt);setStatus('Payment time expired. Please start again.','error');document.getElementById('submitBtn').disabled=true;}
+  },1000);
+}
+function cancelPay() {
+  clearInterval(tmrInt); goStep(1);
+  bData={}; ssFile=null; ocrAmt=false; ocrUpi=false;
+  document.getElementById('utrInput').value='';
+  ['ssPrev','ocrBox','statusMsg'].forEach(id=>{ const el=document.getElementById(id); if(el){el.classList.remove('show');if(id==='ssPrev')el.src='';} });
+}
+
+// ═══════════════════════════════════════════
+// FILE + OCR
+// ═══════════════════════════════════════════
+function handleFile(e){ const f=e.target.files[0]; if(f) processFile(f); }
+function processFile(file) {
+  if(file.size>5*1024*1024){showToast('File too large. Max 5MB','error');return;}
+  ssFile=file;
+  const r=new FileReader(); r.onload=e=>{const p=document.getElementById('ssPrev');p.src=e.target.result;p.classList.add('show');};r.readAsDataURL(file);
+  document.getElementById('ssE').classList.remove('show');
+  runOCR(file);
+}
+async function runOCR(file) {
+  const box=document.getElementById('ocrBox'),p=document.getElementById('ocrP'),a=document.getElementById('ocrA'),u=document.getElementById('ocrU');
+  box.classList.add('show'); p.style.display='flex'; a.style.display='none'; u.style.display='none';
+  ocrAmt=false; ocrUpi=false;
+  try {
+    const res=await Tesseract.recognize(file,'eng',{logger:()=>{}}); const txt=res.data.text;
+    p.style.display='none';
+    const ea=bData.amount||qty*CONFIG.ticketPrice;
+    ocrAmt=[new RegExp(`[₹Rs.]*${ea}`),new RegExp(`${ea}\\.?00`)].some(rx=>rx.test(txt));
+    const upiParts=CONFIG.upiId.split('@');
+    ocrUpi=upiParts.some(part=>txt.toLowerCase().includes(part.toLowerCase()));
+    a.style.display='flex'; a.className=`ocr-item ${ocrAmt?'pass':'fail'}`; a.textContent=ocrAmt?`✓ Amount ₹${ea} detected`:`✗ Amount ₹${ea} not found`;
+    u.style.display='flex'; u.className=`ocr-item ${ocrUpi?'pass':'fail'}`; u.textContent=ocrUpi?'✓ UPI ID verified':'✗ UPI ID not detected — manual review needed';
+    if(!ocrAmt||!ocrUpi) setStatus('⚠️ OCR could not fully verify. Booking will be PENDING for manual review.','info');
+  } catch(e){ p.style.display='none'; box.classList.remove('show'); showToast('OCR failed — continuing unverified','error'); }
+}
+
+// ═══════════════════════════════════════════
+// RATE LIMIT
+// ═══════════════════════════════════════════
+function rateOk(){ const n=Date.now(); rateTs=rateTs.filter(t=>n-t<60000); if(rateTs.length>=3)return false; rateTs.push(n); return true; }
+
+// ═══════════════════════════════════════════
+// SUBMIT BOOKING
+// ═══════════════════════════════════════════
+async function submitBooking() {
+  if(!rateOk()){setStatus('Too many attempts. Please wait.','error');return;}
+  const utr=document.getElementById('utrInput').value.trim();
+  if(!isUTR(utr)){document.getElementById('utrE').classList.add('show');showToast('Please enter a valid UTR','error');return;}
+  if(!ssFile){document.getElementById('ssE').classList.add('show');showToast('Please upload payment screenshot','error');return;}
+  const btn=document.getElementById('submitBtn'); btn.disabled=true; btn.innerHTML='<span class="spn"></span>Processing...';
+  try {
+    const existing=await sbFetch(`bookings?utr=eq.${encodeURIComponent(utr)}&select=id`,{method:'GET',headers:{'Range':'0-0'}}).catch(()=>[]);
+    if(existing&&existing.length>0){setStatus('❌ This UTR has already been used. Each transaction ID can only be used once.','error');btn.disabled=false;btn.innerHTML='Submit Booking';return;}
+    const ext=ssFile.name.split('.').pop();
+    const fname=`${Date.now()}_${Math.random().toString(36).substr(2,9)}.${ext}`;
+    let ssUrl='';
+    try{ssUrl=await sbUpload('payment-screenshots',fname,ssFile);}catch(e){console.error(e);}
+    const bid='RTD-'+Date.now().toString(36).toUpperCase()+'-'+Math.random().toString(36).substr(2,4).toUpperCase();
+    const allOk=isUTR(utr)&&ssUrl&&ocrAmt&&ocrUpi;
+    const status=(CONFIG.autoApprove&&allOk)?'approved':'pending';
+    await sbFetch('bookings',{method:'POST',body:JSON.stringify({booking_id:bid,name:bData.name,email:bData.email,phone:bData.phone,ticket_qty:bData.qty,amount:bData.amount,utr,screenshot_url:ssUrl,status,ocr_verified:ocrAmt&&ocrUpi,ocr_amount_match:ocrAmt,ocr_upi_match:ocrUpi,movie_name:CONFIG.movieName,event_date:CONFIG.eventDate})});
+    clearInterval(tmrInt);
+    bData.bookingId=bid; bData.status=status; bData.utr=utr;
+    renderTicket(bData); goStep(4);
+    // update success message based on status
+    const sm=document.getElementById('successMsg');
+    if(status==='approved'){sm.textContent='✅ Booking APPROVED! Your ticket is confirmed.';sm.className='smsg success show';}
+    else{sm.textContent='🎉 Booking submitted! Pending manual approval.';sm.className='smsg info show';}
+  } catch(err) {
+    console.error(err); setStatus(`Error: ${err.message}. Please try again.`,'error');
+    btn.disabled=false; btn.innerHTML='Submit Booking';
+  }
+}
+
+// ═══════════════════════════════════════════
+// RENDER TICKET
+// ═══════════════════════════════════════════
+function renderTicket(data) {
+  const card=document.getElementById('tktCard');
+  const badge = data.status==='approved'
+    ? '<span class="sbadge approved">✓ Approved</span>'
+    : '<span class="sbadge pending">⏳ Pending Review</span>';
+  if(data.status==='approved') card.classList.add('approved-glow');
+  document.getElementById('tktBody').innerHTML = [
+    ['Booking ID',`<span style="font-family:'Space Mono',monospace;font-size:.85rem;color:var(--orange)">${data.bookingId}</span>`],
+    ['Name',data.name],['Email',`<span style="font-size:.82rem">${data.email}</span>`],['Phone',data.phone],
+    ['Movie',CONFIG.movieName],['Date & Time',CONFIG.eventDateDisplay],['Venue',CONFIG.venue||'MBA Auditorium'],
+    ['Tickets',`${data.qty} × ₹${CONFIG.ticketPrice}`],['Total Paid',`<span style="color:var(--orange);font-size:1.1rem">₹${data.amount}</span>`],
+    ['UTR',`<span style="font-family:'Space Mono',monospace;font-size:.78rem">${data.utr}</span>`],
+    ['Status',badge],
+  ].map(([k,v],i)=>`<div class="tkt-row" style="animation-delay:${i*.055}s"><span class="tkt-k">${k}</span><span class="tkt-v">${v}</span></div>`).join('');
+  document.getElementById('qrcode').innerHTML='';
+  new QRCode(document.getElementById('qrcode'),{text:`RTD|${data.bookingId}|${data.name}|${data.qty}|${data.amount}|${data.status}`,width:120,height:120,colorDark:'#f07020',colorLight:'#120e0a',correctLevel:QRCode.CorrectLevel.H});
+}
+
+// ═══════════════════════════════════════════
+// CANVAS TICKET (SOFT COPY)
+// ═══════════════════════════════════════════
+function drawCanvas(data) {
+  const cv=document.getElementById('tktCanvas');
+  const sc=2,W=340,H=760; cv.width=W*sc; cv.height=H*sc; cv.style.width=W+'px'; cv.style.height=H+'px';
+  const ctx=cv.getContext('2d'); ctx.scale(sc,sc);
+  // BG
+  const bg=ctx.createLinearGradient(0,0,W,H); bg.addColorStop(0,'#140f0b'); bg.addColorStop(1,'#1e1510');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  const gw=ctx.createRadialGradient(W/2,80,10,W/2,80,200); gw.addColorStop(0,'rgba(240,112,32,.08)'); gw.addColorStop(1,'transparent');
+  ctx.fillStyle=gw; ctx.fillRect(0,0,W,H);
+  // Border
+  ctx.strokeStyle=(data.status==='approved')?'rgba(76,175,130,.6)':'rgba(240,112,32,.55)'; ctx.lineWidth=1.5;
+  rrect(ctx,3,3,W-6,H-6,14); ctx.stroke();
+  // Top stripe
+  const st=ctx.createLinearGradient(0,0,W,0); st.addColorStop(0,'transparent'); st.addColorStop(.5,(data.status==='approved')?'#4caf82':'#f07020'); st.addColorStop(1,'transparent');
+  ctx.fillStyle=st; ctx.fillRect(0,0,W,3);
+  // Film holes
+  fholes(ctx,W,14,true);
+  // Header
+  ctx.fillStyle='rgba(240,112,32,.1)'; ctx.fillRect(0,32,W,96);
+  ctx.fillStyle='rgba(240,112,32,.4)'; ctx.font='10px "Space Mono",monospace'; ctx.textAlign='center';
+  ctx.fillText('REEL TO DEAL  ·  MBA 2025',W/2,52);
+  ctx.fillStyle='#f07020'; ctx.font='bold 24px Georgia,serif';
+  ctx.fillText('🎬 '+CONFIG.movieName.toUpperCase(),W/2,80);
+  ctx.fillStyle='#8a7a6a'; ctx.font='9px "Space Mono",monospace';
+  ctx.fillText(CONFIG.eventDateDisplay,W/2,100);
+  ctx.fillText((CONFIG.venue||'MBA Auditorium').toUpperCase(),W/2,116);
+  ctx.setLineDash([4,4]); ctx.strokeStyle='rgba(240,112,32,.25)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(18,128); ctx.lineTo(W-18,128); ctx.stroke(); ctx.setLineDash([]);
+  const rows=[
+    ['BOOKING ID',data.bookingId,'#f07020'],['NAME',data.name,'#f0e8d8'],
+    ['EMAIL',data.email,'#c8b898'],['PHONE',data.phone,'#f0e8d8'],
+    ['TICKETS',data.qty+' × ₹'+CONFIG.ticketPrice,'#f0e8d8'],['TOTAL PAID','₹'+data.amount,'#f07020'],
+    ['UTR',data.utr,'#c8b898'],['STATUS',(data.status||'PENDING').toUpperCase(),data.status==='approved'?'#4caf82':'#f0c040'],
+  ];
+  let y=144;
+  rows.forEach(([k,v,c])=>{
+    ctx.fillStyle='#5a4535'; ctx.font='8px "Space Mono",monospace'; ctx.textAlign='left'; ctx.fillText(k,20,y);
+    ctx.fillStyle=c; ctx.font='12px "Space Mono",monospace';
+    ctx.fillText(String(v||'').length>34?String(v||'').substring(0,32)+'…':String(v||''),20,y+15);
+    ctx.fillStyle='rgba(255,255,255,.04)'; ctx.fillRect(16,y+21,W-32,1); y+=40;
+  });
+  ctx.setLineDash([4,4]); ctx.strokeStyle='rgba(240,112,32,.25)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(18,y+4); ctx.lineTo(W-18,y+4); ctx.stroke(); ctx.setLineDash([]);
+  const qrEl=document.querySelector('#qrcode img,#qrcode canvas');
+  if(qrEl){
+    const qs=100,qx=(W-qs)/2,qy=y+16;
+    ctx.fillStyle='rgba(18,14,10,.9)'; rrect(ctx,qx-6,qy-6,qs+12,qs+12,8); ctx.fill();
+    try{ctx.drawImage(qrEl,qx,qy,qs,qs);}catch(e){}
+    ctx.fillStyle='#5a4535'; ctx.font='8px "Space Mono",monospace'; ctx.textAlign='center';
+    ctx.fillText('SCAN TO VERIFY',W/2,qy+qs+16);
+  }
+  fholes(ctx,W,H-16,false);
+  const sb=ctx.createLinearGradient(0,0,W,0); sb.addColorStop(0,'transparent'); sb.addColorStop(.5,'rgba(240,112,32,.4)'); sb.addColorStop(1,'transparent');
+  ctx.fillStyle=sb; ctx.fillRect(0,H-3,W,3);
+  ctx.save(); ctx.globalAlpha=.04; ctx.fillStyle='#f07020'; ctx.font='bold 90px sans-serif'; ctx.textAlign='center'; ctx.translate(W/2,H/2); ctx.rotate(-.35); ctx.fillText('RTD',0,0); ctx.restore();
+}
+function fholes(ctx,W,y,top){ctx.fillStyle='rgba(240,112,32,.2)';for(let x=14;x<W-14;x+=22){rrect(ctx,x,top?y:y-10,14,10,2);ctx.fill();}}
+function rrect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();}
+
+// ═══════════════════════════════════════════
+// MODALS
+// ═══════════════════════════════════════════
+function showSoftCopy(){drawCanvas(bData);const m=document.getElementById('softModal');m.style.display='flex';void m.offsetWidth;m.classList.add('show');}
+function closeSoftCopy(){const m=document.getElementById('softModal');m.classList.remove('show');setTimeout(()=>m.style.display='none',300);}
+function dlImage(){const c=document.getElementById('tktCanvas');const a=document.createElement('a');a.download='ticket-'+(bData.bookingId||'RTD')+'.png';a.href=c.toDataURL('image/png',1);a.click();showToast('🎟 Ticket image saved!','success');}
+
+// ═══════════════════════════════════════════
+// EMAIL TICKET
+// ═══════════════════════════════════════════
+function buildEmailBody() {
+  return `Dear ${bData.name},
+
+Thank you for booking your ticket for ${CONFIG.movieName}!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎟  YOUR TICKET DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Booking ID : ${bData.bookingId}
+Movie      : ${CONFIG.movieName}
+Date & Time: ${CONFIG.eventDateDisplay}
+Venue      : ${CONFIG.venue||'MBA Auditorium'}
+Tickets    : ${bData.qty} × ₹${CONFIG.ticketPrice}
+Total Paid : ₹${bData.amount}
+UTR/TxnID  : ${bData.utr}
+Status     : ${(bData.status||'PENDING').toUpperCase()}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${bData.status==='approved'?'✅ Your payment is APPROVED. You are confirmed!':'⏳ Your booking is PENDING manual verification. You will be notified.'}
+
+Please show this email (or your downloaded ticket) at the entry gate.
+
+Questions? Contact the event team.
+
+— Reel to Deal · MBA Fest 2025`;
+}
+
+function showEmailModal() {
+  document.getElementById('emailPreview').textContent = buildEmailBody();
+  const m=document.getElementById('emailModal'); m.style.display='flex'; void m.offsetWidth; m.classList.add('show');
+}
+function closeEmailModal(){const m=document.getElementById('emailModal');m.classList.remove('show');setTimeout(()=>m.style.display='none',300);}
+function sendEmail() {
+  const subject=encodeURIComponent(`Your ${CONFIG.movieName} Ticket – ${bData.bookingId}`);
+  const body=encodeURIComponent(buildEmailBody());
+  window.location.href=`mailto:${bData.email}?subject=${subject}&body=${body}`;
+  showToast('Opening email app... ✉️','success');
+  closeEmailModal();
+}
+
+function shareWA() {
+  const msg=`🎬 *${CONFIG.movieName}* Ticket\n\n🎟 Booking ID: ${bData.bookingId}\n👤 Name: ${bData.name}\n📅 Date: ${CONFIG.eventDateDisplay}\n🎫 Tickets: ${bData.qty} × ₹${CONFIG.ticketPrice}\n💰 Total: ₹${bData.amount}\n✅ Status: ${(bData.status||'PENDING').toUpperCase()}\n\n_Reel to Deal · MBA Fest 2025_`;
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+}
+
+// ═══════════════════════════════════════════
+// PDF
+// ═══════════════════════════════════════════
+async function dlPDF() {
+  const btn=document.getElementById('pdfBtn'); if(btn){btn.textContent='⏳...';btn.disabled=true;}
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a5'});
+  doc.setFillColor(10,8,6); doc.rect(0,0,148,210,'F');
+  doc.setFillColor(26,20,14); doc.rect(0,0,148,46,'F');
+  doc.setTextColor(240,112,32); doc.setFontSize(22); doc.setFont('helvetica','bold'); doc.text('REEL TO DEAL',74,18,{align:'center'});
+  doc.setFontSize(8); doc.setTextColor(138,122,106); doc.text('MBA 2025 · '+CONFIG.eventDateDisplay,74,27,{align:'center'});
+  doc.setFontSize(12); doc.setTextColor(240,112,32); doc.text(CONFIG.movieName.toUpperCase(),74,37,{align:'center'});
+  doc.setDrawColor(240,112,32); doc.setLineWidth(.4); doc.line(10,46,138,46);
+  const rows=[['BOOKING ID',bData.bookingId],['NAME',bData.name],['EMAIL',bData.email],['PHONE',bData.phone],['VENUE',CONFIG.venue||'MBA Auditorium'],['TICKETS',bData.qty+' x Rs.'+CONFIG.ticketPrice],['TOTAL','Rs.'+bData.amount],['UTR',bData.utr],['STATUS',(bData.status||'PENDING').toUpperCase()]];
+  let y=56;
+  rows.forEach(([k,v])=>{doc.setFontSize(7);doc.setTextColor(138,122,106);doc.text(k,14,y);doc.setFontSize(9);doc.setTextColor(240,232,216);doc.text(String(v||''),14,y+6);doc.setDrawColor(50,40,30);doc.setLineWidth(.2);doc.line(10,y+10,138,y+10);y+=17;});
+  const qrEl=document.querySelector('#qrcode img,#qrcode canvas');
+  if(qrEl){try{const tc=document.createElement('canvas');tc.width=180;tc.height=180;tc.getContext('2d').drawImage(qrEl,0,0,180,180);doc.addImage(tc.toDataURL('image/png'),'PNG',57,y+2,34,34);doc.setFontSize(6);doc.setTextColor(138,122,106);doc.text('SCAN TO VERIFY',74.5,y+40,{align:'center'});}catch(e){}}
+  doc.setFontSize(6);doc.setTextColor(60,50,40);doc.text('Reel to Deal · MBA Fest 2025 · Valid for event entry only',74,204,{align:'center'});
+  doc.save('ticket-'+(bData.bookingId||'RTD')+'.pdf');
+  if(btn){btn.textContent='📄 PDF';btn.disabled=false;}
+  showToast('PDF downloaded! 📄','success');
+}
+function printTkt(){ window.print(); }
+
+// ═══════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════
+function setStatus(msg,type){const el=document.getElementById('statusMsg');el.textContent=msg;el.className=`smsg ${type} show`;}
+function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast ${type} show`;setTimeout(()=>t.className=`toast ${type}`,3200);}
+</script>
+</body>
+</html>

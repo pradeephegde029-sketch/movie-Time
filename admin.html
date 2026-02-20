@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — Reel to Deal</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0806;--surface:#120e0a;--s2:#1a1410;--s3:#221a14;
+  --orange:#f07020;--og:rgba(240,112,32,.12);--ob:#ff8c3a;
+  --text:#f0e8d8;--muted:#8a7a6a;--border:rgba(240,112,32,.2);
+  --green:#4caf82;--red:#e05050;--yellow:#f0c040;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;cursor:none;}
+
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.3;animation:grain .5s steps(2) infinite;}
+@keyframes grain{0%{transform:translate(0,0)}25%{transform:translate(-2px,1px)}50%{transform:translate(1px,-2px)}75%{transform:translate(-1px,1px)}}
+
+/* LOAD SCREEN */
+#ls{position:fixed;inset:0;z-index:10000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .5s,visibility .5s;}
+#ls.out{opacity:0;visibility:hidden;}
+.ls-logo{font-family:'Bebas Neue',sans-serif;font-size:2.5rem;letter-spacing:8px;color:var(--orange);text-shadow:0 0 50px rgba(240,112,32,.6);animation:lsLogo .8s cubic-bezier(.16,1,.3,1) both;}
+@keyframes lsLogo{from{opacity:0;letter-spacing:24px}to{opacity:1;letter-spacing:8px}}
+.ls-bar{width:140px;height:2px;background:rgba(240,112,32,.2);border-radius:2px;overflow:hidden;}
+.ls-fill{height:100%;background:var(--orange);border-radius:2px;animation:lsFill .8s cubic-bezier(.4,0,.2,1) .3s both;}
+@keyframes lsFill{from{width:0}to{width:100%}}
+.ls-sub{font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:3px;color:var(--muted);animation:fup .5s ease .5s both;}
+@keyframes fup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* CURSOR */
+#cur{position:fixed;width:10px;height:10px;background:var(--orange);border-radius:50%;pointer-events:none;z-index:99999;transform:translate(-50%,-50%);mix-blend-mode:screen;transition:width .15s,height .15s;}
+#curR{position:fixed;width:32px;height:32px;border:1.5px solid rgba(240,112,32,.4);border-radius:50%;pointer-events:none;z-index:99998;transform:translate(-50%,-50%);transition:width .2s,height .2s;}
+
+/* PARTICLES */
+#pCv{position:fixed;inset:0;pointer-events:none;z-index:0;}
+
+/* LOGIN */
+#loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:radial-gradient(ellipse at center,rgba(240,112,32,.06),transparent 70%);}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:40px;width:100%;max-width:400px;text-align:center;animation:cardIn .7s cubic-bezier(.16,1,.3,1) both;position:relative;overflow:hidden;}
+@keyframes cardIn{from{opacity:0;transform:translateY(30px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.login-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--orange),transparent);animation:scan 3s ease-in-out infinite;}
+@keyframes scan{0%,100%{opacity:.4;transform:scaleX(.6)}50%{opacity:1;transform:scaleX(1)}}
+.login-title{font-family:'Bebas Neue',sans-serif;font-size:3rem;letter-spacing:6px;color:var(--orange);margin-bottom:6px;text-shadow:0 0 30px rgba(240,112,32,.4);}
+.login-sub{font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:3px;color:var(--muted);margin-bottom:28px;text-transform:uppercase;}
+.pw-wrap{position:relative;margin-bottom:16px;}
+.pw-wrap input{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:14px 46px 14px 16px;color:var(--text);font-family:'Space Mono',monospace;font-size:.9rem;letter-spacing:3px;outline:none;transition:all .3s;}
+.pw-wrap input:focus{border-color:var(--orange);box-shadow:0 0 0 3px var(--og);}
+.pw-toggle{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:none;font-size:1.1rem;transition:color .2s;}
+.pw-toggle:hover{color:var(--orange);}
+.btn-login{width:100%;padding:14px;background:linear-gradient(135deg,var(--orange),#e05800);color:#fff;border:none;border-radius:10px;font-family:'Space Mono',monospace;font-size:.85rem;letter-spacing:3px;text-transform:uppercase;cursor:none;transition:all .3s cubic-bezier(.34,1.56,.64,1);}
+.btn-login:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(240,112,32,.4);}
+.login-err{display:none;color:var(--red);font-family:'Space Mono',monospace;font-size:.75rem;margin-top:12px;letter-spacing:1px;animation:shake .4s ease;}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+/* ADMIN APP */
+#app{display:none;animation:fi .4s ease both;}
+#app.vis{display:block;}
+
+/* HEADER */
+.hdr{background:linear-gradient(180deg,rgba(240,112,32,.08),transparent);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:10;}
+.hdr::after{content:'';position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);height:1px;background:var(--orange);box-shadow:0 0 20px var(--orange);animation:glowLine 3s ease-in-out infinite;}
+@keyframes glowLine{0%,100%{width:200px}50%{width:60%}}
+.hdr-logo{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:4px;color:var(--orange);}
+.hdr-sub{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted);letter-spacing:1px;margin-top:2px;}
+.hdr-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.auto-badge{display:flex;align-items:center;gap:6px;background:var(--og);border:1px solid var(--border);border-radius:100px;padding:5px 12px;font-family:'Space Mono',monospace;font-size:.6rem;color:var(--orange);letter-spacing:1px;}
+.dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:dotPulse 1.5s ease-in-out infinite;}
+.dot.orange{background:var(--orange);}
+@keyframes dotPulse{0%,100%{box-shadow:0 0 0 0 rgba(76,175,130,.4)}50%{box-shadow:0 0 0 6px rgba(76,175,130,0)}}
+.hdr-btn{background:var(--og);border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:8px;font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:1px;cursor:none;transition:all .25s cubic-bezier(.34,1.56,.64,1);}
+.hdr-btn:hover{border-color:var(--orange);color:var(--orange);transform:translateY(-1px);}
+.hdr-btn.orange{border-color:var(--orange);color:var(--orange);}
+.hdr-btn.red{border-color:rgba(224,80,80,.4);color:var(--red);}
+.hdr-btn.red:hover{background:rgba(224,80,80,.1);}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:20px 24px;position:relative;z-index:1;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 16px;text-align:center;transition:all .3s cubic-bezier(.34,1.56,.64,1);position:relative;overflow:hidden;animation:fup .5s ease both;}
+.stat-card:nth-child(1){animation-delay:.1s}
+.stat-card:nth-child(2){animation-delay:.15s}
+.stat-card:nth-child(3){animation-delay:.2s}
+.stat-card:nth-child(4){animation-delay:.25s}
+.stat-card:nth-child(5){animation-delay:.3s}
+.stat-card:hover{transform:translateY(-3px);border-color:rgba(240,112,32,.38);box-shadow:0 10px 30px rgba(240,112,32,.08);}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--orange),transparent);opacity:.5;}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:var(--orange);line-height:1;transition:all .3s;}
+.stat-val.updated{animation:statPop .4s cubic-bezier(.34,1.56,.64,1);}
+@keyframes statPop{0%{transform:scale(1)}50%{transform:scale(1.22)}100%{transform:scale(1)}}
+.stat-lbl{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-top:4px;}
+
+/* TABS */
+.tabs{display:flex;gap:4px;padding:0 24px;margin-bottom:4px;}
+.tab{background:transparent;border:1px solid transparent;color:var(--muted);padding:8px 16px;border-radius:8px;font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:2px;text-transform:uppercase;cursor:none;transition:all .25s;}
+.tab.active{background:var(--og);border-color:var(--border);color:var(--orange);}
+.tab:hover:not(.active){color:var(--orange);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;animation:fi .3s ease;}
+
+/* CONTROLS */
+.controls{display:flex;gap:10px;align-items:center;padding:12px 24px;flex-wrap:wrap;}
+.srch{flex:1;min-width:200px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;transition:all .3s;}
+.srch:focus{border-color:var(--orange);box-shadow:0 0 0 3px var(--og);transform:translateY(-1px);}
+.sel{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text);font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:1px;cursor:none;outline:none;transition:all .2s;}
+.sel:focus{border-color:var(--orange);}
+.ref-btn{background:var(--og);border:1px solid var(--border);color:var(--orange);padding:10px 16px;border-radius:10px;cursor:none;font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:1px;transition:all .3s;white-space:nowrap;}
+.ref-btn:hover{background:rgba(240,112,32,.22);transform:translateY(-1px);}
+.bulk-wrap{display:flex;gap:6px;}
+.bulk-btn{padding:8px 12px;border-radius:8px;font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:1px;cursor:none;border:1px solid;transition:all .25s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;}
+.bulk-btn.approve-all{border-color:rgba(76,175,130,.4);color:var(--green);background:rgba(76,175,130,.08);}
+.bulk-btn.approve-all:hover{background:rgba(76,175,130,.2);transform:translateY(-2px);}
+.bulk-btn.export{border-color:var(--border);color:var(--muted);}
+.bulk-btn.export:hover{border-color:var(--orange);color:var(--orange);transform:translateY(-2px);}
+
+/* TABLE */
+.tbl-wrap{padding:0 24px 40px;overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:.85rem;}
+thead tr{border-bottom:1px solid var(--border);}
+th{padding:12px 10px;text-align:left;font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;white-space:nowrap;}
+td{padding:13px 10px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle;transition:background .2s;}
+tr{transition:background .2s;}
+tr:hover td{background:rgba(240,112,32,.04);}
+tr.row-in{animation:rowIn .4s cubic-bezier(.16,1,.3,1) both;}
+@keyframes rowIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.bid{font-family:'Space Mono',monospace;font-size:.75rem;color:var(--orange);}
+.sbadge{display:inline-block;padding:3px 12px;border-radius:100px;font-size:.6rem;font-family:'Space Mono',monospace;letter-spacing:1px;text-transform:uppercase;font-weight:700;white-space:nowrap;transition:all .3s;}
+.sbadge.pending{background:rgba(240,192,64,.15);color:var(--yellow);border:1px solid rgba(240,192,64,.3);}
+.sbadge.approved{background:rgba(76,175,130,.15);color:var(--green);border:1px solid rgba(76,175,130,.3);animation:gBadge 2s ease-in-out infinite;}
+@keyframes gBadge{0%,100%{box-shadow:0 0 0 0 rgba(76,175,130,.2)}50%{box-shadow:0 0 8px 2px rgba(76,175,130,.3)}}
+.sbadge.rejected{background:rgba(224,80,80,.15);color:var(--red);border:1px solid rgba(224,80,80,.3);}
+.act-btns{display:flex;gap:5px;flex-wrap:wrap;}
+.act-btn{padding:5px 10px;border-radius:6px;font-size:.6rem;font-family:'Space Mono',monospace;letter-spacing:1px;cursor:none;border:1px solid;transition:all .25s cubic-bezier(.34,1.56,.64,1);text-transform:uppercase;}
+.act-btn:hover{transform:translateY(-2px);}
+.act-btn:active{transform:translateY(0) scale(.96);}
+.ap-btn{border-color:rgba(76,175,130,.4);color:var(--green);background:rgba(76,175,130,.08);}
+.ap-btn:hover{background:rgba(76,175,130,.22);box-shadow:0 4px 15px rgba(76,175,130,.2);}
+.rj-btn{border-color:rgba(224,80,80,.4);color:var(--red);background:rgba(224,80,80,.08);}
+.rj-btn:hover{background:rgba(224,80,80,.22);box-shadow:0 4px 15px rgba(224,80,80,.2);}
+.em-btn{border-color:rgba(76,130,255,.4);color:#4c82ff;background:rgba(76,130,255,.08);}
+.em-btn:hover{background:rgba(76,130,255,.18);box-shadow:0 4px 12px rgba(76,130,255,.2);}
+.ss-thumb{width:38px;height:38px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:none;transition:all .3s cubic-bezier(.34,1.56,.64,1);}
+.ss-thumb:hover{transform:scale(1.15);border-color:var(--orange);box-shadow:0 4px 20px rgba(0,0,0,.4);}
+.empty{text-align:center;padding:60px 20px;color:var(--muted);font-family:'Space Mono',monospace;font-size:.8rem;letter-spacing:1px;animation:fi .4s ease;}
+.empty .ico{font-size:3rem;margin-bottom:16px;display:block;opacity:.4;}
+.loading{text-align:center;padding:40px;color:var(--muted);font-family:'Space Mono',monospace;font-size:.8rem;animation:ldPulse 1.5s ease-in-out infinite;}
+@keyframes ldPulse{0%,100%{opacity:.6}50%{opacity:1}}
+
+/* ══ SETTINGS PANEL ══ */
+.settings-panel{padding:24px;max-width:680px;}
+.settings-panel h2{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:3px;color:var(--orange);margin-bottom:4px;}
+.settings-panel .sub{font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:2px;color:var(--muted);margin-bottom:28px;}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+.s-group{display:flex;flex-direction:column;gap:6px;}
+.s-group.full{grid-column:1/-1;}
+.s-group label{font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
+.s-group input{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.95rem;outline:none;transition:all .3s;}
+.s-group input:focus{border-color:var(--orange);box-shadow:0 0 0 3px var(--og);}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:14px 18px;grid-column:1/-1;}
+.toggle-label{display:flex;flex-direction:column;gap:3px;}
+.toggle-label span{font-family:'Space Mono',monospace;font-size:.75rem;letter-spacing:1px;color:var(--text);}
+.toggle-label small{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted);}
+.toggle{position:relative;width:48px;height:26px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:var(--s3);border:1px solid var(--border);border-radius:26px;cursor:none;transition:all .3s;}
+.toggle-slider::before{content:'';position:absolute;width:20px;height:20px;left:3px;top:2px;background:var(--muted);border-radius:50%;transition:all .3s cubic-bezier(.34,1.56,.64,1);}
+.toggle input:checked+.toggle-slider{background:rgba(76,175,130,.2);border-color:var(--green);}
+.toggle input:checked+.toggle-slider::before{transform:translateX(22px);background:var(--green);box-shadow:0 0 8px rgba(76,175,130,.4);}
+.save-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--orange),#e05800);color:#fff;border:none;border-radius:12px;font-family:'Space Mono',monospace;font-size:.85rem;letter-spacing:3px;text-transform:uppercase;cursor:none;transition:all .3s cubic-bezier(.34,1.56,.64,1);position:relative;overflow:hidden;}
+.save-btn::after{content:'';position:absolute;top:50%;left:-100%;transform:translateY(-50%);width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);transition:left .5s;}
+.save-btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(240,112,32,.4);}
+.save-btn:hover::after{left:150%;}
+.settings-info{background:var(--s2);border:1px solid rgba(76,175,130,.2);border-radius:10px;padding:14px 16px;margin-bottom:20px;font-family:'Space Mono',monospace;font-size:.72rem;line-height:1.7;color:var(--green);}
+
+/* IMAGE MODAL */
+.img-modal{position:fixed;inset:0;background:rgba(0,0,0,0);z-index:1000;display:none;align-items:center;justify-content:center;transition:background .3s;backdrop-filter:blur(0);}
+.img-modal.show{display:flex;background:rgba(0,0,0,.88);backdrop-filter:blur(8px);animation:mdlBg .3s ease;}
+@keyframes mdlBg{from{background:rgba(0,0,0,0)}to{background:rgba(0,0,0,.88)}}
+.mdl-img{max-width:90vw;max-height:90vh;border-radius:12px;border:1px solid var(--border);animation:mdlIn .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 30px 80px rgba(0,0,0,.5);}
+@keyframes mdlIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+.mdl-close{position:absolute;top:20px;right:20px;background:rgba(255,255,255,.1);border:none;color:#fff;font-size:1.5rem;width:40px;height:40px;border-radius:50%;cursor:none;display:flex;align-items:center;justify-content:center;transition:all .3s cubic-bezier(.34,1.56,.64,1);backdrop-filter:blur(4px);}
+.mdl-close:hover{background:rgba(255,255,255,.2);transform:scale(1.1) rotate(90deg);}
+
+/* CONFIRM DIALOG */
+.confirm-overlay{position:fixed;inset:0;z-index:2000;display:none;align-items:center;justify-content:center;}
+.confirm-overlay.show{display:flex;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);animation:mdlBg .2s ease;}
+.confirm-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;max-width:360px;width:90%;text-align:center;animation:mdlIn .3s cubic-bezier(.34,1.56,.64,1);}
+.confirm-box h3{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:2px;margin-bottom:8px;}
+.confirm-box h3.green{color:var(--green);}
+.confirm-box h3.red{color:var(--red);}
+.confirm-box p{font-size:.85rem;color:var(--muted);margin-bottom:20px;line-height:1.6;}
+.confirm-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.cbtn{padding:12px;border-radius:10px;font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:1px;cursor:none;border:1px solid;transition:all .25s cubic-bezier(.34,1.56,.64,1);text-transform:uppercase;}
+.cbtn.yes-green{border-color:var(--green);color:var(--green);background:rgba(76,175,130,.1);}
+.cbtn.yes-green:hover{background:rgba(76,175,130,.22);transform:translateY(-2px);}
+.cbtn.yes-red{border-color:var(--red);color:var(--red);background:rgba(224,80,80,.1);}
+.cbtn.yes-red:hover{background:rgba(224,80,80,.22);transform:translateY(-2px);}
+.cbtn.no{border-color:var(--border);color:var(--muted);}
+.cbtn.no:hover{border-color:var(--orange);color:var(--orange);}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:12px 20px;font-family:'Space Mono',monospace;font-size:.8rem;color:var(--text);z-index:10000;transition:transform .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;backdrop-filter:blur(10px);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.success{border-color:var(--green);color:var(--green);box-shadow:0 4px 20px rgba(76,175,130,.2);}
+.toast.error{border-color:var(--red);color:var(--red);box-shadow:0 4px 20px rgba(224,80,80,.2);}
+.toast.info{border-color:var(--orange);color:var(--orange);}
+
+@media(max-width:900px){.stats{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}.settings-grid{grid-template-columns:1fr}.hdr{flex-direction:column;gap:12px;align-items:flex-start}}
+</style>
+</head>
+<body>
+
+<!-- LOAD SCREEN -->
+<div id="ls">
+  <div class="ls-logo">🎬 RTD ADMIN</div>
+  <div class="ls-bar"><div class="ls-fill"></div></div>
+  <div class="ls-sub">INITIALIZING DASHBOARD...</div>
+</div>
+
+<!-- CURSOR -->
+<div id="cur"></div>
+<div id="curR"></div>
+
+<!-- PARTICLES -->
+<canvas id="pCv"></canvas>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-title">🎬 ADMIN</div>
+    <div class="login-sub">REEL TO DEAL · SECURE ACCESS</div>
+    <div class="pw-wrap">
+      <input type="password" id="pw" placeholder="Enter password" onkeydown="if(event.key==='Enter')login()">
+      <button class="pw-toggle" onclick="togglePw()">👁</button>
+    </div>
+    <button class="btn-login" onclick="login()">Access Dashboard →</button>
+    <div class="login-err" id="loginErr">Incorrect password. Try again.</div>
+  </div>
+</div>
+
+<!-- ADMIN APP -->
+<div id="app">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div>
+      <div class="hdr-logo">RTD Admin</div>
+      <div class="hdr-sub">REEL TO DEAL · BOOKING MANAGEMENT</div>
+    </div>
+    <div class="hdr-right">
+      <div class="auto-badge" id="autoIndicator">
+        <div class="dot" id="autoDot"></div>
+        <span id="autoLabel">AUTO-APPROVE ON</span>
+      </div>
+      <button class="hdr-btn" onclick="manualRefresh()"><span id="refIco">↻</span> Refresh</button>
+      <button class="hdr-btn orange" onclick="switchTab('settings')">⚙ Settings</button>
+      <button class="hdr-btn red" onclick="logout()">LOGOUT</button>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat-card"><div class="stat-val" id="stTotal">0</div><div class="stat-lbl">Total Bookings</div></div>
+    <div class="stat-card"><div class="stat-val" id="stPending" style="color:var(--yellow)">0</div><div class="stat-lbl">Pending</div></div>
+    <div class="stat-card"><div class="stat-val" id="stApproved" style="color:var(--green)">0</div><div class="stat-lbl">Approved</div></div>
+    <div class="stat-card"><div class="stat-val" id="stRejected" style="color:var(--red)">0</div><div class="stat-lbl">Rejected</div></div>
+    <div class="stat-card"><div class="stat-val" id="stRevenue" style="font-size:1.8rem;color:var(--green)">₹0</div><div class="stat-lbl">Revenue (Approved)</div></div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" id="tab-bookings" onclick="switchTab('bookings')">📋 Bookings</button>
+    <button class="tab" id="tab-settings" onclick="switchTab('settings')">⚙ Event Settings</button>
+  </div>
+
+  <!-- BOOKINGS TAB -->
+  <div class="tab-panel active" id="panel-bookings">
+    <div class="controls">
+      <input class="srch" id="srch" placeholder="🔍  Search name, booking ID, email, UTR..." oninput="filterTbl()">
+      <select class="sel" id="stFilter" onchange="filterTbl()">
+        <option value="">ALL STATUS</option>
+        <option value="pending">PENDING</option>
+        <option value="approved">APPROVED</option>
+        <option value="rejected">REJECTED</option>
+      </select>
+      <button class="ref-btn" onclick="manualRefresh()"><span id="refIco2">↻</span> Refresh</button>
+      <div class="bulk-wrap">
+        <button class="bulk-btn approve-all" onclick="bulkApprove()">✓ Approve All Pending</button>
+        <button class="bulk-btn export" onclick="exportCSV()">⬇ Export CSV</button>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Booking ID</th><th>Name</th><th>Phone</th>
+            <th>Qty</th><th>Amount</th><th>UTR</th><th>Screenshot</th>
+            <th>OCR</th><th>Status</th><th>Date</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tblBody">
+          <tr><td colspan="12" class="loading">Loading bookings...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SETTINGS TAB -->
+  <div class="tab-panel" id="panel-settings">
+    <div class="settings-panel">
+      <h2>⚙ Event Settings</h2>
+      <div class="sub">CHANGES SAVED TO BROWSER · SYNCED WITH BOOKING PAGE AUTOMATICALLY</div>
+
+      <div class="settings-info">
+        ✅ These settings are saved locally and automatically applied to the booking page (index.html) when opened in the same browser. No server required.
+      </div>
+
+      <div class="settings-grid">
+        <div class="s-group">
+          <label>Movie / Event Name</label>
+          <input type="text" id="cfg-movie" placeholder="e.g. Reel to Deal">
+        </div>
+        <div class="s-group">
+          <label>Venue</label>
+          <input type="text" id="cfg-venue" placeholder="e.g. MBA Auditorium">
+        </div>
+        <div class="s-group">
+          <label>Event Date (ISO format)</label>
+          <input type="datetime-local" id="cfg-date">
+        </div>
+        <div class="s-group">
+          <label>Event Date Display (shown on ticket)</label>
+          <input type="text" id="cfg-dateDisplay" placeholder="e.g. FEB 17, 2025 · 1:00 PM">
+        </div>
+        <div class="s-group">
+          <label>Ticket Price (₹)</label>
+          <input type="number" id="cfg-price" min="1" placeholder="100">
+        </div>
+        <div class="s-group">
+          <label>Max Tickets Per Booking</label>
+          <input type="number" id="cfg-maxTix" min="1" max="20" placeholder="10">
+        </div>
+        <div class="s-group full">
+          <label>UPI ID</label>
+          <input type="text" id="cfg-upi" placeholder="yourname@bankname">
+        </div>
+        <div class="s-group">
+          <label>Payee Name</label>
+          <input type="text" id="cfg-payee" placeholder="e.g. REEL TO DEAL">
+        </div>
+
+        <!-- AUTO-APPROVE TOGGLE -->
+        <div class="toggle-row">
+          <div class="toggle-label">
+            <span>🤖 Auto-Approve Bookings</span>
+            <small>When ON: bookings are auto-approved if OCR verifies both amount and UPI ID. When OFF: all bookings require manual approval.</small>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="cfg-autoApprove">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <button class="save-btn" onclick="saveSettings()">💾 Save Settings & Apply to Booking Page</button>
+
+      <div id="saveStatus" style="margin-top:14px;font-family:'Space Mono',monospace;font-size:.72rem;text-align:center;display:none;"></div>
+
+      <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border);">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:2px;color:var(--red);margin-bottom:10px;">⚠ Danger Zone</div>
+        <button onclick="resetSettings()" style="background:rgba(224,80,80,.1);border:1px solid rgba(224,80,80,.3);color:var(--red);padding:10px 18px;border-radius:10px;font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:1px;cursor:none;transition:all .25s;">Reset to Defaults</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- IMAGE MODAL -->
+<div class="img-modal" id="imgModal" onclick="closeModal()">
+  <button class="mdl-close" onclick="closeModal()">×</button>
+  <img class="mdl-img" id="mdlImg" src="" alt="">
+</div>
+
+<!-- CONFIRM DIALOG -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box" id="confirmBox">
+    <h3 id="confirmTitle" class="green">Confirm Action</h3>
+    <p id="confirmMsg"></p>
+    <div class="confirm-btns">
+      <button class="cbtn yes-green" id="confirmYes" onclick="confirmAction()">Yes, Proceed</button>
+      <button class="cbtn no" onclick="closeConfirm()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const SB_URL='https://yhrfpcwehtqsppoifhog.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlocmZwY3dlaHRxc3Bwb2lmaG9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1NzQ5MDAsImV4cCI6MjA4NzE1MDkwMH0.Ml1V2zc8j3XCZIuILuapy2Cs4jcBl0i6sHKxFFl6Sqo';
+const ADMIN_PW='reeltodeal2025';
+
+const DEFAULT_CFG={movieName:'Reel to Deal',eventDate:'2025-02-17T13:00',eventDateDisplay:'FEB 17, 2025 · 1:00 PM',ticketPrice:100,maxTickets:10,upiId:'hiteshhayagriv@okicici',payeeName:'REEL TO DEAL',autoApprove:true,venue:'MBA Auditorium'};
+
+let allBookings=[],refInt=null,prevStats={},pendingAction=null;
+
+// ─── INIT ───
+window.addEventListener('load',()=>{
+  setTimeout(()=>{
+    document.getElementById('ls').classList.add('out');
+    setTimeout(()=>document.getElementById('ls').style.display='none',500);
+    initParticles(); initCursor();
+  },1100);
+});
+
+function initCursor(){
+  const c=document.getElementById('cur'),r=document.getElementById('curR');
+  if(!c)return;
+  let mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;c.style.left=mx+'px';c.style.top=my+'px';});
+  (function a(){rx+=(mx-rx)*.11;ry+=(my-ry)*.11;r.style.left=rx+'px';r.style.top=ry+'px';requestAnimationFrame(a);})();
+  document.querySelectorAll('button,a,input,select,.toggle-slider,.ss-thumb').forEach(el=>{
+    el.addEventListener('mouseenter',()=>{c.style.width='18px';c.style.height='18px';r.style.width='44px';r.style.height='44px';});
+    el.addEventListener('mouseleave',()=>{c.style.width='10px';c.style.height='10px';r.style.width='32px';r.style.height='32px';});
+  });
+}
+
+function initParticles(){
+  const cv=document.getElementById('pCv');if(!cv)return;
+  const ctx=cv.getContext('2d');
+  let W=cv.width=window.innerWidth,H=cv.height=window.innerHeight;
+  window.addEventListener('resize',()=>{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;});
+  const pts=Array.from({length:28},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.18,vy:(Math.random()-.5)*.18,r:Math.random()*1.4+.3,op:Math.random()*.22+.05,ph:Math.random()*Math.PI*2}));
+  function draw(){ctx.clearRect(0,0,W,H);pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.ph+=.014;if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;const o=p.op*(0.6+0.4*Math.sin(p.ph));ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(240,112,32,${o})`;ctx.fill();});requestAnimationFrame(draw);}
+  draw();
+}
+
+// ─── AUTH ───
+function login(){
+  const pw=document.getElementById('pw').value;
+  if(pw===ADMIN_PW){
+    const ls=document.getElementById('loginScreen');
+    ls.style.transition='opacity .4s ease';ls.style.opacity='0';
+    setTimeout(()=>{ls.style.display='none';document.getElementById('app').classList.add('vis');loadBookings();loadSettingsForm();updateAutoIndicator();refInt=setInterval(loadBookings,10000);},400);
+  } else {
+    const err=document.getElementById('loginErr');err.style.display='block';err.style.animation='none';void err.offsetWidth;err.style.animation='shake .4s ease';
+    document.getElementById('pw').style.borderColor='var(--red)';
+    setTimeout(()=>{err.style.display='none';document.getElementById('pw').style.borderColor='';},3000);
+  }
+}
+function logout(){
+  clearInterval(refInt);
+  const app=document.getElementById('app');app.style.opacity='0';app.style.transition='opacity .3s';
+  setTimeout(()=>{app.classList.remove('vis');app.style.display='none';app.style.opacity='';app.style.transition='';
+    const ls=document.getElementById('loginScreen');ls.style.display='flex';ls.style.opacity='0';
+    requestAnimationFrame(()=>{ls.style.transition='opacity .4s';ls.style.opacity='1';});
+    document.getElementById('pw').value='';},300);
+}
+function togglePw(){const i=document.getElementById('pw');i.type=i.type==='password'?'text':'password';}
+
+// ─── TABS ───
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
+  if(name==='settings')loadSettingsForm();
+}
+
+// ─── SUPABASE ───
+async function sbFetch(ep,opts={}){
+  const url=`${SB_URL}/rest/v1/${ep}`;
+  const h={'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':opts.prefer||'return=representation',...opts.headers};
+  const res=await fetch(url,{...opts,headers:h});
+  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||`HTTP ${res.status}`);}
+  if(res.status===204)return null;return res.json();
+}
+
+// ─── LOAD ───
+async function loadBookings(){
+  try{
+    const data=await sbFetch('bookings?select=*&order=created_at.desc',{method:'GET',headers:{'Range':'0-999'}});
+    allBookings=data||[];updateStats();filterTbl();
+  }catch(err){
+    document.getElementById('tblBody').innerHTML=`<tr><td colspan="12" class="loading" style="color:var(--red)">Failed: ${err.message}</td></tr>`;
+  }
+}
+async function manualRefresh(){
+  const ico=document.getElementById('refIco');const ico2=document.getElementById('refIco2');
+  [ico,ico2].forEach(i=>{if(i){i.style.animation='spin .6s linear infinite';}});
+  await loadBookings();
+  [ico,ico2].forEach(i=>{if(i)i.style.animation='';});
+  showToast('Refreshed ✓','success');
+}
+
+// ─── STATS ───
+function animStat(id,val){
+  const el=document.getElementById(id); if(!el)return;
+  if(String(prevStats[id])===String(val))return;
+  el.classList.remove('updated');void el.offsetWidth;el.classList.add('updated');
+  el.textContent=val; prevStats[id]=val;
+}
+function updateStats(){
+  const t=allBookings.length,p=allBookings.filter(b=>b.status==='pending').length;
+  const a=allBookings.filter(b=>b.status==='approved').length,rj=allBookings.filter(b=>b.status==='rejected').length;
+  const rev=allBookings.filter(b=>b.status==='approved').reduce((s,b)=>s+Number(b.amount),0);
+  animStat('stTotal',t);animStat('stPending',p);animStat('stApproved',a);animStat('stRejected',rj);animStat('stRevenue','₹'+rev);
+}
+
+// ─── FILTER + RENDER ───
+function filterTbl(){
+  const q=document.getElementById('srch').value.toLowerCase(),st=document.getElementById('stFilter').value;
+  renderTbl(allBookings.filter(b=>{
+    const ms=!q||b.name?.toLowerCase().includes(q)||b.booking_id?.toLowerCase().includes(q)||b.utr?.toLowerCase().includes(q)||b.email?.toLowerCase().includes(q)||b.phone?.includes(q);
+    return ms&&(!st||b.status===st);
+  }));
+}
+
+function renderTbl(rows){
+  const tbody=document.getElementById('tblBody');
+  if(!rows.length){tbody.innerHTML=`<tr><td colspan="12"><div class="empty"><span class="ico">🎬</span>No bookings found</div></td></tr>`;return;}
+  tbody.innerHTML=rows.map((b,i)=>{
+    const dt=new Date(b.created_at).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+    const badge=`<span class="sbadge ${b.status}">${b.status}</span>`;
+    const ss=b.screenshot_url?`<img class="ss-thumb" src="${b.screenshot_url}" alt="" onclick="openModal('${b.screenshot_url}')">`:`<span style="color:var(--muted);font-size:.7rem;font-family:'Space Mono',monospace">—</span>`;
+    const ocr=b.ocr_verified!=null?`<span style="font-family:'Space Mono',monospace;font-size:.62rem;line-height:1.6">${b.ocr_amount_match?'✅':'❌'} Amt<br>${b.ocr_upi_match?'✅':'❌'} UPI</span>`:'—';
+    const acts=buildActions(b);
+    return `<tr class="row-in" style="animation-delay:${i*.025}s">
+      <td style="color:var(--muted);font-size:.75rem">${i+1}</td>
+      <td><span class="bid">${b.booking_id||'—'}</span></td>
+      <td><strong>${b.name}</strong><br><span style="font-size:.72rem;color:var(--muted)">${b.email}</span></td>
+      <td style="font-family:'Space Mono',monospace;font-size:.8rem">${b.phone}</td>
+      <td style="text-align:center;font-weight:600">${b.ticket_qty}</td>
+      <td style="color:var(--orange);font-weight:600">₹${b.amount}</td>
+      <td style="font-family:'Space Mono',monospace;font-size:.72rem;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${b.utr}">${b.utr}</td>
+      <td>${ss}</td><td>${ocr}</td><td>${badge}</td>
+      <td style="font-size:.72rem;color:var(--muted);white-space:nowrap">${dt}</td>
+      <td>${acts}</td>
+    </tr>`;
+  }).join('');
+}
+
+function buildActions(b){
+  let btns='<div class="act-btns">';
+  if(b.status!=='approved') btns+=`<button class="act-btn ap-btn" onclick="confirmStatus('${b.id}','approved','${b.booking_id||b.name}')">✓ Approve</button>`;
+  if(b.status!=='rejected') btns+=`<button class="act-btn rj-btn" onclick="confirmStatus('${b.id}','rejected','${b.booking_id||b.name}')">✗ Reject</button>`;
+  btns+=`<button class="act-btn em-btn" onclick="adminEmailNotify('${b.email}','${b.name}','${b.booking_id}','${b.status}')">✉</button>`;
+  btns+='</div>'; return btns;
+}
+
+// ─── STATUS UPDATE ───
+function confirmStatus(id,status,label){
+  pendingAction={id,status};
+  const box=document.getElementById('confirmBox'),title=document.getElementById('confirmTitle'),msg=document.getElementById('confirmMsg');
+  const yes=document.getElementById('confirmYes');
+  if(status==='approved'){title.className='green';title.textContent='✓ Approve Booking';yes.className='cbtn yes-green';yes.textContent='Yes, Approve';}
+  else{title.className='red';title.textContent='✗ Reject Booking';yes.className='cbtn yes-red';yes.textContent='Yes, Reject';}
+  msg.textContent=`Are you sure you want to ${status} booking for "${label}"?`;
+  document.getElementById('confirmOverlay').classList.add('show');
+}
+function closeConfirm(){document.getElementById('confirmOverlay').classList.remove('show');pendingAction=null;}
+async function confirmAction(){
+  if(!pendingAction)return;
+  const{id,status}=pendingAction;closeConfirm();
+  try{
+    await sbFetch(`bookings?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({status}),prefer:'return=minimal'});
+    const b=allBookings.find(x=>x.id===id);if(b)b.status=status;
+    updateStats();filterTbl();
+    showToast(`Booking ${status} ✓`,'success');
+  }catch(err){showToast(`Error: ${err.message}`,'error');}
+}
+
+// ─── BULK APPROVE ───
+async function bulkApprove(){
+  const pending=allBookings.filter(b=>b.status==='pending');
+  if(!pending.length){showToast('No pending bookings to approve','info');return;}
+  if(!confirm(`Approve all ${pending.length} pending bookings?`))return;
+  let done=0;
+  for(const b of pending){
+    try{await sbFetch(`bookings?id=eq.${b.id}`,{method:'PATCH',body:JSON.stringify({status:'approved'}),prefer:'return=minimal'});b.status='approved';done++;}catch(e){}
+  }
+  updateStats();filterTbl();showToast(`${done}/${pending.length} bookings approved ✓`,'success');
+}
+
+// ─── EXPORT CSV ───
+function exportCSV(){
+  const cols=['booking_id','name','email','phone','ticket_qty','amount','utr','status','ocr_verified','created_at'];
+  const hdr=cols.join(',');
+  const rows=allBookings.map(b=>cols.map(k=>`"${String(b[k]||'').replace(/"/g,'""')}"`).join(','));
+  const csv=[hdr,...rows].join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='rtd-bookings-'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+  showToast('CSV exported ⬇','success');
+}
+
+// ─── EMAIL NOTIFY (admin triggers mailto) ───
+function adminEmailNotify(email,name,bid,status){
+  const sub=encodeURIComponent(`Your Reel to Deal Booking – ${bid}`);
+  const body=encodeURIComponent(`Dear ${name},\n\nYour booking ${bid} has been ${status.toUpperCase()}.\n\nThank you for attending Reel to Deal MBA Fest 2025.\n\n— Admin`);
+  window.location.href=`mailto:${email}?subject=${sub}&body=${body}`;
+  showToast('Opening email for '+name,'success');
+}
+
+// ─── SETTINGS ───
+function getConfig(){let c={...DEFAULT_CFG};try{const s=localStorage.getItem('rtd_config');if(s)Object.assign(c,JSON.parse(s));}catch(e){}return c;}
+function loadSettingsForm(){
+  const c=getConfig();
+  document.getElementById('cfg-movie').value=c.movieName||'';
+  document.getElementById('cfg-venue').value=c.venue||'';
+  // Convert ISO date to datetime-local format
+  try{document.getElementById('cfg-date').value=(c.eventDate||'').slice(0,16);}catch(e){}
+  document.getElementById('cfg-dateDisplay').value=c.eventDateDisplay||'';
+  document.getElementById('cfg-price').value=c.ticketPrice||100;
+  document.getElementById('cfg-maxTix').value=c.maxTickets||10;
+  document.getElementById('cfg-upi').value=c.upiId||'';
+  document.getElementById('cfg-payee').value=c.payeeName||'';
+  document.getElementById('cfg-autoApprove').checked=!!c.autoApprove;
+}
+function saveSettings(){
+  const cfg={
+    movieName:document.getElementById('cfg-movie').value.trim()||DEFAULT_CFG.movieName,
+    venue:document.getElementById('cfg-venue').value.trim()||DEFAULT_CFG.venue,
+    eventDate:document.getElementById('cfg-date').value||DEFAULT_CFG.eventDate,
+    eventDateDisplay:document.getElementById('cfg-dateDisplay').value.trim()||DEFAULT_CFG.eventDateDisplay,
+    ticketPrice:Number(document.getElementById('cfg-price').value)||DEFAULT_CFG.ticketPrice,
+    maxTickets:Number(document.getElementById('cfg-maxTix').value)||DEFAULT_CFG.maxTickets,
+    upiId:document.getElementById('cfg-upi').value.trim()||DEFAULT_CFG.upiId,
+    payeeName:document.getElementById('cfg-payee').value.trim()||DEFAULT_CFG.payeeName,
+    autoApprove:document.getElementById('cfg-autoApprove').checked,
+  };
+  try{
+    localStorage.setItem('rtd_config',JSON.stringify(cfg));
+    updateAutoIndicator();
+    const ss=document.getElementById('saveStatus');
+    ss.style.display='block';ss.style.color='var(--green)';
+    ss.textContent='✅ Settings saved! They will apply next time the booking page is opened.';
+    setTimeout(()=>ss.style.display='none',5000);
+    showToast('Settings saved! ✓','success');
+    // animate save button
+    const btn=document.querySelector('.save-btn');btn.textContent='✅ Saved!';setTimeout(()=>btn.textContent='💾 Save Settings & Apply to Booking Page',2000);
+  }catch(e){showToast('Failed to save settings','error');}
+}
+function resetSettings(){
+  if(!confirm('Reset all settings to defaults?'))return;
+  localStorage.removeItem('rtd_config');loadSettingsForm();updateAutoIndicator();showToast('Settings reset to defaults','info');
+}
+function updateAutoIndicator(){
+  const c=getConfig();
+  const lbl=document.getElementById('autoLabel'),dot=document.getElementById('autoDot');
+  if(c.autoApprove){lbl.textContent='AUTO-APPROVE ON';dot.className='dot';}
+  else{lbl.textContent='MANUAL APPROVAL';dot.className='dot orange';}
+}
+
+// ─── MODAL ───
+function openModal(url){document.getElementById('mdlImg').src=url;document.getElementById('imgModal').classList.add('show');}
+function closeModal(){const m=document.getElementById('imgModal');m.style.opacity='0';m.style.transition='opacity .2s';setTimeout(()=>{m.classList.remove('show');m.style.opacity='';m.style.transition='';},200);}
+
+// ─── TOAST ───
+function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast ${type} show`;setTimeout(()=>t.className=`toast ${type}`,3200);}
+</script>
+</body>
+</html>
