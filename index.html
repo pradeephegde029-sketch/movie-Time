@@ -3,399 +3,356 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Reel to Deal — Ticket Booking</title>
+<title>Reel to Deal — Book Your Ticket</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.1/tesseract.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#060409;--sur:#0e0b14;--s2:#151120;--s3:#1d172c;
-  --p:#a78bfa;--pb:#c4b5fd;--pk:#f472b6;--gold:#fbbf24;
-  --glow:rgba(167,139,250,.12);--glow2:rgba(167,139,250,.05);
-  --tx:#f0ebff;--mu:#6d6285;--bd:rgba(167,139,250,.18);
-  --or:#f07020;--gr:#34d399;--rd:#f87171;--yw:#fbbf24;--bl:#60a5fa;
-  --green:#34d399;--red:#f87171;--yellow:#fbbf24;--orange:#f07020;
-  --text:#f0ebff;--muted:#6d6285;--border:rgba(167,139,250,.18);
+  --bg:#060405;--sur:#0d0a0e;--s2:#141018;--s3:#1c1624;
+  --gold:#d4a853;--gold2:#f0c46a;--goldg:rgba(212,168,83,.12);--goldg2:rgba(212,168,83,.06);
+  --text:#f2ead8;--muted:#6b5f4e;--border:rgba(212,168,83,.15);--border2:rgba(212,168,83,.08);
+  --green:#3ec47a;--red:#e05555;--yellow:#e8b840;--blue:#4c82ff;
   --r8:8px;--r12:12px;--r16:16px;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;-webkit-tap-highlight-color:transparent;}
-body{background:var(--bg);color:var(--tx);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9000;opacity:.14;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");}
-.amb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(120px);will-change:transform;}
-.a1{width:500px;height:500px;background:radial-gradient(#7c3aed,#4c1d95);opacity:.06;top:-180px;left:-160px;animation:o1 22s ease-in-out infinite;}
-.a2{width:360px;height:360px;background:radial-gradient(#db2777,#7c3aed);opacity:.05;bottom:-120px;right:-120px;animation:o2 28s ease-in-out infinite;}
-@keyframes o1{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(25px,-32px,0)}}
-@keyframes o2{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(-20px,24px,0)}}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 70% 40% at 50% 0%,rgba(212,168,83,.04) 0%,transparent 70%),radial-gradient(ellipse 40% 30% at 80% 85%,rgba(212,168,83,.025) 0%,transparent 60%);}
+#ls{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .6s,visibility .6s;}
+#ls.out{opacity:0;visibility:hidden;pointer-events:none;}
+.ls-reel{font-size:3rem;animation:lsR .7s cubic-bezier(.34,1.56,.64,1);}
+@keyframes lsR{from{opacity:0;transform:scale(.3) rotate(-20deg)}to{opacity:1;transform:scale(1)}}
+.ls-title{font-family:'Bebas Neue',sans-serif;font-size:2.4rem;letter-spacing:10px;color:var(--gold);text-shadow:0 0 40px rgba(212,168,83,.4);animation:lsT .9s cubic-bezier(.16,1,.3,1) .15s both;}
+@keyframes lsT{from{opacity:0;letter-spacing:24px}to{opacity:1;letter-spacing:10px}}
+.ls-sub{font-family:'Space Mono',monospace;font-size:.48rem;letter-spacing:5px;color:var(--muted);text-transform:uppercase;animation:fup .5s .5s both;}
+.ls-bar{width:120px;height:1.5px;background:rgba(212,168,83,.1);border-radius:2px;overflow:hidden;}
+.ls-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));animation:lsF 1.4s ease .3s both;}
+@keyframes lsF{from{width:0}to{width:100%}}
 @keyframes fup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fi{from{opacity:0}to{opacity:1}}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
-@keyframes bump{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes bump{0%{transform:scale(1)}50%{transform:scale(1.14)}100%{transform:scale(1)}}
 @keyframes pulse{0%,100%{opacity:.25}50%{opacity:1}}
-@keyframes flip{0%{transform:scaleY(1)}45%{transform:scaleY(.25);opacity:.1}100%{transform:scaleY(1)}}
+@keyframes flip{0%{transform:scaleY(1)}45%{transform:scaleY(.2);opacity:.1}100%{transform:scaleY(1)}}
+@keyframes rowIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+@keyframes scan{0%,100%{opacity:.3;transform:scaleX(.4)}50%{opacity:1;transform:scaleX(1)}}
 
-/* LOAD */
-#ls{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity .55s,visibility .55s;}
-#ls.out{opacity:0;visibility:hidden;pointer-events:none;}
-.ls-reel{font-size:3rem;animation:lsR .7s cubic-bezier(.34,1.56,.64,1);}
-@keyframes lsR{from{opacity:0;transform:scale(.3) rotate(-15deg)}to{opacity:1;transform:scale(1) rotate(0)}}
-.ls-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.8rem,6vw,2.6rem);letter-spacing:10px;color:var(--p);text-shadow:0 0 40px rgba(167,139,250,.55);animation:lsT .9s cubic-bezier(.16,1,.3,1) .15s both;}
-@keyframes lsT{from{opacity:0;letter-spacing:22px}to{opacity:1;letter-spacing:10px}}
-.ls-bar{width:110px;height:2px;background:rgba(167,139,250,.12);border-radius:2px;overflow:hidden;}
-.ls-fill{height:100%;background:linear-gradient(90deg,var(--p),var(--pk));animation:lsF 1.3s ease .2s both;}
-@keyframes lsF{from{width:0}to{width:100%}}
-.ls-sub{font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:4px;color:var(--mu);animation:fup .5s ease .65s both;}
-
-/* SYNC BAR */
-.sync-bar{display:flex;align-items:center;justify-content:center;gap:7px;padding:6px 18px;font-family:'Space Mono',monospace;font-size:.54rem;letter-spacing:2px;color:var(--mu);background:rgba(6,4,9,.92);border-bottom:1px solid rgba(255,255,255,.04);backdrop-filter:blur(12px);position:relative;z-index:10;transition:all .4s;}
-.sync-bar.live{color:var(--gr);}.sync-bar.err{color:var(--rd);}.sync-bar.loading{color:var(--yw);}
+.sync-bar{display:flex;align-items:center;justify-content:center;gap:7px;padding:7px 18px;font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:2px;color:var(--muted);background:rgba(6,4,5,.97);border-bottom:1px solid var(--border2);backdrop-filter:blur(12px);position:relative;z-index:10;transition:all .4s;}
+.sync-bar.live{color:var(--green);}.sync-bar.err{color:var(--red);}
 .sdot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0;animation:pulse 2s ease-in-out infinite;}
-.sync-bar.err .sdot{animation:none;}
 
-/* === CINEMATIC MOVIE HERO === */
-.cinema-hero{position:relative;overflow:hidden;min-height:min(64vw,460px);display:flex;flex-direction:column;justify-content:flex-end;background:#06040a;}
-#heroPosterBg{position:absolute;inset:-30px;z-index:0;background-size:cover;background-position:center top;filter:blur(30px) brightness(.2) saturate(1.7);opacity:0;transition:opacity .9s ease;}
-.hero-grid{position:absolute;inset:0;z-index:1;pointer-events:none;background-image:linear-gradient(rgba(167,139,250,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(167,139,250,.04) 1px,transparent 1px);background-size:42px 42px;}
-.hero-vignette{position:absolute;bottom:0;left:0;right:0;height:65%;z-index:2;pointer-events:none;background:linear-gradient(to bottom,transparent,var(--bg));}
-.hero-film{position:absolute;top:0;left:0;right:0;height:20px;z-index:5;background:rgba(0,0,0,.75);display:flex;gap:3px;align-items:center;padding:5px 8px;overflow:hidden;}
-.hero-film-hole{width:13px;height:10px;border-radius:2px;background:rgba(167,139,250,.22);flex-shrink:0;}
-.hero-stage{position:relative;z-index:6;display:flex;align-items:flex-end;gap:18px;padding:28px 20px 0;}
-/* Poster card with 3D tilt */
-.poster-card{flex-shrink:0;width:min(118px,28vw);aspect-ratio:2/3;border-radius:10px;overflow:hidden;position:relative;
-  border:2px solid rgba(167,139,250,.38);box-shadow:0 0 40px rgba(167,139,250,.15),0 24px 50px rgba(0,0,0,.7);background:#120e1e;
-  transform:perspective(500px) rotateY(-6deg) rotate(-1.5deg);transition:transform .5s cubic-bezier(.34,1.56,.64,1);}
-.poster-card:hover{transform:perspective(500px) rotateY(0) rotate(0) scale(1.04);}
+/* HERO */
+.cinema-hero{position:relative;overflow:hidden;min-height:min(62vw,480px);display:flex;flex-direction:column;justify-content:flex-end;background:#050304;}
+#heroPosterBg{position:absolute;inset:-20px;z-index:0;background-size:cover;background-position:center;filter:blur(28px) brightness(.18) saturate(1.5);opacity:0;transition:opacity 1s ease;}
+.hero-vignette{position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(to bottom,rgba(6,4,5,.28) 0%,transparent 35%,transparent 52%,var(--bg) 100%);}
+.hero-film{position:absolute;top:0;left:0;right:0;height:18px;z-index:5;background:rgba(0,0,0,.82);display:flex;gap:2px;align-items:center;padding:4px 8px;overflow:hidden;}
+.hero-film-hole{width:11px;height:8px;border-radius:2px;background:rgba(212,168,83,.18);flex-shrink:0;}
+.hero-stage{position:relative;z-index:6;display:flex;align-items:flex-end;gap:20px;padding:32px 20px 0;}
+.poster-card{flex-shrink:0;width:min(110px,26vw);aspect-ratio:2/3;border-radius:10px;overflow:hidden;position:relative;border:1.5px solid rgba(212,168,83,.38);box-shadow:0 0 40px rgba(212,168,83,.12),0 20px 50px rgba(0,0,0,.75);background:#120e08;transform:perspective(500px) rotateY(-5deg) rotate(-1deg);transition:transform .5s cubic-bezier(.34,1.56,.64,1);}
+.poster-card:hover{transform:perspective(500px) rotateY(0) rotate(0) scale(1.03);}
 #heroPosterImg{width:100%;height:100%;object-fit:cover;display:none;position:absolute;inset:0;}
-#heroPosterIcon{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:10px;background:linear-gradient(160deg,#1c1232,#0e0820);}
-.pi-ico{font-size:2.4rem;opacity:.4;}
-.pi-txt{font-family:'Bebas Neue',sans-serif;font-size:.75rem;letter-spacing:2px;color:rgba(167,139,250,.45);text-align:center;line-height:1.2;}
-.poster-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 30%,rgba(255,255,255,.08) 50%,transparent 70%);transform:translateX(-100%);animation:shine 8s ease-in-out infinite 3s;pointer-events:none;}
+#heroPosterIcon{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:linear-gradient(160deg,#1c1408,#0e0c04);}
+.pi-ico{font-size:2rem;opacity:.4;}.pi-txt{font-family:'Bebas Neue',sans-serif;font-size:.7rem;letter-spacing:2px;color:rgba(212,168,83,.4);text-align:center;}
+.poster-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 30%,rgba(255,255,255,.06) 50%,transparent 70%);transform:translateX(-100%);animation:shine 8s ease-in-out infinite 3s;pointer-events:none;}
 @keyframes shine{0%,75%,100%{transform:translateX(-100%)}40%{transform:translateX(100%)}}
-/* Hero text */
 .hero-info{flex:1;padding-bottom:8px;min-width:0;}
-.hero-eyebrow{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:4px;color:rgba(196,181,253,.7);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
-.hero-eyebrow::before{content:'';display:block;width:18px;height:1px;background:var(--p);flex-shrink:0;}
-.hero-title{font-family:'Instrument Serif',serif;font-style:italic;font-size:clamp(2rem,9vw,3.8rem);line-height:.94;word-break:break-word;margin-bottom:14px;
-  background:linear-gradient(125deg,#f0ebff 0%,#c4b5fd 45%,#f472b6 100%);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.hero-eyebrow{font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:4px;color:rgba(212,168,83,.6);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.hero-eyebrow::before{content:'';display:block;width:16px;height:1px;background:var(--gold);flex-shrink:0;}
+.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.2rem,9vw,4rem);line-height:.92;word-break:break-word;margin-bottom:14px;color:var(--text);letter-spacing:2px;}
+.hero-title span{color:var(--gold);}
 .hero-pills{display:flex;flex-wrap:wrap;gap:6px;}
-.hero-pill{display:inline-flex;align-items:center;gap:4px;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.16);border-radius:100px;padding:4px 10px;font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:1px;color:var(--mu);}
-.hero-pill strong{color:var(--tx);}
-.hero-bottom{position:relative;z-index:6;display:flex;align-items:center;justify-content:space-between;padding:18px 20px 20px;flex-wrap:wrap;gap:12px;}
+.hero-pill{display:inline-flex;align-items:center;gap:4px;background:rgba(212,168,83,.07);border:1px solid rgba(212,168,83,.14);border-radius:100px;padding:4px 11px;font-family:'Space Mono',monospace;font-size:.53rem;letter-spacing:1px;color:var(--muted);}
+.hero-pill strong{color:var(--text);}
+.hero-bottom{position:relative;z-index:6;display:flex;align-items:center;justify-content:space-between;padding:18px 20px 22px;flex-wrap:wrap;gap:12px;}
 .hero-price{display:flex;align-items:baseline;gap:5px;}
-.hero-amt{font-family:'Bebas Neue',sans-serif;font-size:3rem;line-height:1;color:var(--gold);text-shadow:0 0 24px rgba(251,191,36,.28);}
-.hero-per{font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:2px;color:var(--mu);}
-.hero-btn{background:linear-gradient(135deg,#7c3aed,var(--pk));border:none;border-radius:100px;padding:13px 28px;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:3px;cursor:pointer;
-  box-shadow:0 0 28px rgba(124,58,237,.3),0 4px 20px rgba(0,0,0,.45);transition:all .25s cubic-bezier(.34,1.56,.64,1);position:relative;overflow:hidden;}
-.hero-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.13),transparent);transform:translateX(-120%);transition:transform .4s;}
-.hero-btn:hover{transform:translateY(-3px) scale(1.05);box-shadow:0 0 44px rgba(124,58,237,.5),0 8px 28px rgba(0,0,0,.5);}
-.hero-btn:hover::before{transform:translateX(120%);}
+.hero-amt{font-family:'Bebas Neue',sans-serif;font-size:3.2rem;line-height:1;color:var(--gold);text-shadow:0 0 24px rgba(212,168,83,.3);}
+.hero-per{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:2px;color:var(--muted);}
+.hero-btn{background:var(--gold);border:none;border-radius:6px;padding:13px 28px;color:#0a0806;font-family:'Bebas Neue',sans-serif;font-size:1.05rem;letter-spacing:4px;cursor:pointer;box-shadow:0 0 28px rgba(212,168,83,.25),0 4px 16px rgba(0,0,0,.5);transition:all .25s cubic-bezier(.34,1.56,.64,1);}
+.hero-btn:hover{transform:translateY(-2px) scale(1.04);box-shadow:0 0 44px rgba(212,168,83,.45),0 8px 24px rgba(0,0,0,.5);}
 .hero-btn:active{transform:scale(.97);}
 
-/* INFO STRIP */
-.info-strip{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:5px 14px;padding:8px 20px;background:rgba(6,4,9,.9);border-bottom:1px solid rgba(167,139,250,.07);backdrop-filter:blur(12px);position:relative;z-index:5;}
-.info-item{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:1px;color:var(--mu);display:flex;align-items:center;gap:4px;}
-.info-item strong{color:var(--tx);}
-.info-sep{width:1px;height:11px;background:var(--bd);flex-shrink:0;}
+.info-strip{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:5px 16px;padding:9px 20px;background:rgba(6,4,5,.95);border-bottom:1px solid var(--border2);backdrop-filter:blur(12px);position:relative;z-index:5;}
+.info-item{font-family:'Space Mono',monospace;font-size:.56rem;letter-spacing:1px;color:var(--muted);display:flex;align-items:center;gap:5px;}
+.info-item strong{color:var(--text);}
+.info-sep{width:1px;height:12px;background:var(--border2);flex-shrink:0;}
 
-/* WRAP */
 .wrap{max-width:560px;margin:0 auto;padding:22px 16px 80px;position:relative;z-index:1;}
-
-/* NOTICE */
-.notice-banner{background:var(--glow);border:1px solid var(--bd);border-radius:var(--r12);padding:11px 15px;margin-bottom:16px;font-family:'Space Mono',monospace;font-size:.68rem;line-height:1.7;color:var(--pb);display:none;}
+.notice-banner{background:var(--goldg2);border:1px solid var(--border);border-radius:var(--r12);padding:12px 15px;margin-bottom:16px;font-family:'Space Mono',monospace;font-size:.67rem;line-height:1.7;color:var(--gold);display:none;}
 .notice-banner.show{display:block;animation:fup .35s ease both;}
 
 /* COUNTDOWN */
-.cd-card{background:linear-gradient(135deg,var(--glow),var(--glow2));border:1px solid var(--bd);border-radius:var(--r16);padding:18px;margin-bottom:20px;text-align:center;position:relative;overflow:hidden;}
-.cd-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--p),var(--pk),transparent);animation:cdscan 4s ease-in-out infinite;}
-@keyframes cdscan{0%,100%{opacity:.3;transform:scaleX(.4)}50%{opacity:1;transform:scaleX(1)}}
-.cd-label{font-family:'Space Mono',monospace;font-size:.56rem;letter-spacing:3px;color:var(--mu);text-transform:uppercase;margin-bottom:12px;}
+.cd-card{background:var(--sur);border:1px solid var(--border);border-radius:var(--r16);padding:18px;margin-bottom:20px;text-align:center;position:relative;overflow:hidden;}
+.cd-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,var(--gold),transparent);animation:scan 4s ease-in-out infinite;}
+.cd-label{font-family:'Space Mono',monospace;font-size:.54rem;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:12px;}
 .cd-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;max-width:280px;margin:0 auto;}
-.cd-unit{background:var(--s2);border:1px solid var(--bd);border-radius:9px;padding:10px 5px;}
-.cd-n{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--p);line-height:1;display:block;text-shadow:0 0 14px rgba(167,139,250,.28);}
+.cd-unit{background:var(--s2);border:1px solid var(--border2);border-radius:9px;padding:10px 5px;}
+.cd-n{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:var(--gold);line-height:1;display:block;text-shadow:0 0 14px rgba(212,168,83,.25);}
 .cd-n.flip{animation:flip .22s ease;}
-.cd-t{font-family:'Space Mono',monospace;font-size:.45rem;letter-spacing:2px;color:var(--mu);text-transform:uppercase;margin-top:2px;display:block;}
-.cd-live{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:4px;color:var(--rd);animation:livP 1.5s ease-in-out infinite;}
+.cd-t{font-family:'Space Mono',monospace;font-size:.43rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-top:2px;display:block;}
+.cd-live{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:4px;color:var(--red);animation:livP 1.5s ease-in-out infinite;}
 @keyframes livP{0%,100%{opacity:1}50%{opacity:.3}}
 
 /* STEPS */
 .steps{display:flex;align-items:center;justify-content:center;margin-bottom:26px;}
 .si{display:flex;flex-direction:column;align-items:center;gap:4px;}
-.sn{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--bd);display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:.65rem;color:var(--mu);background:var(--sur);transition:all .35s cubic-bezier(.34,1.56,.64,1);}
-.si.active .sn{border-color:var(--p);color:var(--p);background:var(--glow);box-shadow:0 0 14px rgba(167,139,250,.28);transform:scale(1.1);}
-.si.done .sn{border-color:var(--gr);background:rgba(52,211,153,.1);color:var(--gr);}
-.si.done .sn::after{content:'\2713';}
-.sl{font-size:.51rem;color:var(--mu);letter-spacing:1px;text-transform:uppercase;font-family:'Space Mono',monospace;white-space:nowrap;transition:color .3s;}
-.si.active .sl{color:var(--p);}
-.sc{width:44px;height:1px;background:var(--bd);margin:0 3px;margin-bottom:17px;flex-shrink:0;transition:background .4s;}
-.sc.done{background:var(--gr);}
+.sn{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted);background:var(--sur);transition:all .35s cubic-bezier(.34,1.56,.64,1);}
+.si.active .sn{border-color:var(--gold);color:var(--gold);background:var(--goldg);box-shadow:0 0 14px rgba(212,168,83,.2);transform:scale(1.1);}
+.si.done .sn{border-color:var(--green);background:rgba(62,196,122,.1);color:var(--green);}
+.si.done .sn::after{content:'✓';}
+.sl{font-size:.48rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;font-family:'Space Mono',monospace;white-space:nowrap;transition:color .3s;}
+.si.active .sl{color:var(--gold);}
+.sc{width:40px;height:1px;background:var(--border2);margin:0 3px;margin-bottom:16px;flex-shrink:0;transition:background .4s;}
+.sc.done{background:var(--green);}
 .sec{display:none;}.sec.active{display:block;animation:secIn .38s cubic-bezier(.16,1,.3,1) both;}
-@keyframes secIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes secIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 
-/* CARD */
-.card{background:var(--sur);border:1px solid var(--bd);border-radius:var(--r16);padding:20px;margin-bottom:12px;position:relative;overflow:hidden;}
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,var(--p),transparent);opacity:.4;}
-.card-title{font-family:'Bebas Neue',sans-serif;font-size:1.22rem;letter-spacing:2px;color:var(--p);margin-bottom:15px;}
+.card{background:var(--sur);border:1px solid var(--border);border-radius:var(--r16);padding:20px;margin-bottom:12px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.35;}
+.card-title{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:3px;color:var(--gold);margin-bottom:16px;}
 
-/* STEP 1 — ticket selector with movie badge */
-.tsel{background:var(--sur);border:1px solid var(--bd);border-radius:var(--r16);margin-bottom:12px;overflow:hidden;position:relative;}
-.tsel::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,var(--p),var(--pk),transparent);}
-.movie-badge{display:flex;align-items:center;gap:14px;padding:14px 18px 12px;border-bottom:1px solid rgba(167,139,250,.1);background:linear-gradient(135deg,rgba(167,139,250,.05),rgba(244,114,182,.02));}
-.mini-poster{width:46px;height:66px;border-radius:7px;overflow:hidden;flex-shrink:0;border:1.5px solid rgba(167,139,250,.3);background:#120e1e;position:relative;display:flex;align-items:center;justify-content:center;font-size:1.1rem;}
+/* STEP 1 */
+.tsel{background:var(--sur);border:1px solid var(--border);border-radius:var(--r16);margin-bottom:12px;overflow:hidden;position:relative;}
+.tsel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.movie-badge{display:flex;align-items:center;gap:14px;padding:14px 18px 12px;border-bottom:1px solid var(--border2);background:linear-gradient(135deg,var(--goldg2),transparent);}
+.mini-poster{width:44px;height:64px;border-radius:6px;overflow:hidden;flex-shrink:0;border:1px solid rgba(212,168,83,.28);background:#120e08;position:relative;display:flex;align-items:center;justify-content:center;font-size:1.1rem;}
 #miniPosterImg{width:100%;height:100%;object-fit:cover;display:none;position:absolute;inset:0;}
-#miniPosterIcon{position:relative;z-index:1;}
-.badge-name{font-family:'Instrument Serif',serif;font-style:italic;font-size:1.15rem;color:var(--tx);}
-.badge-meta{font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:1px;color:var(--mu);margin-top:3px;}
+.badge-name{font-family:'Bebas Neue',sans-serif;font-size:1.15rem;letter-spacing:2px;color:var(--text);}
+.badge-meta{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:1px;color:var(--muted);margin-top:3px;}
 .qty-zone{padding:18px 18px 14px;}
 .t-display{text-align:center;margin-bottom:14px;}
-.t-cnt{font-family:'Bebas Neue',sans-serif;font-size:5.5rem;color:var(--gold);line-height:1;text-shadow:0 0 30px rgba(251,191,36,.2);display:block;}
+.t-cnt{font-family:'Bebas Neue',sans-serif;font-size:5.5rem;color:var(--gold);line-height:1;text-shadow:0 0 30px rgba(212,168,83,.18);display:block;}
 .t-cnt.bump{animation:bump .28s cubic-bezier(.34,1.56,.64,1);}
-.t-lbl{font-family:'Space Mono',monospace;font-size:.57rem;letter-spacing:3px;color:var(--mu);text-transform:uppercase;margin-top:4px;}
+.t-lbl{font-family:'Space Mono',monospace;font-size:.54rem;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-top:4px;}
 .qty-ctrl{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:12px;}
-.qbtn{width:46px;height:46px;border-radius:50%;border:1.5px solid var(--p);background:transparent;color:var(--p);font-size:1.4rem;cursor:pointer;transition:all .22s cubic-bezier(.34,1.56,.64,1);display:flex;align-items:center;justify-content:center;}
-.qbtn:hover{background:var(--p);color:#fff;box-shadow:0 0 22px rgba(167,139,250,.38);transform:scale(1.1);}
+.qbtn{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--gold);background:transparent;color:var(--gold);font-size:1.3rem;cursor:pointer;transition:all .22s cubic-bezier(.34,1.56,.64,1);display:flex;align-items:center;justify-content:center;}
+.qbtn:hover{background:var(--gold);color:#0a0806;box-shadow:0 0 20px rgba(212,168,83,.3);transform:scale(1.08);}
 .qbtn:active{transform:scale(.93);}
 .qbtn:disabled{opacity:.2;cursor:not-allowed;transform:none;box-shadow:none;}
-.price-bd{background:rgba(6,4,9,.45);border-radius:var(--r8);padding:12px;border:1px solid rgba(167,139,250,.08);}
-.pr{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:.86rem;color:var(--mu);}
-.pr.tot{border-top:1px solid var(--bd);margin-top:7px;padding-top:10px;color:var(--tx);font-weight:600;}
+.price-bd{background:rgba(6,4,5,.5);border-radius:var(--r8);padding:12px;border:1px solid var(--border2);}
+.pr{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:.85rem;color:var(--muted);}
+.pr.tot{border-top:1px solid var(--border2);margin-top:7px;padding-top:10px;color:var(--text);font-weight:600;}
 #totD{color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:1px;}
 #totD.bump{animation:bump .22s cubic-bezier(.34,1.56,.64,1);}
 
 /* FORM */
-.fg{margin-bottom:15px;}
-label{display:block;font-size:.61rem;letter-spacing:2px;text-transform:uppercase;color:var(--mu);margin-bottom:6px;font-family:'Space Mono',monospace;}
-input[type="text"],input[type="email"],input[type="tel"]{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:var(--r8);padding:12px 14px;color:var(--tx);font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;transition:border-color .22s,box-shadow .22s;-webkit-appearance:none;}
-input:focus{border-color:var(--p);box-shadow:0 0 0 3px var(--glow);}
-input.errf{border-color:var(--rd)!important;animation:shake .3s ease;}
-input.okf{border-color:var(--gr)!important;}
-.ferr{color:var(--rd);font-size:.63rem;margin-top:4px;display:none;font-family:'Space Mono',monospace;}
+.fg{margin-bottom:14px;}
+label{display:block;font-size:.59rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-family:'Space Mono',monospace;}
+input[type="text"],input[type="email"],input[type="tel"]{width:100%;background:var(--s2);border:1px solid var(--border2);border-radius:var(--r8);padding:12px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;transition:border-color .22s,box-shadow .22s;-webkit-appearance:none;}
+input:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--goldg);}
+input.errf{border-color:var(--red)!important;animation:shake .3s ease;}
+input.okf{border-color:var(--green)!important;}
+.ferr{color:var(--red);font-size:.62rem;margin-top:5px;display:none;font-family:'Space Mono',monospace;line-height:1.5;}
 .ferr.show{display:block;animation:fup .2s ease;}
 
-/* UPI */
-.upi-box{background:linear-gradient(135deg,var(--s2),var(--s3));border:1px solid var(--p);border-radius:var(--r16);padding:18px;margin-bottom:12px;position:relative;overflow:hidden;}
-.upi-box::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:linear-gradient(90deg,var(--p),var(--pk));opacity:.65;}
-.amt-lbl{font-size:.6rem;letter-spacing:3px;color:var(--mu);text-transform:uppercase;font-family:'Space Mono',monospace;text-align:center;display:block;}
-.amt-big{font-family:'Bebas Neue',sans-serif;font-size:3.6rem;color:var(--gold);text-shadow:0 0 28px rgba(251,191,36,.25);line-height:1;text-align:center;margin:4px 0;}
-.upi-row{display:flex;align-items:center;justify-content:space-between;background:rgba(6,4,9,.45);border:1px solid rgba(167,139,250,.1);border-radius:8px;padding:10px 13px;margin-bottom:8px;}
-.upi-lbl{font-size:.58rem;color:var(--mu);letter-spacing:1px;text-transform:uppercase;font-family:'Space Mono',monospace;display:block;margin-bottom:2px;}
-.upi-val{font-family:'Space Mono',monospace;font-size:.86rem;color:var(--tx);font-weight:700;}
-.copy-btn{background:var(--glow);border:1px solid var(--p);color:var(--p);padding:6px 12px;border-radius:6px;font-size:.63rem;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:1px;transition:all .2s;flex-shrink:0;}
-.copy-btn:hover{background:rgba(167,139,250,.2);}
-.copy-btn.copied{border-color:var(--gr);color:var(--gr);}
+/* UPI BOX */
+.upi-box{background:linear-gradient(135deg,var(--s2),var(--s3));border:1px solid var(--border);border-radius:var(--r16);padding:18px;margin-bottom:12px;position:relative;overflow:hidden;}
+.upi-box::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:var(--gold);opacity:.5;}
+.amt-lbl{font-size:.58rem;letter-spacing:3px;color:var(--muted);text-transform:uppercase;font-family:'Space Mono',monospace;text-align:center;display:block;}
+.amt-big{font-family:'Bebas Neue',sans-serif;font-size:3.6rem;color:var(--gold);text-shadow:0 0 28px rgba(212,168,83,.25);line-height:1;text-align:center;margin:4px 0;}
+.upi-row{display:flex;align-items:center;justify-content:space-between;background:rgba(6,4,5,.45);border:1px solid var(--border2);border-radius:8px;padding:10px 13px;margin-bottom:8px;}
+.upi-lbl{font-size:.56rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;font-family:'Space Mono',monospace;display:block;margin-bottom:2px;}
+.upi-val{font-family:'Space Mono',monospace;font-size:.86rem;color:var(--text);font-weight:700;}
+.copy-btn{background:var(--goldg);border:1px solid var(--gold);color:var(--gold);padding:6px 12px;border-radius:6px;font-size:.6rem;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:1px;transition:all .2s;flex-shrink:0;}
+.copy-btn:hover{background:rgba(212,168,83,.18);}
+.copy-btn.copied{border-color:var(--green);color:var(--green);}
 
 /* TIMER */
-.tmr-box{display:flex;align-items:center;gap:12px;background:var(--s2);border:1px solid var(--bd);border-radius:var(--r8);padding:11px 14px;margin-bottom:14px;position:relative;overflow:hidden;}
-.tmr-prog{position:absolute;bottom:0;left:0;height:2px;background:linear-gradient(90deg,var(--gr),var(--yw),var(--rd));transition:width 1s linear;}
-.tmr-num{font-family:'Space Mono',monospace;font-size:1.3rem;font-weight:700;color:var(--p);letter-spacing:2px;transition:color .3s;}
-.tmr-num.warn{color:var(--rd);animation:tw .9s ease-in-out infinite;}
+.tmr-box{display:flex;align-items:center;gap:12px;background:var(--s2);border:1px solid var(--border2);border-radius:var(--r8);padding:11px 14px;margin-bottom:14px;position:relative;overflow:hidden;}
+.tmr-prog{position:absolute;bottom:0;left:0;height:2px;background:linear-gradient(90deg,var(--green),var(--yellow),var(--red));transition:width 1s linear;}
+.tmr-num{font-family:'Space Mono',monospace;font-size:1.3rem;font-weight:700;color:var(--gold);letter-spacing:2px;transition:color .3s;}
+.tmr-num.warn{color:var(--red);animation:tw .9s ease-in-out infinite;}
 @keyframes tw{0%,100%{opacity:1}50%{opacity:.35}}
 
 /* PSS */
-.pss-item{display:flex;align-items:center;gap:4px;font-family:'Space Mono',monospace;font-size:.55rem;color:var(--mu);transition:color .3s;}
-.pss-item.active{color:var(--p);}.pss-item.done{color:var(--gr);}
+.pss-item{display:flex;align-items:center;gap:4px;font-family:'Space Mono',monospace;font-size:.53rem;color:var(--muted);transition:color .3s;}
+.pss-item.active{color:var(--gold);}.pss-item.done{color:var(--green);}
 .pss-dot{width:20px;height:20px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:.6rem;flex-shrink:0;transition:all .3s;}
-.pss-item.active .pss-dot{background:var(--glow);animation:psA 1.8s ease-in-out infinite;}
-@keyframes psA{0%,100%{box-shadow:0 0 0 0 rgba(167,139,250,.25)}50%{box-shadow:0 0 0 4px rgba(167,139,250,0)}}
-.pss-line{flex:1;height:1px;background:var(--bd);min-width:8px;transition:background .4s;}
-.pss-line.done{background:var(--gr);}
+.pss-item.active .pss-dot{background:var(--goldg);animation:psA 1.8s ease-in-out infinite;}
+@keyframes psA{0%,100%{box-shadow:0 0 0 0 rgba(212,168,83,.25)}50%{box-shadow:0 0 0 4px rgba(212,168,83,0)}}
+.pss-line{flex:1;height:1px;background:var(--border2);min-width:8px;transition:background .4s;}
+.pss-line.done{background:var(--green);}
 
 /* UPI APPS */
 .upi-apps{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px;}
-.app-btn{background:var(--s2);border:1px solid var(--bd);border-radius:var(--r8);padding:10px 6px;text-align:center;cursor:pointer;transition:all .2s;display:block;text-decoration:none;color:var(--tx);}
-.app-btn:hover{border-color:var(--p);background:var(--glow);transform:translateY(-2px);}
-.app-btn:active{transform:scale(.95);}
-.app-icon{font-size:1.5rem;display:block;margin-bottom:3px;}
-.app-name{font-size:.56rem;letter-spacing:1px;color:var(--mu);font-family:'Space Mono',monospace;}
+.app-btn{background:var(--s2);border:1px solid var(--border2);border-radius:var(--r8);padding:10px 6px;text-align:center;cursor:pointer;transition:all .2s;display:block;color:var(--text);}
+.app-btn:hover{border-color:var(--gold);background:var(--goldg2);transform:translateY(-2px);}
+.app-icon{font-size:1.4rem;display:block;margin-bottom:3px;}
+.app-name{font-size:.54rem;letter-spacing:1px;color:var(--muted);font-family:'Space Mono',monospace;}
 
 /* UPLOAD */
-.up-zone{border:2px dashed var(--bd);border-radius:var(--r12);padding:22px;text-align:center;cursor:pointer;transition:all .22s;position:relative;}
-.up-zone:hover,.up-zone.drag{border-color:var(--p);border-style:solid;background:rgba(167,139,250,.03);}
+.up-zone{border:2px dashed var(--border);border-radius:var(--r12);padding:22px;text-align:center;cursor:pointer;transition:all .22s;position:relative;}
+.up-zone:hover,.up-zone.drag{border-color:var(--gold);border-style:solid;background:var(--goldg2);}
 .up-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
 .up-icon{font-size:2rem;margin-bottom:7px;display:block;}
-.up-text{color:var(--mu);font-size:.78rem;}
-.up-text strong{color:var(--p);}
-.up-prev{width:100%;max-height:300px;object-fit:contain;border-radius:9px;margin-top:12px;display:none;border:1px solid var(--bd);}
+.up-text{color:var(--muted);font-size:.78rem;}
+.up-text strong{color:var(--gold);}
+.up-prev{width:100%;max-height:300px;object-fit:contain;border-radius:9px;margin-top:12px;display:none;border:1px solid var(--border2);}
 .up-prev.show{display:block;animation:fi .3s ease;}
 .ocr-box{background:var(--s2);border-radius:8px;padding:11px 13px;margin-top:9px;font-family:'Space Mono',monospace;display:none;}
 .ocr-box.show{display:block;animation:fi .25s ease;}
-.ocr-item{display:flex;align-items:center;gap:7px;padding:3px 0;color:var(--mu);font-size:.68rem;}
-.ocr-item.ok{color:var(--gr);}.ocr-item.fail{color:var(--rd);}
-.ocr-spin{width:12px;height:12px;border:2px solid rgba(167,139,250,.2);border-top-color:var(--p);border-radius:50%;animation:spin .65s linear infinite;flex-shrink:0;}
+.ocr-item{display:flex;align-items:center;gap:7px;padding:3px 0;color:var(--muted);font-size:.67rem;}
+.ocr-item.ok{color:var(--green);}.ocr-item.fail{color:var(--red);}
+.ocr-spin{width:12px;height:12px;border:2px solid rgba(212,168,83,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .65s linear infinite;flex-shrink:0;}
 
 /* BUTTONS */
-.btn{width:100%;padding:13px 20px;border-radius:var(--r8);font-size:.82rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;font-family:'Space Mono',monospace;cursor:pointer;transition:all .22s;border:none;-webkit-tap-highlight-color:transparent;}
-.btn-p{background:linear-gradient(135deg,#7c3aed,var(--pk));color:#fff;}
-.btn-p:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(124,58,237,.36);}
+.btn{width:100%;padding:13px 20px;border-radius:var(--r8);font-size:.8rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;font-family:'Space Mono',monospace;cursor:pointer;transition:all .22s;border:none;-webkit-tap-highlight-color:transparent;}
+.btn-p{background:var(--gold);color:#0a0806;}
+.btn-p:hover{background:var(--gold2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(212,168,83,.25);}
 .btn-p:active{transform:scale(.98);}
 .btn-p:disabled{opacity:.38;cursor:not-allowed;transform:none!important;box-shadow:none!important;}
-.btn-s{background:transparent;border:1px solid var(--bd);color:var(--mu);margin-top:8px;}
-.btn-s:hover{border-color:var(--p);color:var(--p);}
-.btn-g{background:rgba(52,211,153,.1);border:1px solid var(--gr);color:var(--gr);}
-.btn-g:hover{background:rgba(52,211,153,.2);transform:translateY(-2px);}
-.btn-wa{background:rgba(37,211,102,.09);border:1px solid #25d366;color:#25d366;}
-.btn-wa:hover{background:rgba(37,211,102,.2);}
-.btn-bl{background:rgba(96,165,250,.1);border:1px solid var(--bl);color:var(--bl);margin:0;}
-.btn-bl:hover{background:rgba(96,165,250,.2);}
+.btn-s{background:transparent;border:1px solid var(--border);color:var(--muted);margin-top:8px;}
+.btn-s:hover{border-color:var(--gold);color:var(--gold);}
+.btn-g{background:rgba(62,196,122,.1);border:1px solid var(--green);color:var(--green);}
+.btn-g:hover{background:rgba(62,196,122,.18);transform:translateY(-2px);}
+.btn-wa{background:rgba(37,211,102,.08);border:1px solid #25d366;color:#25d366;}
+.btn-wa:hover{background:rgba(37,211,102,.18);}
+.btn-bl{background:rgba(76,130,255,.08);border:1px solid var(--blue);color:var(--blue);margin:0;}
+.btn-bl:hover{background:rgba(76,130,255,.18);}
 
-/* STATUS MSG */
-.smsg{border-radius:8px;padding:11px 14px;margin-bottom:12px;font-size:.75rem;font-family:'Space Mono',monospace;line-height:1.5;display:none;}
+/* STATUS MSGS */
+.smsg{border-radius:8px;padding:11px 14px;margin-bottom:12px;font-size:.74rem;font-family:'Space Mono',monospace;line-height:1.6;display:none;}
 .smsg.show{display:block;animation:fup .22s ease;}
-.smsg.error{background:rgba(248,113,113,.09);border:1px solid rgba(248,113,113,.25);color:var(--rd);}
-.smsg.success{background:rgba(52,211,153,.09);border:1px solid rgba(52,211,153,.25);color:var(--gr);}
-.smsg.info{background:var(--glow);border:1px solid var(--bd);color:var(--pb);}
+.smsg.error{background:rgba(224,85,85,.09);border:1px solid rgba(224,85,85,.28);color:var(--red);}
+.smsg.success{background:rgba(62,196,122,.09);border:1px solid rgba(62,196,122,.28);color:var(--green);}
+.smsg.info{background:var(--goldg2);border:1px solid var(--border);color:var(--gold);}
 
-/* === CINEMA TICKET === */
-.tkt-card{background:var(--sur);border-radius:var(--r16);overflow:hidden;border:1px solid rgba(167,139,250,.15);box-shadow:0 0 60px rgba(167,139,250,.08),0 24px 60px rgba(0,0,0,.55);animation:tktIn .7s cubic-bezier(.16,1,.3,1) both;}
-.tkt-card.glow-green{border-color:rgba(52,211,153,.22);box-shadow:0 0 60px rgba(52,211,153,.08),0 24px 60px rgba(0,0,0,.55);}
+/* HELP BOX */
+.help-box{background:rgba(212,168,83,.05);border:1px solid rgba(212,168,83,.18);border-radius:9px;padding:11px 14px;margin-top:8px;font-family:'Space Mono',monospace;font-size:.62rem;line-height:1.85;color:var(--muted);display:none;}
+.help-box.show{display:block;animation:fup .2s ease;}
+.help-box strong{color:var(--gold);}
+.help-box .tip{color:var(--muted);margin-top:5px;padding-top:5px;border-top:1px solid var(--border2);}
+.help-box .tip strong{color:var(--text);}
+
+/* LOOKUP */
+.lookup-box{background:var(--goldg2);border:1px solid var(--border);border-radius:var(--r12);padding:14px;margin-top:12px;}
+.lookup-title{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:2px;color:var(--muted);margin-bottom:10px;text-transform:uppercase;}
+.lookup-row{display:flex;gap:7px;}
+.lookup-row input{flex:1;border-radius:8px;}
+.lookup-btn{padding:10px 14px;background:rgba(62,196,122,.1);border:1px solid var(--green);color:var(--green);border-radius:8px;font-family:'Space Mono',monospace;font-size:.62rem;cursor:pointer;white-space:nowrap;transition:all .2s;flex-shrink:0;}
+.lookup-btn:hover{background:rgba(62,196,122,.2);}
+.lookup-result{margin-top:9px;background:var(--s2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;font-family:'Space Mono',monospace;font-size:.68rem;line-height:1.85;display:none;}
+
+/* TICKET */
+.tkt-card{background:var(--sur);border-radius:var(--r16);overflow:hidden;border:1px solid rgba(212,168,83,.2);box-shadow:0 0 60px rgba(212,168,83,.07),0 24px 60px rgba(0,0,0,.6);animation:tktIn .7s cubic-bezier(.16,1,.3,1) both;}
+.tkt-card.glow-green{border-color:rgba(62,196,122,.25);box-shadow:0 0 60px rgba(62,196,122,.08),0 24px 60px rgba(0,0,0,.6);}
 @keyframes tktIn{from{opacity:0;transform:scale(.9) translateY(18px)}to{opacity:1;transform:scale(1) translateY(0)}}
-/* gold top bar */
-.tkt-topbar{height:3px;background:linear-gradient(90deg,transparent,var(--gold),var(--p),var(--pk),transparent);}
-/* ticket hero with blurred poster bg */
-.tkt-hero{position:relative;min-height:132px;overflow:hidden;display:flex;align-items:flex-end;background:linear-gradient(160deg,#100d1e,#1a1232);}
-#tktPosterBg{position:absolute;inset:-10px;background-size:cover;background-position:center;filter:blur(14px) brightness(.2) saturate(1.6);opacity:0;transition:opacity .6s;}
-/* mini poster thumb - overhangs below hero */
-.tkt-thumb{position:absolute;left:16px;bottom:-22px;z-index:5;width:60px;height:86px;border-radius:8px;overflow:hidden;border:2px solid rgba(167,139,250,.42);box-shadow:0 6px 26px rgba(0,0,0,.65);background:#120e1e;display:flex;align-items:center;justify-content:center;font-size:1.4rem;}
+.tkt-topbar{height:2.5px;background:linear-gradient(90deg,transparent,var(--gold),var(--gold2),transparent);}
+.tkt-hero{position:relative;min-height:132px;overflow:hidden;display:flex;align-items:flex-end;background:linear-gradient(160deg,#120e08,#1c1408);}
+#tktPosterBg{position:absolute;inset:-10px;background-size:cover;background-position:center;filter:blur(14px) brightness(.18) saturate(1.6);opacity:0;transition:opacity .6s;}
+.tkt-thumb{position:absolute;left:16px;bottom:-22px;z-index:5;width:58px;height:84px;border-radius:7px;overflow:hidden;border:1.5px solid rgba(212,168,83,.38);box-shadow:0 6px 24px rgba(0,0,0,.7);background:#120e08;display:flex;align-items:center;justify-content:center;font-size:1.3rem;}
 #tktPosterImg{width:100%;height:100%;object-fit:cover;display:none;position:absolute;inset:0;}
-#tktPosterIcon{position:relative;z-index:1;}
-/* hero text offset right of thumb */
-.tkt-hero-txt{position:relative;z-index:3;flex:1;padding:14px 16px 26px 92px;}
-.tkt-label-sm{font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:3px;color:rgba(196,181,253,.5);text-transform:uppercase;margin-bottom:4px;}
-.tkt-hero-movie{font-family:'Bebas Neue',sans-serif;font-size:1.75rem;letter-spacing:3px;color:var(--tx);line-height:1;}
-.tkt-hero-date{font-family:'Space Mono',monospace;font-size:.56rem;color:rgba(255,255,255,.38);margin-top:5px;}
-/* perforated divider */
+.tkt-hero-txt{position:relative;z-index:3;flex:1;padding:14px 16px 26px 90px;}
+.tkt-label-sm{font-family:'Space Mono',monospace;font-size:.48rem;letter-spacing:3px;color:rgba(212,168,83,.45);text-transform:uppercase;margin-bottom:4px;}
+.tkt-hero-movie{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:3px;color:var(--text);line-height:1;}
+.tkt-hero-date{font-family:'Space Mono',monospace;font-size:.54rem;color:rgba(255,255,255,.32);margin-top:5px;}
 .tkt-perf{display:flex;align-items:center;overflow:visible;}
 .tkt-nc{width:22px;height:22px;border-radius:50%;background:var(--bg);flex-shrink:0;}
 .tkt-nc-l{margin-left:-11px;}.tkt-nc-r{margin-right:-11px;margin-left:auto;}
-.tkt-dash{flex:1;border:none;height:0;border-top:2px dashed rgba(167,139,250,.13);margin:0 4px;}
+.tkt-dash{flex:1;border:none;height:0;border-top:2px dashed rgba(212,168,83,.12);margin:0 4px;}
 .tkt-body{padding:28px 16px 16px;}
 .tkt-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.82rem;}
 .tkt-row:last-child{border:none;}
-.tkt-k{color:var(--mu);font-family:'Space Mono',monospace;font-size:.59rem;letter-spacing:1px;text-transform:uppercase;}
+.tkt-k{color:var(--muted);font-family:'Space Mono',monospace;font-size:.57rem;letter-spacing:1px;text-transform:uppercase;}
 .tkt-v{font-weight:600;text-align:right;max-width:58%;}
-.tkt-qr{display:flex;flex-direction:column;align-items:center;padding:16px;border-top:2px dashed rgba(167,139,250,.12);gap:8px;background:linear-gradient(to bottom,transparent,rgba(167,139,250,.02));}
-.tkt-qr-lbl{font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:2px;color:var(--mu);text-transform:uppercase;}
-.sbadge{display:inline-block;padding:3px 10px;border-radius:100px;font-size:.58rem;letter-spacing:1.5px;font-family:'Space Mono',monospace;text-transform:uppercase;font-weight:700;}
-.sbadge.pending{background:rgba(251,191,36,.1);color:var(--yw);border:1px solid rgba(251,191,36,.28);}
-.sbadge.approved{background:rgba(52,211,153,.1);color:var(--gr);border:1px solid rgba(52,211,153,.28);animation:appG 2.5s ease-in-out infinite;}
-@keyframes appG{0%,100%{box-shadow:0 0 0 0 rgba(52,211,153,.2)}50%{box-shadow:0 0 0 4px rgba(52,211,153,0)}}
-
-/* FILM STRIP */
-.fstrip{display:flex;gap:4px;padding:5px 10px;opacity:.18;pointer-events:none;overflow:hidden;}
-.fhole{width:13px;height:9px;border-radius:3px;background:var(--p);flex-shrink:0;}
-
-/* DL GRID */
+.tkt-qr{display:flex;flex-direction:column;align-items:center;padding:16px;border-top:2px dashed rgba(212,168,83,.1);gap:8px;background:linear-gradient(to bottom,transparent,rgba(212,168,83,.02));}
+.tkt-qr-lbl{font-family:'Space Mono',monospace;font-size:.48rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
+.sbadge{display:inline-block;padding:3px 10px;border-radius:100px;font-size:.56rem;letter-spacing:1.5px;font-family:'Space Mono',monospace;text-transform:uppercase;font-weight:700;}
+.sbadge.pending{background:rgba(232,184,64,.1);color:var(--yellow);border:1px solid rgba(232,184,64,.28);}
+.sbadge.approved{background:rgba(62,196,122,.1);color:var(--green);border:1px solid rgba(62,196,122,.28);animation:appG 2.5s ease-in-out infinite;}
+@keyframes appG{0%,100%{box-shadow:0 0 0 0 rgba(62,196,122,.2)}50%{box-shadow:0 0 0 4px rgba(62,196,122,0)}}
+.sbadge.rejected{background:rgba(224,85,85,.1);color:var(--red);border:1px solid rgba(224,85,85,.28);}
+.fstrip{display:flex;gap:4px;padding:5px 10px;opacity:.15;pointer-events:none;overflow:hidden;}
+.fhole{width:12px;height:8px;border-radius:3px;background:var(--gold);flex-shrink:0;}
 .dl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:12px;}
-.dl-grid .btn{font-size:.62rem;padding:10px 4px;margin:0;}
+.dl-grid .btn{font-size:.6rem;padding:10px 4px;margin:0;}
 .dl-full{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:7px;}
-
-/* LOOKUP */
-.lookup-box{background:var(--glow2);border:1px solid var(--bd);border-radius:var(--r12);padding:14px;margin-top:12px;}
-.lookup-title{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:2px;color:var(--mu);margin-bottom:10px;text-transform:uppercase;}
-.lookup-row{display:flex;gap:7px;}
-.lookup-row input{flex:1;border-radius:8px;}
-.lookup-btn{padding:10px 14px;background:rgba(52,211,153,.1);border:1px solid var(--gr);color:var(--gr);border-radius:8px;font-family:'Space Mono',monospace;font-size:.63rem;cursor:pointer;white-space:nowrap;transition:all .2s;flex-shrink:0;}
-.lookup-btn:hover{background:rgba(52,211,153,.2);}
-.lookup-result{margin-top:9px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;font-family:'Space Mono',monospace;font-size:.7rem;line-height:1.8;display:none;}
 
 /* MODALS */
 #softModal,#emailModal{position:fixed;inset:0;z-index:5000;display:none;align-items:center;justify-content:center;}
-#softModal.show,#emailModal.show{display:flex;background:rgba(0,0,0,.88);backdrop-filter:blur(14px);animation:mdlBg .22s ease;}
-@keyframes mdlBg{from{background:rgba(0,0,0,0)}to{background:rgba(0,0,0,.88)}}
-.modal-inner{background:var(--sur);border:1px solid rgba(167,139,250,.22);border-radius:var(--r16);padding:20px;max-width:340px;width:90%;position:relative;animation:mdlIn .35s cubic-bezier(.34,1.56,.64,1);}
+#softModal.show,#emailModal.show{display:flex;background:rgba(0,0,0,.9);backdrop-filter:blur(14px);animation:mdlBg .22s ease;}
+@keyframes mdlBg{from{background:rgba(0,0,0,0)}to{background:rgba(0,0,0,.9)}}
+.modal-inner{background:var(--sur);border:1px solid rgba(212,168,83,.2);border-radius:var(--r16);padding:20px;max-width:340px;width:90%;position:relative;animation:mdlIn .35s cubic-bezier(.34,1.56,.64,1);}
 @keyframes mdlIn{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:scale(1)}}
-.modal-close{position:absolute;top:11px;right:11px;background:rgba(255,255,255,.06);border:none;color:var(--mu);width:27px;height:27px;border-radius:50%;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;transition:all .2s;}
-.modal-close:hover{background:rgba(248,113,113,.15);color:var(--rd);transform:rotate(90deg);}
-.modal-title{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:2px;color:var(--p);text-align:center;margin-bottom:12px;}
-#tktCanvas{width:100%;border-radius:8px;border:1px solid rgba(167,139,250,.18);display:block;margin-bottom:12px;}
-.email-prev{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:12px;font-family:'Space Mono',monospace;font-size:.64rem;line-height:1.75;color:var(--tx);max-height:200px;overflow-y:auto;margin-bottom:12px;white-space:pre-wrap;}
+.modal-close{position:absolute;top:11px;right:11px;background:rgba(255,255,255,.06);border:none;color:var(--muted);width:27px;height:27px;border-radius:50%;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.modal-close:hover{background:rgba(224,85,85,.15);color:var(--red);transform:rotate(90deg);}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:3px;color:var(--gold);text-align:center;margin-bottom:12px;}
+#tktCanvas{width:100%;border-radius:8px;border:1px solid var(--border2);display:block;margin-bottom:12px;}
+.email-prev{background:var(--s2);border:1px solid var(--border2);border-radius:8px;padding:12px;font-family:'Space Mono',monospace;font-size:.63rem;line-height:1.75;color:var(--text);max-height:200px;overflow-y:auto;margin-bottom:12px;white-space:pre-wrap;}
 .email-modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
 .spn{width:14px;height:14px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px;}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(90px);background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:10px 16px;font-family:'Space Mono',monospace;font-size:.71rem;color:var(--tx);z-index:10000;transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;max-width:92vw;backdrop-filter:blur(10px);}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(90px);background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;font-family:'Space Mono',monospace;font-size:.7rem;color:var(--text);z-index:10000;transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;max-width:92vw;backdrop-filter:blur(10px);}
 .toast.show{transform:translateX(-50%) translateY(0);}
-.toast.success{border-color:var(--gr);color:var(--gr);}
-.toast.error{border-color:var(--rd);color:var(--rd);}
-.toast.info{border-color:var(--p);color:var(--pb);}
+.toast.success{border-color:var(--green);color:var(--green);}
+.toast.error{border-color:var(--red);color:var(--red);}
+.toast.info{border-color:var(--gold);color:var(--gold);}
 .cf{position:fixed;pointer-events:none;z-index:9991;animation:cfFall var(--dur) ease-out var(--del) both;}
 @keyframes cfFall{from{transform:translate(0,-10px) rotate(0);opacity:1}to{transform:translate(var(--dx),100vh) rotate(600deg);opacity:0}}
-.adm-lnk{text-align:center;padding-top:18px;margin-top:24px;border-top:1px solid var(--bd);}
-.adm-lnk a{font-family:'Space Mono',monospace;font-size:.62rem;color:var(--mu);text-decoration:none;letter-spacing:2px;transition:color .2s;}
-.adm-lnk a:hover{color:var(--p);}
-@keyframes rowIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
-@media(max-width:480px){.upi-apps{grid-template-columns:repeat(2,1fr)}.sc{width:26px}.card{padding:16px 13px}.dl-grid{grid-template-columns:1fr 1fr}.dl-grid>*:nth-child(3){grid-column:1/-1}.hero-stage{padding:20px 14px 0}.poster-card{width:min(95px,25vw)}.hero-title{font-size:clamp(1.7rem,8vw,2.8rem)}}
+.adm-lnk{text-align:center;padding-top:18px;margin-top:24px;border-top:1px solid var(--border2);}
+.adm-lnk a{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted);text-decoration:none;letter-spacing:2px;transition:color .2s;}
+.adm-lnk a:hover{color:var(--gold);}
+@media(max-width:480px){
+  .upi-apps{grid-template-columns:repeat(2,1fr)}
+  .sc{width:26px}.card{padding:16px 13px}
+  .dl-grid{grid-template-columns:1fr 1fr}.dl-grid>*:nth-child(3){grid-column:1/-1}
+  .hero-stage{padding:20px 14px 0}.poster-card{width:min(90px,24vw)}
+}
 </style>
 </head>
 <body>
-<div class="amb a1"></div><div class="amb a2"></div>
-
-<!-- LOAD SCREEN -->
 <div id="ls">
-  <div class="ls-reel">&#127916;</div>
-  <div class="ls-title">Reel &amp; Deal</div>
+  <div class="ls-reel">🎬</div>
+  <div class="ls-title">Reel to Deal</div>
+  <div class="ls-sub">MBA Fest · Ticket Booking</div>
   <div class="ls-bar"><div class="ls-fill"></div></div>
-  <div class="ls-sub">SYNCING LIVE SETTINGS...</div>
 </div>
 
-<!-- SYNC BAR -->
 <div class="sync-bar loading" id="syncBar">
-  <div class="sdot"></div><span id="syncTxt">Connecting to Supabase...</span>
+  <div class="sdot"></div><span id="syncTxt">Connecting to server...</span>
 </div>
 
-<!-- CINEMATIC HERO -->
 <div class="cinema-hero">
   <div id="heroPosterBg"></div>
-  <div class="hero-grid"></div>
   <div class="hero-vignette"></div>
   <div class="hero-film" id="heroFilm"></div>
-
   <div class="hero-stage">
     <div class="poster-card">
       <img id="heroPosterImg" alt="Movie Poster" crossorigin="anonymous">
-      <div id="heroPosterIcon">
-        <span class="pi-ico">&#127916;</span>
-        <div class="pi-txt" id="heroPosterName">REEL TO DEAL</div>
-      </div>
+      <div id="heroPosterIcon"><span class="pi-ico">🎬</span><div class="pi-txt" id="heroPosterName">REEL TO DEAL</div></div>
     </div>
     <div class="hero-info">
-      <div class="hero-eyebrow">&#127910; Now Screening</div>
-      <div class="hero-title" id="heroMovieName">Reel to Deal</div>
+      <div class="hero-eyebrow">🎞 Now Screening</div>
+      <div class="hero-title" id="heroMovieName">Reel <span>to Deal</span></div>
       <div class="hero-pills">
-        <div class="hero-pill">&#128205; <strong id="infoVenue">MBA Auditorium</strong></div>
-        <div class="hero-pill">&#128197; <strong id="infoDate">FEB 24, 2026</strong></div>
+        <div class="hero-pill">📍 <strong id="infoVenue">MBA Auditorium</strong></div>
+        <div class="hero-pill">📅 <strong id="infoDate">—</strong></div>
       </div>
     </div>
   </div>
-
   <div class="hero-bottom">
     <div class="hero-price">
-      <span class="hero-amt" id="infoPrice">&#8377;1</span>
+      <span class="hero-amt" id="infoPrice">₹1</span>
       <span class="hero-per">/ TICKET</span>
     </div>
-    <button class="hero-btn" onclick="document.getElementById('bookingWrap').scrollIntoView({behavior:'smooth'})">
-      &#127915; BOOK NOW
-    </button>
+    <button class="hero-btn" onclick="document.getElementById('bookingWrap').scrollIntoView({behavior:'smooth'})">🎟 BOOK NOW</button>
   </div>
 </div>
 
-<!-- INFO STRIP -->
 <div class="info-strip">
-  <span class="info-item">&#127916; <strong id="infoMovieName2">Reel to Deal</strong></span>
+  <span class="info-item">🎬 <strong id="infoMovieName2">Reel to Deal</strong></span>
   <div class="info-sep"></div>
-  <span class="info-item">&#128205; <strong id="infoVenue2">MBA Classroom</strong></span>
+  <span class="info-item">📍 <strong id="infoVenue2">MBA Auditorium</strong></span>
   <div class="info-sep"></div>
-  <span class="info-item">&#127915; <strong id="infoPrice2">&#8377;1</strong>/ticket</span>
+  <span class="info-item">🎟 <strong id="infoPrice2">₹1</strong>/ticket</span>
 </div>
-
-<!-- legacy hidden IDs used by JS -->
 <span id="evBadge" style="display:none"></span>
 
 <div class="wrap" id="bookingWrap">
   <div class="notice-banner" id="noticeBanner"></div>
-
-  <!-- COUNTDOWN -->
   <div class="cd-card" id="cdCard">
-    <div class="cd-label">&#127916; Event Countdown</div>
+    <div class="cd-label">🎬 Event Countdown</div>
     <div class="cd-grid">
       <div class="cd-unit"><span class="cd-n" id="cdD">00</span><span class="cd-t">Days</span></div>
       <div class="cd-unit"><span class="cd-n" id="cdH">00</span><span class="cd-t">Hrs</span></div>
@@ -404,7 +361,6 @@ input.okf{border-color:var(--gr)!important;}
     </div>
   </div>
 
-  <!-- STEPS -->
   <div class="steps">
     <div class="si active" id="s1"><div class="sn">1</div><div class="sl">Tickets</div></div>
     <div class="sc" id="sc1"></div>
@@ -422,11 +378,11 @@ input.okf{border-color:var(--gr)!important;}
       <div class="movie-badge">
         <div class="mini-poster">
           <img id="miniPosterImg" alt="" crossorigin="anonymous">
-          <span id="miniPosterIcon">&#127916;</span>
+          <span id="miniPosterIcon">🎬</span>
         </div>
         <div>
           <div class="badge-name" id="badgeMovieName">Reel to Deal</div>
-          <div class="badge-meta" id="stepMeta">MBA Classroom &middot; FEB 24, 2026</div>
+          <div class="badge-meta" id="stepMeta">MBA Auditorium · —</div>
         </div>
       </div>
       <div class="qty-zone">
@@ -434,22 +390,22 @@ input.okf{border-color:var(--gr)!important;}
           <span class="t-cnt" id="tCnt">1</span>
           <div class="t-lbl">Ticket(s) Selected</div>
           <div class="qty-ctrl">
-            <button class="qbtn" id="btnM" onclick="chgQty(-1)">&minus;</button>
+            <button class="qbtn" id="btnM" onclick="chgQty(-1)">−</button>
             <button class="qbtn" id="btnP" onclick="chgQty(1)">+</button>
           </div>
         </div>
         <div class="price-bd">
-          <div class="pr"><span>Price per ticket</span><span id="ppt">&#8377;1</span></div>
+          <div class="pr"><span>Price per ticket</span><span id="ppt">₹1</span></div>
           <div class="pr"><span>Quantity</span><span id="qD">1</span></div>
-          <div class="pr tot"><span>Total Amount</span><span id="totD">&#8377;1</span></div>
+          <div class="pr tot"><span>Total Amount</span><span id="totD">₹1</span></div>
         </div>
       </div>
     </div>
-    <button class="btn btn-p" onclick="goStep(2)">Continue &rarr;</button>
+    <button class="btn btn-p" onclick="goStep(2)">Continue →</button>
     <div class="lookup-box">
-      <div class="lookup-title">&#128269; Check Existing Booking</div>
+      <div class="lookup-title">🔍 Check Existing Booking</div>
       <div class="lookup-row">
-        <input type="text" id="lookupInput" placeholder="Enter Booking ID or UTR...">
+        <input type="text" id="lookupInput" placeholder="Enter Booking ID (RTD-...) or UTR...">
         <button class="lookup-btn" onclick="lookupBooking()">Check</button>
       </div>
       <div class="lookup-result" id="lookupResult"></div>
@@ -459,19 +415,31 @@ input.okf{border-color:var(--gr)!important;}
   <!-- STEP 2 -->
   <div class="sec" id="sec2">
     <div class="card">
-      <div class="card-title">&#128100; Your Details</div>
-      <div class="fg"><label>Full Name</label><input type="text" id="fname" placeholder="Enter your full name" oninput="valF('fname')"><div class="ferr" id="fnameE">Please enter your full name (min 2 chars)</div></div>
-      <div class="fg"><label>Email Address</label><input type="email" id="femail" placeholder="you@college.edu" oninput="valF('femail')"><div class="ferr" id="femailE">Please enter a valid email address</div></div>
-      <div class="fg"><label>Phone Number</label><input type="tel" id="fphone" placeholder="10-digit mobile number" maxlength="10" oninput="valF('fphone')"><div class="ferr" id="fphoneE">Please enter a valid 10-digit number</div></div>
+      <div class="card-title">👤 Your Details</div>
+      <div class="fg">
+        <label>Full Name</label>
+        <input type="text" id="fname" placeholder="Enter your full name" oninput="valF('fname')">
+        <div class="ferr" id="fnameE">⚠ Please enter your full name (min 2 characters)</div>
+      </div>
+      <div class="fg">
+        <label>Email Address</label>
+        <input type="email" id="femail" placeholder="you@college.edu" oninput="valF('femail')">
+        <div class="ferr" id="femailE">⚠ Enter a valid email — e.g. name@domain.com</div>
+      </div>
+      <div class="fg">
+        <label>Phone Number</label>
+        <input type="tel" id="fphone" placeholder="10-digit mobile number" maxlength="10" oninput="valF('fphone')">
+        <div class="ferr" id="fphoneE">⚠ Enter a valid 10-digit number starting with 6, 7, 8 or 9</div>
+      </div>
     </div>
-    <button class="btn btn-p" onclick="validateDetails()">Proceed to Payment &rarr;</button>
-    <button class="btn btn-s" onclick="goStep(1)">&larr; Back</button>
+    <button class="btn btn-p" onclick="validateDetails()">Proceed to Payment →</button>
+    <button class="btn btn-s" onclick="goStep(1)">← Back</button>
   </div>
 
   <!-- STEP 3 -->
   <div class="sec" id="sec3">
     <div style="display:flex;align-items:center;gap:6px;margin-bottom:13px;padding:2px 0">
-      <div class="pss-item active" id="pss1"><div class="pss-dot">1</div></div>
+      <div class="pss-item active" id="pss1"><div class="pss-dot">1</div><span>Scan</span></div>
       <div class="pss-line" id="psl1"></div>
       <div class="pss-item" id="pss2"><div class="pss-dot">2</div><span>Pay</span></div>
       <div class="pss-line" id="psl2"></div>
@@ -480,931 +448,609 @@ input.okf{border-color:var(--gr)!important;}
       <div class="pss-item" id="pss4"><div class="pss-dot">4</div><span>Submit</span></div>
     </div>
     <div class="tmr-box">
-      <span style="font-size:1.3rem">&#9201;</span>
-      <div><div style="font-size:.58rem;color:var(--mu);letter-spacing:2px;font-family:'Space Mono',monospace">COMPLETE PAYMENT IN</div><div class="tmr-num" id="tmrD">10:00</div></div>
-      <div class="tmr-prog"></div>
+      <span style="font-size:1.3rem">⏱</span>
+      <div>
+        <div style="font-size:.56rem;color:var(--muted);letter-spacing:2px;font-family:'Space Mono',monospace">COMPLETE PAYMENT IN</div>
+        <div class="tmr-num" id="tmrD">10:00</div>
+      </div>
+      <div class="tmr-prog" id="tmrProg" style="width:100%"></div>
     </div>
     <div class="upi-box">
-      <div style="margin-bottom:16px;text-align:center"><span class="amt-lbl">Total Payable</span><span class="amt-big" id="payAmt">&#8377;1</span><span class="amt-lbl" id="payInfo">for 1 ticket</span></div>
-      <div class="upi-row"><div><span class="upi-lbl">UPI ID</span><span class="upi-val" id="upiD"></span></div><button class="copy-btn" onclick="copyUPI(this)">COPY</button></div>
-      <div class="upi-row"><div><span class="upi-lbl">Payee Name</span><span class="upi-val" id="payeeD"></span></div></div>
+      <div style="margin-bottom:16px;text-align:center">
+        <span class="amt-lbl">Total Payable</span>
+        <span class="amt-big" id="payAmt">₹1</span>
+        <span class="amt-lbl" id="payInfo">for 1 ticket</span>
+      </div>
+      <div class="upi-row">
+        <div><span class="upi-lbl">UPI ID</span><span class="upi-val" id="upiD"></span></div>
+        <button class="copy-btn" onclick="copyUPI(this)">COPY</button>
+      </div>
+      <div class="upi-row">
+        <div><span class="upi-lbl">Payee Name</span><span class="upi-val" id="payeeD"></span></div>
+      </div>
     </div>
     <div class="card">
-      <div class="card-title">&#128241; Pay With App</div>
+      <div class="card-title">📱 Pay With App</div>
       <div class="upi-apps" id="upiApps"></div>
-      <p style="font-size:.62rem;color:var(--mu);text-align:center;font-family:'Space Mono',monospace;letter-spacing:1px">TAP APP &rarr; VERIFY AMOUNT &rarr; PAY &rarr; COME BACK</p>
+      <p style="font-size:.6rem;color:var(--muted);text-align:center;font-family:'Space Mono',monospace;letter-spacing:1px">TAP APP → VERIFY AMOUNT → PAY → COME BACK HERE</p>
     </div>
     <div class="card">
-      <div class="card-title">&#9989; Verify Payment</div>
+      <div class="card-title">✅ Verify Payment</div>
       <div class="smsg" id="statusMsg"></div>
-      <div class="fg"><label>UTR / Transaction ID</label><input type="text" id="utrI" placeholder="12-digit UTR or Paytm TxnID (starts with T)" oninput="valUTR()"><div class="ferr" id="utrE">Invalid format &mdash; enter 12+ digit UTR or Paytm ID starting with T</div></div>
+      <div class="fg">
+        <label>UTR / Transaction ID</label>
+        <input type="text" id="utrI" placeholder="12-digit UTR or Paytm TxnID (starts with T)" oninput="valUTR()">
+        <div class="ferr" id="utrE">⚠ Invalid — enter 12+ digit number or Paytm ID starting with T</div>
+        <div class="help-box" id="utrHelp">
+          <strong>📍 Where to find your UTR / Transaction ID?</strong><br>
+          • <strong>Google Pay / PhonePe:</strong> Open the payment → "Transaction ID" (12 digits)<br>
+          • <strong>Paytm:</strong> Open transaction history → starts with T followed by digits<br>
+          • <strong>BHIM UPI:</strong> Under payment details → "UTR Number"<br>
+          • <strong>Bank SMS:</strong> UTR is mentioned in the payment confirmation message<br>
+          <div class="tip">💡 <strong>Tip:</strong> It's usually 12 digits. If you can't find it, check your UPI app's transaction history.</div>
+        </div>
+      </div>
       <div class="fg">
         <label>Payment Screenshot</label>
-        <div class="up-zone" id="upZone"><input type="file" id="ssFile" accept=".jpg,.jpeg,.png,.webp,.heic" onchange="handleFile(event)"><span class="up-icon">&#128248;</span><p class="up-text">Drop screenshot here or <strong>browse</strong></p><p style="font-size:.62rem;color:var(--mu);margin-top:4px;font-family:'Space Mono',monospace">JPG &middot; PNG &middot; WEBP &middot; HEIC &middot; MAX 5MB</p></div>
+        <div class="up-zone" id="upZone">
+          <input type="file" id="ssFile" accept=".jpg,.jpeg,.png,.webp,.heic" onchange="handleFile(event)">
+          <span class="up-icon">📸</span>
+          <p class="up-text">Drop screenshot here or <strong>browse</strong></p>
+          <p style="font-size:.6rem;color:var(--muted);margin-top:4px;font-family:'Space Mono',monospace">JPG · PNG · WEBP · HEIC · MAX 5MB</p>
+        </div>
         <img class="up-prev" id="ssPrev" alt="">
         <div class="ocr-box" id="ocrBox">
-          <div class="ocr-item" id="ocrP"><div class="ocr-spin"></div> Analyzing screenshot...</div>
+          <div class="ocr-item" id="ocrP"><div class="ocr-spin"></div>&nbsp;Analyzing screenshot with AI...</div>
           <div class="ocr-item" id="ocrA" style="display:none"></div>
           <div class="ocr-item" id="ocrU" style="display:none"></div>
         </div>
-        <div class="ferr" id="ssE">Please upload your payment screenshot</div>
+        <div class="ferr" id="ssE">⚠ Please upload your payment screenshot</div>
+        <div class="help-box" id="ssHelp">
+          <strong>📸 Screenshot tips:</strong><br>
+          • Screenshot must show the ✅ payment <strong>success screen</strong><br>
+          • The exact amount and UPI ID should be visible<br>
+          • Avoid cropping out important info<br>
+          <div class="tip">💡 <strong>Don't worry:</strong> Even if AI verification fails, admin will manually check your UTR and approve if valid.</div>
+        </div>
       </div>
     </div>
     <button class="btn btn-p" id="subBtn" onclick="submitBooking()">Submit Booking</button>
-    <button class="btn btn-s" onclick="cancelPay()">Cancel &amp; Go Back</button>
+    <button class="btn btn-s" onclick="cancelPay()">Cancel & Go Back</button>
   </div>
 
-  <!-- STEP 4 — Cinema Ticket -->
+  <!-- STEP 4 -->
   <div class="sec" id="sec4">
     <div class="smsg show" id="successMsg" style="display:block;margin-bottom:16px"></div>
     <div class="tkt-card" id="tktCard">
       <div class="tkt-topbar"></div>
       <div class="fstrip" id="fs2"></div>
-      <!-- Ticket hero: blurred bg + hanging poster thumb -->
       <div class="tkt-hero">
         <div id="tktPosterBg"></div>
         <div class="tkt-thumb">
           <img id="tktPosterImg" alt="" crossorigin="anonymous">
-          <span id="tktPosterIcon">&#127916;</span>
+          <span id="tktPosterIcon">🎬</span>
         </div>
         <div class="tkt-hero-txt">
-          <div class="tkt-label-sm" id="tktLabel">REEL TO DEAL &middot; MBA 2025</div>
+          <div class="tkt-label-sm" id="tktLabel">REEL TO DEAL · MBA FEST</div>
           <div class="tkt-hero-movie" id="tktTitle">Movie Ticket</div>
-          <div class="tkt-hero-date" id="tktDate">&mdash;</div>
+          <div class="tkt-hero-date" id="tktDate">—</div>
         </div>
       </div>
-      <!-- Perforated divider -->
       <div class="tkt-perf"><div class="tkt-nc tkt-nc-l"></div><div class="tkt-dash"></div><div class="tkt-nc tkt-nc-r"></div></div>
       <div class="tkt-body" id="tktBody"></div>
       <div class="tkt-qr"><div id="qrDiv"></div><div class="tkt-qr-lbl">Scan to verify at entry</div></div>
       <div class="fstrip" id="fs3"></div>
     </div>
     <div class="dl-grid">
-      <button class="btn btn-p" onclick="dlPDF()">&#128196; PDF</button>
-      <button class="btn btn-g" onclick="showSoftCopy()">&#128444; Image</button>
-      <button class="btn btn-bl" onclick="showEmailModal()">&#9993; Email</button>
+      <button class="btn btn-p" onclick="dlPDF()">📄 PDF</button>
+      <button class="btn btn-g" onclick="showSoftCopy()">🖼 Image</button>
+      <button class="btn btn-bl" onclick="showEmailModal()">✉ Email</button>
       <div class="dl-full">
-        <button class="btn btn-wa" onclick="shareWA()">&#128172; WhatsApp</button>
-        <button class="btn btn-s" onclick="printTkt()" style="margin:0">&#128424; Print</button>
+        <button class="btn btn-wa" onclick="shareWA()">💬 WhatsApp</button>
+        <button class="btn btn-s" onclick="printTkt()" style="margin:0">🖨 Print</button>
       </div>
     </div>
     <div class="card" style="margin-top:12px">
-      <p style="font-size:.72rem;color:var(--mu);line-height:1.8;font-family:'Space Mono',monospace">
-        &#128204; <strong style="color:var(--p)">PENDING?</strong> Payment is being verified. You&rsquo;ll be notified once approved.<br><br>
-        &#9989; <strong style="color:var(--gr)">APPROVED?</strong> You&rsquo;re all set &mdash; show this ticket at the gate.
+      <p style="font-size:.7rem;color:var(--muted);line-height:1.9;font-family:'Space Mono',monospace">
+        📌 <strong style="color:var(--gold)">PENDING?</strong> Payment verification usually takes a few minutes. You'll be notified once approved.<br><br>
+        ✅ <strong style="color:var(--green)">APPROVED?</strong> You're confirmed! Show this ticket at the gate.<br><br>
+        🔍 <strong style="color:var(--text)">CHECK STATUS</strong> anytime using your Booking ID in the lookup box below.
       </p>
     </div>
   </div>
 
   <button class="btn btn-s" onclick="bookAnother()" style="margin-top:6px">+ Book Another Ticket</button>
-  <div class="adm-lnk"><a href="admin.html">Admin Panel &rarr;</a></div>
+  <div class="adm-lnk"><a href="admin.html">Admin Panel →</a></div>
 </div>
 
 <!-- SOFT COPY MODAL -->
 <div id="softModal">
   <div class="modal-inner">
-    <button class="modal-close" onclick="closeSoftCopy()">&#x2715;</button>
-    <div class="modal-title">&#127915; Digital Ticket</div>
+    <button class="modal-close" onclick="closeSoftCopy()">✕</button>
+    <div class="modal-title">🎟 Digital Ticket</div>
     <canvas id="tktCanvas"></canvas>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
-      <button class="btn btn-g" onclick="dlImage()" style="font-size:.68rem;padding:10px;margin:0">&#11015; Save</button>
-      <button class="btn btn-s" onclick="closeSoftCopy()" style="font-size:.68rem;padding:10px;margin:0">Close</button>
+      <button class="btn btn-g" onclick="dlImage()" style="font-size:.66rem;padding:10px;margin:0">⬇ Save</button>
+      <button class="btn btn-s" onclick="closeSoftCopy()" style="font-size:.66rem;padding:10px;margin:0">Close</button>
     </div>
   </div>
 </div>
 
 <!-- EMAIL MODAL -->
 <div id="emailModal">
-  <div class="modal-inner email-modal" style="border-color:rgba(52,211,153,.2)">
-    <button class="modal-close" onclick="closeEmailModal()">&#x2715;</button>
-    <div class="modal-title" style="color:var(--gr)">&#9993; Email Ticket</div>
+  <div class="modal-inner" style="border-color:rgba(62,196,122,.22)">
+    <button class="modal-close" onclick="closeEmailModal()">✕</button>
+    <div class="modal-title" style="color:var(--green)">✉ Email Ticket</div>
     <div class="email-prev" id="emailPrev"></div>
     <div class="email-modal-grid">
-      <button class="btn btn-g" onclick="sendEmail()" style="font-size:.68rem;padding:10px;margin:0">Open Email App</button>
-      <button class="btn btn-s" onclick="closeEmailModal()" style="font-size:.68rem;padding:10px;margin:0">Cancel</button>
+      <button class="btn btn-g" onclick="sendEmail()" style="font-size:.66rem;padding:10px;margin:0">Open Email App</button>
+      <button class="btn btn-s" onclick="closeEmailModal()" style="font-size:.66rem;padding:10px;margin:0">Cancel</button>
     </div>
-    <p style="font-size:.58rem;color:var(--mu);margin-top:7px;font-family:'Space Mono',monospace;text-align:center;letter-spacing:1px">Opens your default mail client pre-filled.</p>
+    <p style="font-size:.56rem;color:var(--muted);margin-top:7px;font-family:'Space Mono',monospace;text-align:center;letter-spacing:1px">Opens your default mail client pre-filled.</p>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 <script>
-
 'use strict';
-// ══════════════════════════════════════════
-// SUPABASE
-// ══════════════════════════════════════════
-const SB_URL = 'https://yhrfpcwehtqsppoifhog.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlocmZwY3dlaHRxc3Bwb2lmaG9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1NzQ5MDAsImV4cCI6MjA4NzE1MDkwMH0.Ml1V2zc8j3XCZIuILuapy2Cs4jcBl0i6sHKxFFl6Sqo';
+const SB_URL='https://yhrfpcwehtqsppoifhog.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlocmZwY3dlaHRxc3Bwb2lmaG9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1NzQ5MDAsImV4cCI6MjA4NzE1MDkwMH0.Ml1V2zc8j3XCZIuILuapy2Cs4jcBl0i6sHKxFFl6Sqo';
+const DEFAULTS={movieName:'Reel to Deal',venue:'MBA Auditorium',eventDate:'2025-02-17T13:00',eventDateDisplay:'FEB 17, 2025 · 1:00 PM',ticketPrice:100,maxTickets:10,upiId:'hiteshhayagriv@okicici',payeeName:'REEL TO DEAL',autoApprove:true,eventDescription:'',posterUrl:''};
+let CFG={...DEFAULTS};
+let qty=1,step=1,tmrInt=null,tmrSecs=600;
+let bData={},ssFile=null,ocrAmt=false,ocrUpi=false,rateTs=[];
 
-// ══════════════════════════════════════════
-// CONFIG (loaded from Supabase, falls back to defaults)
-// ══════════════════════════════════════════
-const DEFAULTS = {
-  movieName:'Reel to Deal', venue:'MBA Auditorium',
-  eventDate:'2025-02-17T13:00', eventDateDisplay:'FEB 17, 2025 · 1:00 PM',
-  ticketPrice:100, maxTickets:10,
-  upiId:'hiteshhayagriv@okicici', payeeName:'REEL TO DEAL',
-  autoApprove:true, eventDescription:'', posterUrl:''
-};
-let CFG = { ...DEFAULTS };
-
-let qty = 1, step = 1, tmrInt = null, tmrSecs = 600;
-let bData = {}, ssFile = null, ocrAmt = false, ocrUpi = false, rateTs = [];
-
-// ══════════════════════════════════════════
-// INIT
-// ══════════════════════════════════════════
-window.addEventListener('load', async () => {
+window.addEventListener('load',async()=>{
   buildFilmStrips();
-  setSyncState('loading', 'Connecting to server...');
-
-  // Load config from Supabase
+  setSyncState('loading','Connecting to server...');
   await loadConfig();
-  applyConfig();
-  startCd();
-  buildApps();
-  chgQty(0);
-  initDrag();
-
-  setTimeout(() => {
-    const ls = document.getElementById('ls');
-    ls.classList.add('out');
-    setTimeout(() => ls.style.display = 'none', 500);
-  }, 1100);
+  applyConfig();startCd();buildApps();chgQty(0);initDrag();
+  setTimeout(()=>{const ls=document.getElementById('ls');ls.classList.add('out');setTimeout(()=>ls.style.display='none',600);},1200);
 });
 
-// ══════════════════════════════════════════
-// SYNC BAR
-// ══════════════════════════════════════════
-function setSyncState(state, msg) {
-  const b = document.getElementById('syncBar');
-  const t = document.getElementById('syncTxt');
-  b.className = 'sync-bar ' + (state === 'live' ? 'live' : state === 'err' ? 'err' : 'loading');
-  t.textContent = msg;
+function buildFilmStrips(){
+  ['fs1','fs2','fs3'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=Array(40).fill('<div class="fhole"></div>').join('');});
+  const hf=document.getElementById('heroFilm');if(hf){let h='';for(let i=0;i<55;i++)h+='<div class="hero-film-hole"></div>';hf.innerHTML=h;}
 }
 
-// ══════════════════════════════════════════
-// LOAD CONFIG FROM SUPABASE
-// ══════════════════════════════════════════
-async function loadConfig() {
-  setSyncState('syncing', 'Fetching live event settings...');
-  try {
-    const res = await fetch(
-      `${SB_URL}/rest/v1/app_settings?id=eq.1&select=*`,
-      { headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` } }
-    );
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    if (data && data.length > 0) {
-      const s = data[0];
-      // Write into CFG — the single config object used everywhere
-      if (s.movie_name)          CFG.movieName        = s.movie_name;
-      if (s.venue)               CFG.venue            = s.venue;
-      if (s.event_date)          CFG.eventDate        = s.event_date;
-      if (s.event_date_display)  CFG.eventDateDisplay = s.event_date_display;
-      if (s.ticket_price > 0)    CFG.ticketPrice      = Number(s.ticket_price);
-      if (s.max_tickets > 0)     CFG.maxTickets       = Number(s.max_tickets);
-      if (s.upi_id)              CFG.upiId            = s.upi_id;
-      if (s.payee_name)          CFG.payeeName        = s.payee_name;
-      CFG.autoApprove = s.auto_approve != null ? Boolean(s.auto_approve) : CFG.autoApprove;
-      CFG.posterUrl = s.movie_poster_url || '';
+function setSyncState(state,msg){
+  const b=document.getElementById('syncBar'),t=document.getElementById('syncTxt');
+  b.className='sync-bar '+(state==='live'||state==='ok'?'live':state==='err'||state==='error'?'err':'loading');
+  t.textContent=msg;
+}
+
+async function loadConfig(){
+  setSyncState('loading','Fetching live settings...');
+  try{
+    const res=await fetch(`${SB_URL}/rest/v1/app_settings?id=eq.1&select=*`,{headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`}});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    if(data&&data.length>0){
+      const s=data[0];
+      if(s.movie_name)         CFG.movieName        =s.movie_name;
+      if(s.venue)              CFG.venue            =s.venue;
+      if(s.event_date)         CFG.eventDate        =s.event_date;
+      if(s.event_date_display) CFG.eventDateDisplay =s.event_date_display;
+      if(s.ticket_price>0)     CFG.ticketPrice      =Number(s.ticket_price);
+      if(s.max_tickets>0)      CFG.maxTickets       =Number(s.max_tickets);
+      if(s.upi_id)             CFG.upiId            =s.upi_id;
+      if(s.payee_name)         CFG.payeeName        =s.payee_name;
+      CFG.autoApprove=s.auto_approve!=null?Boolean(s.auto_approve):CFG.autoApprove;
+      CFG.posterUrl=s.movie_poster_url||'';
+      if(s.event_description)  CFG.eventDescription =s.event_description;
     }
-    setSyncState('ok', 'Live · Settings synced ✓');
-    setTimeout(() => { const sb = document.getElementById('syncBar'); if(sb) sb.style.opacity = '.5'; }, 5000);
-  } catch (e) {
-    console.warn('Config load failed, using defaults', e);
-    setSyncState('error', 'Offline · Using default settings');
-  }
+    setSyncState('ok','Live · Settings synced ✓');
+    setTimeout(()=>{const sb=document.getElementById('syncBar');if(sb)sb.style.opacity='.5';},5000);
+  }catch(e){console.warn('Config load failed',e);setSyncState('error','Offline · Using default settings');}
 }
 
-// ══════════════════════════════════════════
-// APPLY CONFIG TO UI
-// ══════════════════════════════════════════
-function applyConfig() {
-  document.title = CFG.movieName + ' — Ticket Booking';
-  var url = CFG.posterUrl || '';
-  // ── poster: hero blurred bg
-  var hpb = document.getElementById('heroPosterBg');
-  if (hpb) { hpb.style.backgroundImage = url ? 'url('+url+')' : 'none'; hpb.style.opacity = url ? '1' : '0'; }
-  // ── poster: hero card img vs icon
-  var hpi = document.getElementById('heroPosterImg');
-  var hpic = document.getElementById('heroPosterIcon');
-  if (hpi)  { if(url){ hpi.src=url; hpi.style.display='block'; } else hpi.style.display='none'; }
-  if (hpic) hpic.style.display = url ? 'none' : 'flex';
-  // ── poster: mini badge in step 1
-  var mpi = document.getElementById('miniPosterImg');
-  var mpic = document.getElementById('miniPosterIcon');
-  if (mpi)  { if(url){ mpi.src=url; mpi.style.display='block'; } else mpi.style.display='none'; }
-  if (mpic) mpic.style.display = url ? 'none' : 'block';
-  // ── poster: ticket thumb
-  var tpi = document.getElementById('tktPosterImg');
-  var tpic = document.getElementById('tktPosterIcon');
-  var tpbg = document.getElementById('tktPosterBg');
-  if (tpi)  { if(url){ tpi.src=url; tpi.style.display='block'; } else tpi.style.display='none'; }
-  if (tpic) tpic.style.display = url ? 'none' : 'flex';
-  if (tpbg) { tpbg.style.backgroundImage = url ? 'url('+url+')' : 'none'; tpbg.style.opacity = url ? '1' : '0'; }
-  // ── movie name: all synced elements
-  document.querySelectorAll('[data-movie-name]').forEach(function(el){
-    el.textContent = el.dataset.movieName === 'upper' ? CFG.movieName.toUpperCase() : CFG.movieName;
-  });
-  // ── legacy IDs still used by other functions
-  var eb = document.getElementById('evBadge'); if(eb) eb.textContent = '🎬 '+CFG.movieName.toUpperCase();
-  var iv = document.getElementById('infoVenue');  if(iv) iv.textContent = CFG.venue;
-  var id2= document.getElementById('infoDate');   if(id2) id2.textContent = CFG.eventDateDisplay;
-  var ip = document.getElementById('infoPrice');  if(ip) ip.textContent = '₹'+CFG.ticketPrice;
-  var ppt= document.getElementById('ppt');        if(ppt) ppt.textContent = '₹'+CFG.ticketPrice;
+function applyConfig(){
+  document.title=CFG.movieName+' — Ticket Booking';
+  const url=CFG.posterUrl||'';
+  const hpb=document.getElementById('heroPosterBg');if(hpb){hpb.style.backgroundImage=url?'url('+url+')':'none';hpb.style.opacity=url?'1':'0';}
+  const hpi=document.getElementById('heroPosterImg'),hpic=document.getElementById('heroPosterIcon');
+  if(hpi){if(url){hpi.src=url;hpi.style.display='block';}else hpi.style.display='none';}
+  if(hpic)hpic.style.display=url?'none':'flex';
+  const mpi=document.getElementById('miniPosterImg'),mpic=document.getElementById('miniPosterIcon');
+  if(mpi){if(url){mpi.src=url;mpi.style.display='block';}else mpi.style.display='none';}
+  if(mpic)mpic.style.display=url?'none':'block';
+  const tpi=document.getElementById('tktPosterImg'),tpic=document.getElementById('tktPosterIcon'),tpbg=document.getElementById('tktPosterBg');
+  if(tpi){if(url){tpi.src=url;tpi.style.display='block';}else tpi.style.display='none';}
+  if(tpic)tpic.style.display=url?'none':'flex';
+  if(tpbg){tpbg.style.backgroundImage=url?'url('+url+')':'none';tpbg.style.opacity=url?'1':'0';}
+  const mn=CFG.movieName,upper=mn.toUpperCase();
+  const hm=document.getElementById('heroMovieName');if(hm)hm.textContent=mn;
+  ['heroPosterName','infoMovieName2'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=upper;});
+  const bm=document.getElementById('badgeMovieName');if(bm)bm.textContent=mn;
+  const eb=document.getElementById('evBadge');if(eb)eb.textContent='🎬 '+upper;
+  const iv=document.getElementById('infoVenue');if(iv)iv.textContent=CFG.venue;
+  const iv2=document.getElementById('infoVenue2');if(iv2)iv2.textContent=CFG.venue;
+  const id2=document.getElementById('infoDate');if(id2)id2.textContent=CFG.eventDateDisplay;
+  const ip=document.getElementById('infoPrice');if(ip)ip.textContent='₹'+CFG.ticketPrice;
+  const ip2=document.getElementById('infoPrice2');if(ip2)ip2.textContent='₹'+CFG.ticketPrice;
+  const ppt=document.getElementById('ppt');if(ppt)ppt.textContent='₹'+CFG.ticketPrice;
   updatePrice();
-  var upiEl = document.getElementById('upiD');   if(upiEl) upiEl.textContent = CFG.upiId;
-  var payEl = document.getElementById('payeeD'); if(payEl) payEl.textContent = CFG.payeeName;
-  var tt = document.getElementById('tktTitle'); if(tt) tt.textContent = CFG.movieName;
-  var td = document.getElementById('tktDate');  if(td) td.textContent = CFG.eventDateDisplay;
-  var tl = document.getElementById('tktLabel'); if(tl) tl.textContent = CFG.movieName.toUpperCase()+' · MBA 2025';
-  var sm = document.getElementById('stepMeta'); if(sm) sm.textContent = CFG.venue+' · '+CFG.eventDateDisplay;
-  if(CFG.eventDescription){
-    var nb=document.getElementById('noticeBanner'); if(nb){nb.textContent='📢 '+CFG.eventDescription;nb.classList.add('show');}
-  }
-  var btnP=document.getElementById('btnP'); if(btnP) btnP.disabled=(qty>=CFG.maxTickets);
+  const upiEl=document.getElementById('upiD');if(upiEl)upiEl.textContent=CFG.upiId;
+  const payEl=document.getElementById('payeeD');if(payEl)payEl.textContent=CFG.payeeName;
+  const tt=document.getElementById('tktTitle');if(tt)tt.textContent=CFG.movieName;
+  const td=document.getElementById('tktDate');if(td)td.textContent=CFG.eventDateDisplay;
+  const tl=document.getElementById('tktLabel');if(tl)tl.textContent=CFG.movieName.toUpperCase()+' · MBA FEST';
+  const sm=document.getElementById('stepMeta');if(sm)sm.textContent=CFG.venue+' · '+CFG.eventDateDisplay;
+  if(CFG.eventDescription){const nb=document.getElementById('noticeBanner');if(nb){nb.textContent='📢 '+CFG.eventDescription;nb.classList.add('show');}}
+  const btnP=document.getElementById('btnP');if(btnP)btnP.disabled=(qty>=CFG.maxTickets);
 }
 
-// ══════════════════════════════════════════
-// COUNTDOWN
-// ══════════════════════════════════════════
-function startCd() {
-  const target = new Date(CFG.eventDate).getTime();
-  function tick() {
-    const diff = target - Date.now();
-    if (diff <= 0) {
-      document.getElementById('cdCard').innerHTML = '<div class="cd-live">🎬 EVENT IS LIVE NOW!</div>';
-      return;
-    }
-    const d = Math.floor(diff / 86400000);
-    const h = Math.floor((diff % 86400000) / 3600000);
-    const m = Math.floor((diff % 3600000) / 60000);
-    const s = Math.floor((diff % 60000) / 1000);
-    [['cdD',d],['cdH',h],['cdM',m],['cdS',s]].forEach(([id,v]) => {
-      const el = document.getElementById(id);
-      const vs = String(v).padStart(2, '0');
-      if (el && el.textContent !== vs) {
-        el.classList.remove('flip'); void el.offsetWidth; el.classList.add('flip');
-        el.textContent = vs;
-      }
+function startCd(){
+  const target=new Date(CFG.eventDate).getTime();
+  function tick(){
+    const diff=target-Date.now();
+    if(diff<=0){document.getElementById('cdCard').innerHTML='<div class="cd-live">🎬 EVENT IS LIVE NOW!</div>';return;}
+    const d=Math.floor(diff/86400000),h=Math.floor((diff%86400000)/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);
+    [['cdD',d],['cdH',h],['cdM',m],['cdS',s]].forEach(([id,v])=>{
+      const el=document.getElementById(id);const vs=String(v).padStart(2,'0');
+      if(el&&el.textContent!==vs){el.classList.remove('flip');void el.offsetWidth;el.classList.add('flip');el.textContent=vs;}
     });
-    setTimeout(tick, 1000);
+    setTimeout(tick,1000);
   }
   tick();
 }
 
-// ══════════════════════════════════════════
-// FILM STRIPS
-// ══════════════════════════════════════════
-function buildFilmStrips() {
-  ['fs1','fs2','fs3'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = Array(40).fill('<div class="fhole"></div>').join('');
-  });
-}
-
-// ══════════════════════════════════════════
-// SUPABASE HELPERS (fixed — no updated_at in PATCH, correct Prefer headers)
-// ══════════════════════════════════════════
-async function sbPost(table, body) {
-  const res = await fetch(`${SB_URL}/rest/v1/${table}`, {
-    method: 'POST',
-    headers: {
-      'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`,
-      'Content-Type': 'application/json', 'Prefer': 'return=representation'
-    },
-    body: JSON.stringify(body)
-  });
-  if (!res.ok) {
-    const e = await res.json().catch(() => ({}));
-    throw new Error(e.message || e.hint || 'HTTP ' + res.status);
-  }
+async function sbPost(table,body){
+  const res=await fetch(`${SB_URL}/rest/v1/${table}`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(body)});
+  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||e.hint||'HTTP '+res.status);}
   return res.json();
 }
-
-async function sbGet(ep) {
-  const res = await fetch(`${SB_URL}/rest/v1/${ep}`, {
-    headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` }
-  });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
+async function sbGet(ep){
+  const res=await fetch(`${SB_URL}/rest/v1/${ep}`,{headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`}});
+  if(!res.ok)throw new Error('HTTP '+res.status);
   return res.json();
 }
-
-async function sbUpload(bucket, path, file) {
-  const res = await fetch(`${SB_URL}/storage/v1/object/${bucket}/${path}`, {
-    method: 'POST',
-    headers: {
-      'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`,
-      'Content-Type': file.type, 'x-upsert': 'true'
-    },
-    body: file
-  });
-  if (!res.ok) throw new Error('Upload failed ' + res.status);
-  return `${SB_URL}/storage/v1/object/public/${bucket}/${path}`;
+async function sbUpload(bucket,path,file){
+  const res=await fetch(`${SB_URL}/storage/v1/object/${bucket}/${path}`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':file.type,'x-upsert':'true'},body:file});
+  if(!res.ok)throw new Error('Upload failed '+res.status);
+  return`${SB_URL}/storage/v1/object/public/${bucket}/${path}`;
 }
 
-// ══════════════════════════════════════════
-// QTY + PRICE
-// ══════════════════════════════════════════
-function chgQty(d) {
-  qty = Math.max(1, Math.min(CFG.maxTickets, qty + d));
-  const el = document.getElementById('tCnt');
-  el.textContent = qty;
-  el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
+function chgQty(d){
+  qty=Math.max(1,Math.min(CFG.maxTickets,qty+d));
+  const el=document.getElementById('tCnt');
+  el.textContent=qty;el.classList.remove('bump');void el.offsetWidth;el.classList.add('bump');
   updatePrice();
-  document.getElementById('btnM').disabled = qty <= 1;
-  document.getElementById('btnP').disabled = qty >= CFG.maxTickets;
+  document.getElementById('btnM').disabled=qty<=1;
+  document.getElementById('btnP').disabled=qty>=CFG.maxTickets;
+}
+function updatePrice(){
+  document.getElementById('qD').textContent=qty;
+  const tot=document.getElementById('totD');
+  tot.textContent='₹'+(qty*CFG.ticketPrice);
+  tot.classList.remove('pPop');void tot.offsetWidth;tot.classList.add('pPop');
 }
 
-function updatePrice() {
-  document.getElementById('qD').textContent = qty;
-  const tot = document.getElementById('totD');
-  tot.textContent = '₹' + (qty * CFG.ticketPrice);
-  tot.classList.remove('pPop'); void tot.offsetWidth; tot.classList.add('pPop');
-}
-
-// ══════════════════════════════════════════
-// STEPS
-// ══════════════════════════════════════════
-function goStep(s) {
-  document.querySelectorAll('.sec').forEach((el, i) => el.classList.toggle('active', i + 1 === s));
-  for (let i = 1; i <= 4; i++) {
-    const el = document.getElementById('s' + i);
-    el.classList.remove('active','done');
-    if (i < s) el.classList.add('done');
-    if (i === s) el.classList.add('active');
+function goStep(s){
+  document.querySelectorAll('.sec').forEach((el,i)=>el.classList.toggle('active',i+1===s));
+  for(let i=1;i<=4;i++){
+    const el=document.getElementById('s'+i);el.classList.remove('active','done');
+    if(i<s)el.classList.add('done');if(i===s)el.classList.add('active');
   }
-  for (let i = 1; i <= 3; i++) document.getElementById('sc' + i).classList.toggle('done', i < s);
-  step = s;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  if (s === 4) { launchConfetti(); setTimeout(() => drawCanvas(bData), 600); }
+  for(let i=1;i<=3;i++)document.getElementById('sc'+i).classList.toggle('done',i<s);
+  step=s;window.scrollTo({top:0,behavior:'smooth'});
+  if(s===4){launchConfetti();setTimeout(()=>drawCanvas(bData),600);}
 }
 
-// ══════════════════════════════════════════
-// CONFETTI
-// ══════════════════════════════════════════
-function launchConfetti() {
-  const clrs = ['#f07020','#ff8a35','#3fb876','#e8b840','#d94f4f','#4c82ff'];
-  for (let i = 0; i < 55; i++) {
-    const p = document.createElement('div');
-    p.className = 'cf';
-    const drift = (Math.random() - .5) * 180;
-    const size = 4 + Math.random() * 6;
-    p.style.cssText = `left:${Math.random()*100}vw;top:0;background:${clrs[i%clrs.length]};--drift:${drift}px;--dur:${.8+Math.random()*1.3}s;--dl:${Math.random()*.6}s;width:${size}px;height:${size}px;border-radius:${Math.random()>.5?'50%':'2px'};`;
-    document.body.appendChild(p);
-    setTimeout(() => p.remove(), 2500);
+function launchConfetti(){
+  const clrs=['#d4a853','#f0c46a','#3ec47a','#e8b840','#e05555','#4c82ff'];
+  for(let i=0;i<55;i++){
+    const p=document.createElement('div');p.className='cf';
+    const drift=(Math.random()-.5)*180,size=4+Math.random()*6;
+    p.style.cssText=`left:${Math.random()*100}vw;top:0;background:${clrs[i%clrs.length]};--dx:${drift}px;--dur:${.8+Math.random()*1.3}s;--del:${Math.random()*.6}s;width:${size}px;height:${size}px;border-radius:${Math.random()>.5?'50%':'2px'};`;
+    document.body.appendChild(p);setTimeout(()=>p.remove(),2500);
   }
 }
 
-// ══════════════════════════════════════════
-// FORM VALIDATION
-// ══════════════════════════════════════════
-function valF(id) {
-  const v = document.getElementById(id).value.trim();
-  let ok = false;
-  if (id === 'fname')  ok = v.length >= 2;
-  if (id === 'femail') ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-  if (id === 'fphone') ok = /^[6-9]\d{9}$/.test(v);
-  document.getElementById(id).classList.toggle('err', !ok);
-  document.getElementById(id).classList.toggle('ok', ok);
-  document.getElementById(id + 'E').classList.toggle('show', !ok && v.length > 0);
+function valF(id){
+  const v=document.getElementById(id).value.trim();
+  let ok=false;
+  if(id==='fname')  ok=v.length>=2;
+  if(id==='femail') ok=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  if(id==='fphone') ok=/^[6-9]\d{9}$/.test(v);
+  document.getElementById(id).classList.toggle('errf',!ok&&v.length>0);
+  document.getElementById(id).classList.toggle('okf',ok);
+  document.getElementById(id+'E').classList.toggle('show',!ok&&v.length>0);
   return ok;
 }
 
-function valUTR() {
-  const v = document.getElementById('utrI').value.trim();
-  const ok = isUTR(v);
-  document.getElementById('utrI').classList.toggle('err', !ok && v.length > 0);
-  document.getElementById('utrI').classList.toggle('ok', ok);
-  document.getElementById('utrE').classList.toggle('show', !ok && v.length > 0);
+function valUTR(){
+  const v=document.getElementById('utrI').value.trim();
+  const ok=isUTR(v);
+  document.getElementById('utrI').classList.toggle('errf',!ok&&v.length>0);
+  document.getElementById('utrI').classList.toggle('okf',ok);
+  document.getElementById('utrE').classList.toggle('show',!ok&&v.length>0);
+  document.getElementById('utrHelp').classList.toggle('show',!ok&&v.length>=3);
   return ok;
 }
-
-function isUTR(v) {
-  if (!v || /[^a-zA-Z0-9]/.test(v)) return false;
-  if (/^T/i.test(v) && v.length >= 12) return true;
-  return /^\d{12,25}$/.test(v);
+function isUTR(v){
+  if(!v||/[^a-zA-Z0-9]/.test(v))return false;
+  if(/^T/i.test(v)&&v.length>=12)return true;
+  return/^\d{12,25}$/.test(v);
 }
 
-function validateDetails() {
-  const ok = valF('fname') & valF('femail') & valF('fphone');
-  if (ok) {
-    bData.name  = document.getElementById('fname').value.trim();
-    bData.email = document.getElementById('femail').value.trim();
-    bData.phone = document.getElementById('fphone').value.trim();
-    bData.qty   = qty;
-    bData.amount = qty * CFG.ticketPrice;
-    document.getElementById('payAmt').textContent = '₹' + bData.amount;
-    document.getElementById('payInfo').textContent = 'for ' + bData.qty + ' ticket' + (bData.qty > 1 ? 's' : '');
-    buildApps();
-    goStep(3);
-    startTmr();
-  }
+function validateDetails(){
+  const ok=valF('fname')&valF('femail')&valF('fphone');
+  if(ok){
+    bData.name=document.getElementById('fname').value.trim();
+    bData.email=document.getElementById('femail').value.trim();
+    bData.phone=document.getElementById('fphone').value.trim();
+    bData.qty=qty;bData.amount=qty*CFG.ticketPrice;
+    document.getElementById('payAmt').textContent='₹'+bData.amount;
+    document.getElementById('payInfo').textContent='for '+bData.qty+' ticket'+(bData.qty>1?'s':'');
+    buildApps();goStep(3);startTmr();
+  } else {showToast('Please fill all fields correctly','error');}
 }
 
-// ══════════════════════════════════════════
-// DRAG & DROP
-// ══════════════════════════════════════════
-function initDrag() {
-  const z = document.getElementById('upZone');
-  z.addEventListener('dragover', e => { e.preventDefault(); z.classList.add('drag'); });
-  z.addEventListener('dragleave', () => z.classList.remove('drag'));
-  z.addEventListener('drop', e => {
-    e.preventDefault(); z.classList.remove('drag');
-    const f = e.dataTransfer.files[0];
-    if (f) processFile(f);
+function initDrag(){
+  const z=document.getElementById('upZone');
+  z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('drag');});
+  z.addEventListener('dragleave',()=>z.classList.remove('drag'));
+  z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('drag');const f=e.dataTransfer.files[0];if(f)processFile(f);});
+}
+
+function buildApps(){
+  const apps=[{n:'Google Pay',i:'🟢'},{n:'PhonePe',i:'🟣'},{n:'Paytm',i:'🔵'},{n:'BHIM UPI',i:'🏛'},{n:'Amazon Pay',i:'🟠'},{n:'Any UPI',i:'💳'}];
+  document.getElementById('upiApps').innerHTML=apps.map((a,i)=>`<div class="app-btn" onclick="openApp()" style="animation:fup .3s ease ${i*.05}s both;"><span class="app-icon">${a.i}</span><span class="app-name">${a.n}</span></div>`).join('');
+}
+function openApp(){
+  const amt=bData.amount||qty*CFG.ticketPrice;
+  window.location.href=`upi://pay?pa=${CFG.upiId}&pn=${encodeURIComponent(CFG.payeeName)}&am=${amt}&cu=INR&tn=${encodeURIComponent('Ticket - '+CFG.movieName)}`;
+}
+function copyUPI(btn){
+  navigator.clipboard.writeText(CFG.upiId).then(()=>{
+    btn.textContent='COPIED!';btn.classList.add('copied');
+    showToast('UPI ID copied!','success');
+    setTimeout(()=>{btn.textContent='COPY';btn.classList.remove('copied');},2000);
   });
 }
 
-// ══════════════════════════════════════════
-// UPI
-// ══════════════════════════════════════════
-function buildApps() {
-  const apps = [
-    { n:'Google Pay', i:'🟢' }, { n:'PhonePe', i:'🟣' }, { n:'Paytm', i:'🔵' },
-    { n:'BHIM UPI', i:'🏛' }, { n:'Amazon Pay', i:'🟠' }, { n:'Any UPI', i:'💳' }
-  ];
-  document.getElementById('upiApps').innerHTML = apps.map((a, i) =>
-    `<div class="app-btn" onclick="openApp()" style="animation:fup .3s ease ${i*.05}s both;cursor:pointer;">
-      <span class="app-icon">${a.i}</span><span class="app-name">${a.n}</span>
-    </div>`
-  ).join('');
-}
-
-function openApp() {
-  const amt = bData.amount || qty * CFG.ticketPrice;
-  window.location.href = `upi://pay?pa=${CFG.upiId}&pn=${encodeURIComponent(CFG.payeeName)}&am=${amt}&cu=INR&tn=${encodeURIComponent('Ticket - ' + CFG.movieName)}`;
-}
-
-function copyUPI(btn) {
-  navigator.clipboard.writeText(CFG.upiId).then(() => {
-    btn.textContent = 'COPIED!'; btn.classList.add('copied');
-    showToast('UPI ID copied!', 'success');
-    setTimeout(() => { btn.textContent = 'COPY'; btn.classList.remove('copied'); }, 2000);
-  });
-}
-
-// ══════════════════════════════════════════
-// PAYMENT TIMER
-// ══════════════════════════════════════════
-function startTmr() {
-  tmrSecs = 600; clearInterval(tmrInt);
-  tmrInt = setInterval(() => {
+function startTmr(){
+  tmrSecs=600;clearInterval(tmrInt);
+  tmrInt=setInterval(()=>{
     tmrSecs--;
-    const m = Math.floor(tmrSecs / 60), s = tmrSecs % 60;
-    const el = document.getElementById('tmrD');
-    el.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
-    el.classList.toggle('warn', tmrSecs <= 60);
-    if (tmrSecs <= 0) {
-      clearInterval(tmrInt);
-      setStatusMsg('⏰ Time expired. Please restart.', 'error');
-      document.getElementById('subBtn').disabled = true;
-    }
-  }, 1000);
+    const m=Math.floor(tmrSecs/60),s=tmrSecs%60;
+    const el=document.getElementById('tmrD');
+    el.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    el.classList.toggle('warn',tmrSecs<=60);
+    const prog=document.getElementById('tmrProg');
+    if(prog)prog.style.width=(tmrSecs/600*100)+'%';
+    if(tmrSecs<=0){clearInterval(tmrInt);setStatusMsg('⏰ Time expired. Please go back and restart the payment process.','error');document.getElementById('subBtn').disabled=true;}
+  },1000);
 }
 
-function cancelPay() {
-  clearInterval(tmrInt);
-  bData = {}; ssFile = null; ocrAmt = false; ocrUpi = false;
-  document.getElementById('utrI').value = '';
+function cancelPay(){
+  clearInterval(tmrInt);bData={};ssFile=null;ocrAmt=false;ocrUpi=false;
+  document.getElementById('utrI').value='';
   document.getElementById('ssPrev').classList.remove('show');
   document.getElementById('ocrBox').classList.remove('show');
   document.getElementById('statusMsg').classList.remove('show');
-  document.getElementById('subBtn').disabled = false;
+  document.getElementById('utrHelp').classList.remove('show');
+  document.getElementById('ssHelp').classList.remove('show');
   goStep(1);
 }
 
-// ══════════════════════════════════════════
-// FILE UPLOAD + OCR
-// ══════════════════════════════════════════
-function handleFile(e) { const f = e.target.files[0]; if (f) processFile(f); }
-
-function processFile(file) {
-  if (file.size > 5 * 1024 * 1024) { showToast('File too large (max 5MB)', 'error'); return; }
-  ssFile = file;
-  const r = new FileReader();
-  r.onload = e => { const p = document.getElementById('ssPrev'); p.src = e.target.result; p.classList.add('show'); };
+function handleFile(e){const f=e.target.files[0];if(f)processFile(f);}
+function processFile(file){
+  if(file.size>5*1024*1024){showToast('File too large (max 5MB)','error');document.getElementById('ssHelp').classList.add('show');return;}
+  ssFile=file;
+  const r=new FileReader();
+  r.onload=e=>{const p=document.getElementById('ssPrev');p.src=e.target.result;p.classList.add('show');};
   r.readAsDataURL(file);
   document.getElementById('ssE').classList.remove('show');
+  document.getElementById('ssHelp').classList.remove('show');
   runOCR(file);
 }
 
-async function runOCR(file) {
-  const box = document.getElementById('ocrBox');
-  const oP = document.getElementById('ocrP');
-  const oA = document.getElementById('ocrA');
-  const oU = document.getElementById('ocrU');
-  box.classList.add('show');
-  oP.style.display = 'flex'; oA.style.display = 'none'; oU.style.display = 'none';
-  ocrAmt = false; ocrUpi = false;
-  try {
-    const res = await Tesseract.recognize(file, 'eng', { logger: () => {} });
-    const txt = res.data.text;
-    oP.style.display = 'none';
-    const ea = bData.amount || qty * CFG.ticketPrice;
-    ocrAmt = new RegExp(`[₹Rs\\.]*\\s*${ea}([.\\s]|$)`, 'i').test(txt) ||
-             new RegExp(`${ea}\\.?00`).test(txt);
-    const upiBase = CFG.upiId.split('@')[0].toLowerCase();
-    const upiDomain = CFG.upiId.split('@')[1]?.toLowerCase() || '';
-    ocrUpi = txt.toLowerCase().includes(upiBase) || txt.toLowerCase().includes(upiDomain);
-    oA.style.display = 'flex';
-    oA.className = `ocr-item ${ocrAmt ? 'pass' : 'fail'}`;
-    oA.textContent = ocrAmt ? `✓ Amount ₹${ea} found` : `✗ Amount ₹${ea} not found`;
-    oU.style.display = 'flex';
-    oU.className = `ocr-item ${ocrUpi ? 'pass' : 'fail'}`;
-    oU.textContent = ocrUpi ? '✓ UPI ID verified' : '✗ UPI ID not detected';
-    if (!ocrAmt || !ocrUpi)
-      setStatusMsg('⚠ Screenshot could not be fully verified. Admin will review manually.', 'info');
-  } catch (e) {
-    oP.style.display = 'none';
-    box.classList.remove('show');
-    console.warn('OCR error:', e);
+async function runOCR(file){
+  const box=document.getElementById('ocrBox'),oP=document.getElementById('ocrP'),oA=document.getElementById('ocrA'),oU=document.getElementById('ocrU');
+  box.classList.add('show');oP.style.display='flex';oA.style.display='none';oU.style.display='none';
+  ocrAmt=false;ocrUpi=false;
+  try{
+    const res=await Tesseract.recognize(file,'eng',{logger:()=>{}});
+    const txt=res.data.text;
+    oP.style.display='none';
+    const ea=bData.amount||qty*CFG.ticketPrice;
+    ocrAmt=new RegExp(`[₹Rs\\.]*\\s*${ea}([.\\s]|$)`,'i').test(txt)||new RegExp(`${ea}\\.?00`).test(txt);
+    const upiBase=CFG.upiId.split('@')[0].toLowerCase();
+    const upiDomain=CFG.upiId.split('@')[1]?.toLowerCase()||'';
+    ocrUpi=txt.toLowerCase().includes(upiBase)||txt.toLowerCase().includes(upiDomain);
+    oA.style.display='flex';oA.className=`ocr-item ${ocrAmt?'ok':'fail'}`;
+    oA.textContent=ocrAmt?`✓ Amount ₹${ea} found`:`✗ Amount ₹${ea} not detected — admin will verify`;
+    oU.style.display='flex';oU.className=`ocr-item ${ocrUpi?'ok':'fail'}`;
+    oU.textContent=ocrUpi?'✓ UPI ID verified':'✗ UPI ID not detected — admin will verify manually';
+    if(!ocrAmt||!ocrUpi){
+      setStatusMsg('⚠ Auto-verification partial. Admin will manually verify your UTR — you can still submit.','info');
+      document.getElementById('ssHelp').classList.add('show');
+    }
+  }catch(e){
+    oP.style.display='none';box.classList.remove('show');console.warn('OCR error:',e);
   }
 }
 
-// ══════════════════════════════════════════
-// RATE LIMIT
-// ══════════════════════════════════════════
-function rateOk() {
-  const now = Date.now();
-  rateTs = rateTs.filter(t => now - t < 60000);
-  if (rateTs.length >= 3) return false;
-  rateTs.push(now); return true;
+function rateOk(){
+  const now=Date.now();rateTs=rateTs.filter(t=>now-t<60000);
+  if(rateTs.length>=3)return false;
+  rateTs.push(now);return true;
 }
 
-// ══════════════════════════════════════════
-// SUBMIT BOOKING (all Supabase bugs fixed)
-// ══════════════════════════════════════════
-async function submitBooking() {
-  if (!rateOk()) { setStatusMsg('Too many attempts. Please wait a minute.', 'error'); return; }
-  const utr = document.getElementById('utrI').value.trim();
-  if (!isUTR(utr)) { document.getElementById('utrE').classList.add('show'); showToast('Enter a valid UTR', 'error'); return; }
-  if (!ssFile) { document.getElementById('ssE').classList.add('show'); showToast('Upload payment screenshot', 'error'); return; }
-
-  const btn = document.getElementById('subBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spn"></span>Processing...';
-
-  try {
-    // 1. Check UTR duplicate (no Range header — avoids 416 on empty tables)
-    const existing = await sbGet(`bookings?utr=eq.${encodeURIComponent(utr)}&select=id`);
-    if (existing && existing.length > 0) {
-      setStatusMsg('❌ This UTR has already been submitted.', 'error');
-      btn.disabled = false; btn.innerHTML = 'Submit Booking';
-      return;
+async function submitBooking(){
+  if(!rateOk()){setStatusMsg('Too many attempts. Please wait a minute.','error');return;}
+  const utr=document.getElementById('utrI').value.trim();
+  if(!isUTR(utr)){
+    document.getElementById('utrE').classList.add('show');
+    document.getElementById('utrHelp').classList.add('show');
+    showToast('Enter a valid UTR / Transaction ID','error');return;
+  }
+  if(!ssFile){
+    document.getElementById('ssE').classList.add('show');
+    document.getElementById('ssHelp').classList.add('show');
+    showToast('Upload your payment screenshot','error');return;
+  }
+  const btn=document.getElementById('subBtn');
+  btn.disabled=true;btn.innerHTML='<span class="spn"></span>Processing...';
+  try{
+    const existing=await sbGet(`bookings?utr=eq.${encodeURIComponent(utr)}&select=id`);
+    if(existing&&existing.length>0){
+      setStatusMsg('❌ This UTR has already been used. If this is an error, please contact admin.','error');
+      btn.disabled=false;btn.innerHTML='Submit Booking';return;
     }
-
-    // 2. Upload screenshot
-    let ssUrl = '';
-    try {
-      const ext = ssFile.name.split('.').pop().toLowerCase();
-      const fname = `${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
-      ssUrl = await sbUpload('payment-screenshots', fname, ssFile);
-    } catch (e) { console.warn('Screenshot upload failed:', e.message); }
-
-    // 3. Generate booking ID
-    const bid = 'RTD-' + Date.now().toString(36).toUpperCase().slice(-6) + '-' + Math.random().toString(36).slice(2,6).toUpperCase();
-
-    // 4. Auto-approve logic
-    const allVerified = ocrAmt && ocrUpi && ssUrl;
-    const status = (CFG.autoApprove && allVerified) ? 'approved' : 'pending';
-
-    // 5. Insert booking (no updated_at — only created_at exists in schema)
-    await sbPost('bookings', {
-      booking_id: bid,
-      name: bData.name, email: bData.email, phone: bData.phone,
-      ticket_qty: bData.qty, amount: bData.amount,
-      utr, screenshot_url: ssUrl, status,
-      ocr_verified: ocrAmt && ocrUpi,
-      ocr_amount_match: ocrAmt,
-      ocr_upi_match: ocrUpi,
-      movie_name: CFG.movieName,
-      event_date: CFG.eventDate
+    let ssUrl='';
+    try{
+      const ext=ssFile.name.split('.').pop().toLowerCase();
+      const fname=`${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+      ssUrl=await sbUpload('payment-screenshots',fname,ssFile);
+    }catch(e){console.warn('Screenshot upload failed:',e.message);}
+    const bid='RTD-'+Date.now().toString(36).toUpperCase().slice(-6)+'-'+Math.random().toString(36).slice(2,6).toUpperCase();
+    const allVerified=ocrAmt&&ocrUpi&&ssUrl;
+    const status=(CFG.autoApprove&&allVerified)?'approved':'pending';
+    await sbPost('bookings',{
+      booking_id:bid,name:bData.name,email:bData.email,phone:bData.phone,
+      ticket_qty:bData.qty,amount:bData.amount,utr,screenshot_url:ssUrl,status,
+      ocr_verified:ocrAmt&&ocrUpi,ocr_amount_match:ocrAmt,ocr_upi_match:ocrUpi,
+      movie_name:CFG.movieName,event_date:CFG.eventDate
     });
-
     clearInterval(tmrInt);
-    bData.bookingId = bid; bData.status = status; bData.utr = utr;
-    renderTicket(bData);
-    goStep(4);
-
-    const sm = document.getElementById('successMsg');
-    if (status === 'approved') {
-      sm.textContent = '✅ Booking APPROVED! Your ticket is confirmed.';
-      sm.className = 'smsg success show';
-    } else {
-      sm.textContent = '🎉 Booking submitted! Pending verification — we\'ll notify you.';
-      sm.className = 'smsg info show';
-    }
-
-  } catch (err) {
-    console.error('Submit error:', err);
-    setStatusMsg('Error: ' + err.message + '. Please try again.', 'error');
-    btn.disabled = false; btn.innerHTML = 'Submit Booking';
+    bData.bookingId=bid;bData.status=status;bData.utr=utr;
+    renderTicket(bData);goStep(4);
+    const sm=document.getElementById('successMsg');
+    if(status==='approved'){sm.textContent='✅ Booking APPROVED! Your ticket is confirmed. Show this at the gate.';sm.className='smsg success show';}
+    else{sm.textContent='🎉 Booking submitted! Your ID is '+bid+'. Pending verification — admin will approve shortly.';sm.className='smsg info show';}
+  }catch(err){
+    console.error('Submit error:',err);
+    let msg='Error: '+err.message;
+    if(err.message.includes('duplicate')||err.message.includes('unique'))msg='This UTR is already used. Contact admin if this is wrong.';
+    else if(err.message.includes('network')||err.message.toLowerCase().includes('fetch'))msg='Network error — check your internet and try again.';
+    setStatusMsg(msg,'error');btn.disabled=false;btn.innerHTML='Submit Booking';
   }
 }
 
-// ══════════════════════════════════════════
-// RENDER TICKET
-// ══════════════════════════════════════════
-function renderTicket(d) {
-  // update ticket poster hero
-  var url2 = CFG.posterUrl || '';
-  var _tpi=document.getElementById('tktPosterImg'), _tpic=document.getElementById('tktPosterIcon'), _tpbg=document.getElementById('tktPosterBg');
-  if(_tpi){ if(url2){_tpi.src=url2;_tpi.style.display='block';}else _tpi.style.display='none';}
-  if(_tpic) _tpic.style.display = url2?'none':'flex';
-  if(_tpbg){ _tpbg.style.backgroundImage=url2?'url('+url2+')':'none'; _tpbg.style.opacity=url2?'1':'0';}
-  if(d.status==='approved'){ var _c=document.getElementById('tktCard'); if(_c) _c.classList.add('glow-green'); }
-
-  const card = document.getElementById('tktCard');
-  const badge = d.status === 'approved'
-    ? '<span class="sbadge approved">✓ Approved</span>'
-    : '<span class="sbadge pending">⏳ Pending</span>';
-  if (d.status === 'approved') card.classList.add('glow-green');
-
-  document.getElementById('tktBody').innerHTML = [
-    ['Booking ID', `<span style="font-family:'Space Mono',monospace;font-size:.78rem;color:var(--or)">${d.bookingId}</span>`],
-    ['Name', d.name], ['Email', `<span style="font-size:.78rem">${d.email}</span>`], ['Phone', d.phone],
-    ['Movie', CFG.movieName], ['Date & Time', CFG.eventDateDisplay], ['Venue', CFG.venue || 'MBA Auditorium'],
-    ['Tickets', `${d.qty} × ₹${CFG.ticketPrice}`],
-    ['Total Paid', `<span style="color:var(--or);font-size:1.05rem">₹${d.amount}</span>`],
-    ['UTR', `<span style="font-family:'Space Mono',monospace;font-size:.72rem">${d.utr}</span>`],
-    ['Status', badge],
-  ].map(([k, v], i) =>
-    `<div class="tkt-row" style="animation-delay:${i*.04}s"><span class="tkt-k">${k}</span><span class="tkt-v">${v}</span></div>`
-  ).join('');
-
-  document.getElementById('qrDiv').innerHTML = '';
-  new QRCode(document.getElementById('qrDiv'), {
-    text: `RTD|${d.bookingId}|${d.name}|${d.qty}|${d.amount}|${d.status}`,
-    width: 100, height: 100,
-    colorDark: '#f07020', colorLight: '#100d09',
-    correctLevel: QRCode.CorrectLevel.H
+function renderTicket(d){
+  const url2=CFG.posterUrl||'';
+  const _tpi=document.getElementById('tktPosterImg'),_tpic=document.getElementById('tktPosterIcon'),_tpbg=document.getElementById('tktPosterBg');
+  if(_tpi){if(url2){_tpi.src=url2;_tpi.style.display='block';}else _tpi.style.display='none';}
+  if(_tpic)_tpic.style.display=url2?'none':'flex';
+  if(_tpbg){_tpbg.style.backgroundImage=url2?'url('+url2+')':'none';_tpbg.style.opacity=url2?'1':'0';}
+  const card=document.getElementById('tktCard');
+  if(d.status==='approved')card.classList.add('glow-green');
+  const badge=d.status==='approved'?'<span class="sbadge approved">✓ Approved</span>':'<span class="sbadge pending">⏳ Pending</span>';
+  document.getElementById('tktBody').innerHTML=[
+    ['Booking ID',`<span style="font-family:'Space Mono',monospace;font-size:.76rem;color:var(--gold)">${d.bookingId}</span>`],
+    ['Name',d.name],['Email',`<span style="font-size:.76rem">${d.email}</span>`],['Phone',d.phone],
+    ['Movie',CFG.movieName],['Date & Time',CFG.eventDateDisplay],['Venue',CFG.venue||'MBA Auditorium'],
+    ['Tickets',`${d.qty} × ₹${CFG.ticketPrice}`],
+    ['Total Paid',`<span style="color:var(--gold);font-size:1.05rem">₹${d.amount}</span>`],
+    ['UTR',`<span style="font-family:'Space Mono',monospace;font-size:.7rem">${d.utr}</span>`],
+    ['Status',badge],
+  ].map(([k,v],i)=>`<div class="tkt-row" style="animation-delay:${i*.04}s"><span class="tkt-k">${k}</span><span class="tkt-v">${v}</span></div>`).join('');
+  document.getElementById('qrDiv').innerHTML='';
+  new QRCode(document.getElementById('qrDiv'),{
+    text:`RTD|${d.bookingId}|${d.name}|${d.qty}|${d.amount}|${d.status}`,
+    width:100,height:100,colorDark:'#d4a853',colorLight:'#0a0806',correctLevel:QRCode.CorrectLevel.H
   });
 }
 
-// ══════════════════════════════════════════
-// CANVAS TICKET
-// ══════════════════════════════════════════
-function drawCanvas(data) {
-  const cv = document.getElementById('tktCanvas');
-  const W = 340, H = 720, sc = 2;
-  cv.width = W * sc; cv.height = H * sc;
-  cv.style.width = W + 'px'; cv.style.height = H + 'px';
-  const ctx = cv.getContext('2d'); ctx.scale(sc, sc);
-
-  // Background
-  const bg = ctx.createLinearGradient(0, 0, W, H);
-  bg.addColorStop(0, '#120e09'); bg.addColorStop(1, '#1c1510');
-  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
-
-  // Border
-  ctx.strokeStyle = data.status === 'approved' ? 'rgba(63,184,118,.5)' : 'rgba(240,112,32,.5)';
-  ctx.lineWidth = 1.5; rr(ctx, 3, 3, W-6, H-6, 13); ctx.stroke();
-
-  // Top line
-  const tl = ctx.createLinearGradient(0,0,W,0);
-  tl.addColorStop(0,'transparent'); tl.addColorStop(.5, data.status==='approved'?'#3fb876':'#f07020'); tl.addColorStop(1,'transparent');
-  ctx.fillStyle = tl; ctx.fillRect(0,0,W,2.5);
-
-  // Film holes top
-  filmHoles(ctx, W, 14);
-  // Draw poster thumbnail on canvas ticket
-  if (CFG.posterUrl) {
-    var _cImg = new Image(); _cImg.crossOrigin='anonymous';
-    _cImg.onload = function(){
-      ctx.save(); rr(ctx,9,40,56,78,5); ctx.clip();
-      ctx.drawImage(_cImg,9,40,56,78); ctx.restore();
-      ctx.strokeStyle='rgba(255,210,100,.55)'; ctx.lineWidth=1.5;
-      rr(ctx,9,40,56,78,5); ctx.stroke();
-    };
-    _cImg.src = CFG.posterUrl;
-  }
-
-
-  // Header
-  ctx.fillStyle = 'rgba(240,112,32,.07)'; ctx.fillRect(0, 28, W, 85);
-  ctx.fillStyle = 'rgba(240,112,32,.38)'; ctx.font = '8px Space Mono,monospace';
-  ctx.textAlign = 'center'; ctx.fillText('REEL TO DEAL  ·  MBA 2025', W/2, 46);
-  ctx.fillStyle = '#f07020'; ctx.font = 'bold 20px Georgia,serif';
-  ctx.fillText('🎬 ' + CFG.movieName.toUpperCase(), W/2, 70);
-  ctx.fillStyle = '#8a7060'; ctx.font = '8px Space Mono,monospace';
-  ctx.fillText(CFG.eventDateDisplay, W/2, 87);
-  ctx.fillText((CFG.venue||'MBA Auditorium').toUpperCase(), W/2, 101);
-
-  // Divider
-  ctx.setLineDash([4,5]); ctx.strokeStyle = 'rgba(240,112,32,.2)'; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(16, 114); ctx.lineTo(W-16, 114); ctx.stroke();
-  ctx.setLineDash([]);
-
-  // Rows
-  const rows = [
-    ['BOOKING ID', data.bookingId, '#f07020'],
-    ['NAME', data.name, '#f0e8d8'],
-    ['EMAIL', data.email, '#b8a888'],
-    ['PHONE', data.phone, '#f0e8d8'],
-    ['TICKETS', data.qty + ' × ₹' + CFG.ticketPrice, '#f0e8d8'],
-    ['TOTAL PAID', '₹' + data.amount, '#f07020'],
-    ['UTR', data.utr, '#b8a888'],
-    ['STATUS', (data.status||'PENDING').toUpperCase(), data.status==='approved'?'#3fb876':'#e8b840'],
-  ];
-  let y = 128;
-  rows.forEach(([k,v,c]) => {
-    ctx.fillStyle = '#503830'; ctx.font = '7.5px Space Mono,monospace';
-    ctx.textAlign = 'left'; ctx.fillText(k, 18, y);
-    ctx.fillStyle = c; ctx.font = '10.5px Space Mono,monospace';
-    const vs = String(v||''); ctx.fillText(vs.length > 34 ? vs.slice(0,32)+'…' : vs, 18, y+13);
-    ctx.fillStyle = 'rgba(255,255,255,.035)'; ctx.fillRect(14, y+18, W-28, 1);
-    y += 34;
-  });
-
-  // QR code
-  ctx.setLineDash([4,5]); ctx.strokeStyle = 'rgba(240,112,32,.2)';
-  ctx.beginPath(); ctx.moveTo(16,y+4); ctx.lineTo(W-16,y+4); ctx.stroke(); ctx.setLineDash([]);
-  const qrEl = document.querySelector('#qrDiv img, #qrDiv canvas');
-  if (qrEl) {
-    const qs = 85, qx = (W-qs)/2, qy = y+14;
-    ctx.fillStyle = 'rgba(16,13,9,.95)'; rr(ctx, qx-6, qy-6, qs+12, qs+12, 7); ctx.fill();
-    try { ctx.drawImage(qrEl, qx, qy, qs, qs); } catch(e) {}
-    ctx.fillStyle = '#504030'; ctx.font = '7px Space Mono,monospace';
-    ctx.textAlign = 'center'; ctx.fillText('SCAN TO VERIFY', W/2, qy+qs+13);
-  }
-
-  // Film holes bottom
-  filmHoles(ctx, W, H-14);
-
-  // Watermark
-  ctx.save(); ctx.globalAlpha = .03; ctx.fillStyle = '#f07020';
-  ctx.font = 'bold 72px sans-serif'; ctx.textAlign = 'center';
-  ctx.translate(W/2, H/2); ctx.rotate(-.3); ctx.fillText('RTD', 0, 0); ctx.restore();
+function drawCanvas(data){
+  const cv=document.getElementById('tktCanvas'),W=340,H=720,sc=2;
+  cv.width=W*sc;cv.height=H*sc;cv.style.width=W+'px';cv.style.height=H+'px';
+  const ctx=cv.getContext('2d');ctx.scale(sc,sc);
+  const bg=ctx.createLinearGradient(0,0,W,H);bg.addColorStop(0,'#100e08');bg.addColorStop(1,'#1a1610');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle=data.status==='approved'?'rgba(62,196,122,.5)':'rgba(212,168,83,.45)';
+  ctx.lineWidth=1.5;rr(ctx,3,3,W-6,H-6,13);ctx.stroke();
+  const tl=ctx.createLinearGradient(0,0,W,0);
+  tl.addColorStop(0,'transparent');tl.addColorStop(.5,data.status==='approved'?'#3ec47a':'#d4a853');tl.addColorStop(1,'transparent');
+  ctx.fillStyle=tl;ctx.fillRect(0,0,W,2.5);
+  filmHoles(ctx,W,14);
+  if(CFG.posterUrl){var _cImg=new Image();_cImg.crossOrigin='anonymous';_cImg.onload=function(){ctx.save();rr(ctx,9,40,56,78,5);ctx.clip();ctx.drawImage(_cImg,9,40,56,78);ctx.restore();ctx.strokeStyle='rgba(212,168,83,.5)';ctx.lineWidth=1.5;rr(ctx,9,40,56,78,5);ctx.stroke();};_cImg.src=CFG.posterUrl;}
+  ctx.fillStyle='rgba(212,168,83,.06)';ctx.fillRect(0,28,W,85);
+  ctx.fillStyle='rgba(212,168,83,.35)';ctx.font='8px Space Mono,monospace';ctx.textAlign='center';ctx.fillText('REEL TO DEAL  ·  MBA FEST',W/2,46);
+  ctx.fillStyle='#d4a853';ctx.font='bold 20px Georgia,serif';ctx.fillText('🎬 '+CFG.movieName.toUpperCase(),W/2,70);
+  ctx.fillStyle='#7a6a5a';ctx.font='8px Space Mono,monospace';ctx.fillText(CFG.eventDateDisplay,W/2,87);ctx.fillText((CFG.venue||'MBA Auditorium').toUpperCase(),W/2,101);
+  ctx.setLineDash([4,5]);ctx.strokeStyle='rgba(212,168,83,.18)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(16,114);ctx.lineTo(W-16,114);ctx.stroke();ctx.setLineDash([]);
+  const rows=[['BOOKING ID',data.bookingId,'#d4a853'],['NAME',data.name,'#f2ead8'],['EMAIL',data.email,'#a89880'],['PHONE',data.phone,'#f2ead8'],['TICKETS',data.qty+' × ₹'+CFG.ticketPrice,'#f2ead8'],['TOTAL PAID','₹'+data.amount,'#d4a853'],['UTR',data.utr,'#a89880'],['STATUS',(data.status||'PENDING').toUpperCase(),data.status==='approved'?'#3ec47a':'#e8b840']];
+  let y=128;rows.forEach(([k,v,c])=>{ctx.fillStyle='#5a4a3a';ctx.font='7.5px Space Mono,monospace';ctx.textAlign='left';ctx.fillText(k,18,y);ctx.fillStyle=c;ctx.font='10.5px Space Mono,monospace';const vs=String(v||'');ctx.fillText(vs.length>34?vs.slice(0,32)+'…':vs,18,y+13);ctx.fillStyle='rgba(255,255,255,.03)';ctx.fillRect(14,y+18,W-28,1);y+=34;});
+  ctx.setLineDash([4,5]);ctx.strokeStyle='rgba(212,168,83,.18)';ctx.beginPath();ctx.moveTo(16,y+4);ctx.lineTo(W-16,y+4);ctx.stroke();ctx.setLineDash([]);
+  const qrEl=document.querySelector('#qrDiv img, #qrDiv canvas');
+  if(qrEl){const qs=85,qx=(W-qs)/2,qy=y+14;ctx.fillStyle='rgba(10,8,6,.95)';rr(ctx,qx-6,qy-6,qs+12,qs+12,7);ctx.fill();try{ctx.drawImage(qrEl,qx,qy,qs,qs);}catch(e){}ctx.fillStyle='#5a4a3a';ctx.font='7px Space Mono,monospace';ctx.textAlign='center';ctx.fillText('SCAN TO VERIFY',W/2,qy+qs+13);}
+  filmHoles(ctx,W,H-14);
+  ctx.save();ctx.globalAlpha=.03;ctx.fillStyle='#d4a853';ctx.font='bold 72px sans-serif';ctx.textAlign='center';ctx.translate(W/2,H/2);ctx.rotate(-.3);ctx.fillText('RTD',0,0);ctx.restore();
 }
+function filmHoles(ctx,W,y){ctx.fillStyle='rgba(212,168,83,.15)';for(let x=12;x<W-12;x+=19){rr(ctx,x,y-8,12,8,2);ctx.fill();}}
+function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();}
 
-function filmHoles(ctx, W, y) {
-  ctx.fillStyle = 'rgba(240,112,32,.15)';
-  for (let x = 12; x < W-12; x += 19) { rr(ctx, x, y-8, 12, 8, 2); ctx.fill(); }
+function showSoftCopy(){drawCanvas(bData);openModal('softModal');}
+function closeSoftCopy(){closeModal('softModal');}
+function dlImage(){const a=document.createElement('a');a.download='ticket-'+(bData.bookingId||'RTD')+'.png';a.href=document.getElementById('tktCanvas').toDataURL('image/png',1);a.click();showToast('🎟 Image saved!','success');}
+function openModal(id){const m=document.getElementById(id);m.style.display='flex';void m.offsetWidth;m.classList.add('show');}
+function closeModal(id){const m=document.getElementById(id);m.classList.remove('show');setTimeout(()=>m.style.display='none',300);}
+function buildEmailBody(){return `Dear ${bData.name},\n\nThank you for booking!\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n🎟  TICKET DETAILS\n━━━━━━━━━━━━━━━━━━━━━━━━\n\nBooking ID : ${bData.bookingId}\nMovie      : ${CFG.movieName}\nDate & Time: ${CFG.eventDateDisplay}\nVenue      : ${CFG.venue||'MBA Auditorium'}\nTickets    : ${bData.qty} × ₹${CFG.ticketPrice}\nTotal Paid : ₹${bData.amount}\nUTR/TxnID  : ${bData.utr}\nStatus     : ${(bData.status||'PENDING').toUpperCase()}\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n${bData.status==='approved'?'✅ APPROVED — You are confirmed! Show ticket at entry.':'⏳ PENDING — Under verification. We\'ll notify you.'}\n\n— Reel to Deal · MBA Fest`;}
+function showEmailModal(){document.getElementById('emailPrev').textContent=buildEmailBody();openModal('emailModal');}
+function closeEmailModal(){closeModal('emailModal');}
+function sendEmail(){const s=encodeURIComponent(`Your ${CFG.movieName} Ticket – ${bData.bookingId}`);window.location.href=`mailto:${bData.email}?subject=${s}&body=${encodeURIComponent(buildEmailBody())}`;showToast('Opening email app...','success');closeEmailModal();}
+function shareWA(){const msg=`🎬 *${CFG.movieName}* Ticket\n\n🎟 ID: ${bData.bookingId}\n👤 ${bData.name}\n📅 ${CFG.eventDateDisplay}\n🎫 ${bData.qty} × ₹${CFG.ticketPrice} = ₹${bData.amount}\n✅ ${(bData.status||'PENDING').toUpperCase()}\n\n_Reel to Deal · MBA Fest_`;window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');}
+
+async function dlPDF(){
+  const ev=event;if(ev)ev.target.textContent='⏳...';
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a5'});
+  doc.setFillColor(10,8,6);doc.rect(0,0,148,210,'F');
+  doc.setFillColor(20,16,10);doc.rect(0,0,148,42,'F');
+  doc.setTextColor(212,168,83);doc.setFontSize(18);doc.setFont('helvetica','bold');
+  doc.text('REEL TO DEAL',74,14,{align:'center'});
+  doc.setFontSize(7);doc.setTextColor(120,100,70);doc.text(CFG.eventDateDisplay,74,22,{align:'center'});
+  doc.setFontSize(10);doc.setTextColor(212,168,83);doc.text(CFG.movieName.toUpperCase(),74,32,{align:'center'});
+  doc.setDrawColor(212,168,83);doc.setLineWidth(.25);doc.line(10,42,138,42);
+  const rows2=[['BOOKING ID',bData.bookingId],['NAME',bData.name],['EMAIL',bData.email],['PHONE',bData.phone],['VENUE',CFG.venue||'MBA Auditorium'],['TICKETS',bData.qty+' × ₹'+CFG.ticketPrice],['TOTAL','₹'+bData.amount],['UTR',bData.utr],['STATUS',(bData.status||'PENDING').toUpperCase()]];
+  let y2=52;
+  rows2.forEach(([k,v])=>{doc.setFontSize(6);doc.setTextColor(100,80,50);doc.text(k,12,y2);doc.setFontSize(8);doc.setTextColor(242,234,216);doc.text(String(v||''),12,y2+5);doc.setDrawColor(40,30,20);doc.setLineWidth(.1);doc.line(10,y2+8.5,138,y2+8.5);y2+=15;});
+  const qrEl2=document.querySelector('#qrDiv img, #qrDiv canvas');
+  if(qrEl2){try{const tc=document.createElement('canvas');tc.width=150;tc.height=150;tc.getContext('2d').drawImage(qrEl2,0,0,150,150);doc.addImage(tc.toDataURL('image/png'),'PNG',59,y2+2,30,30);doc.setFontSize(5);doc.setTextColor(80,65,45);doc.text('SCAN TO VERIFY',74.5,y2+36,{align:'center'});}catch(e){}}
+  doc.setFontSize(5);doc.setTextColor(40,32,22);doc.text('Reel to Deal · MBA Fest · Valid for event entry only',74,206,{align:'center'});
+  doc.save('ticket-'+(bData.bookingId||'RTD')+'.pdf');
+  if(ev&&ev.target)ev.target.textContent='📄 PDF';
+  showToast('PDF downloaded!','success');
 }
+function printTkt(){window.print();}
 
-function rr(ctx, x, y, w, h, r) {
-  ctx.beginPath(); ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.arcTo(x+w,y,x+w,y+r,r);
-  ctx.lineTo(x+w,y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r); ctx.lineTo(x+r,y+h);
-  ctx.arcTo(x,y+h,x,y+h-r,r); ctx.lineTo(x,y+r); ctx.arcTo(x,y,x+r,y,r); ctx.closePath();
-}
+function setStatusMsg(msg,type){const el=document.getElementById('statusMsg');el.textContent=msg;el.className=`smsg ${type} show`;}
+function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast ${type} show`;setTimeout(()=>t.className=`toast ${type}`,3500);}
 
-// ══════════════════════════════════════════
-// MODALS
-// ══════════════════════════════════════════
-function showSoftCopy() { drawCanvas(bData); openModal('softModal'); }
-function closeSoftCopy() { closeModal('softModal'); }
-function dlImage() {
-  const a = document.createElement('a');
-  a.download = 'ticket-' + (bData.bookingId||'RTD') + '.png';
-  a.href = document.getElementById('tktCanvas').toDataURL('image/png', 1);
-  a.click(); showToast('🎟 Image saved!', 'success');
-}
-
-function openModal(id) { const m = document.getElementById(id); m.style.display='flex'; void m.offsetWidth; m.classList.add('show'); }
-function closeModal(id) { const m = document.getElementById(id); m.classList.remove('show'); setTimeout(()=>m.style.display='none',300); }
-
-function buildEmailBody() {
-  return `Dear ${bData.name},\n\nThank you for booking!\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n🎟  TICKET DETAILS\n━━━━━━━━━━━━━━━━━━━━━━━━\n\nBooking ID : ${bData.bookingId}\nMovie      : ${CFG.movieName}\nDate & Time: ${CFG.eventDateDisplay}\nVenue      : ${CFG.venue||'MBA Auditorium'}\nTickets    : ${bData.qty} × ₹${CFG.ticketPrice}\nTotal Paid : ₹${bData.amount}\nUTR/TxnID  : ${bData.utr}\nStatus     : ${(bData.status||'PENDING').toUpperCase()}\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n${bData.status==='approved'?'✅ APPROVED — You are confirmed! Show ticket at entry.':'⏳ PENDING — Under verification. We\'ll email you.'}\n\n— Reel to Deal · MBA Fest 2025`;
-}
-
-function showEmailModal() { document.getElementById('emailPrev').textContent = buildEmailBody(); openModal('emailModal'); }
-function closeEmailModal() { closeModal('emailModal'); }
-function sendEmail() {
-  const s = encodeURIComponent(`Your ${CFG.movieName} Ticket – ${bData.bookingId}`);
-  window.location.href = `mailto:${bData.email}?subject=${s}&body=${encodeURIComponent(buildEmailBody())}`;
-  showToast('Opening email app...', 'success'); closeEmailModal();
-}
-
-function shareWA() {
-  const msg = `🎬 *${CFG.movieName}* Ticket\n\n🎟 ID: ${bData.bookingId}\n👤 ${bData.name}\n📅 ${CFG.eventDateDisplay}\n🎫 ${bData.qty} × ₹${CFG.ticketPrice} = ₹${bData.amount}\n✅ ${(bData.status||'PENDING').toUpperCase()}\n\n_Reel to Deal · MBA Fest 2025_`;
-  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
-}
-
-async function dlPDF() {
-  const ev = event; if (ev) ev.target.textContent = '⏳...';
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a5' });
-  doc.setFillColor(10,8,6); doc.rect(0,0,148,210,'F');
-  doc.setFillColor(22,16,10); doc.rect(0,0,148,42,'F');
-  doc.setTextColor(240,112,32); doc.setFontSize(18); doc.setFont('helvetica','bold');
-  doc.text('REEL TO DEAL', 74, 14, { align:'center' });
-  doc.setFontSize(7); doc.setTextColor(138,112,80);
-  doc.text(CFG.eventDateDisplay, 74, 22, { align:'center' });
-  doc.setFontSize(10); doc.setTextColor(240,112,32);
-  doc.text(CFG.movieName.toUpperCase(), 74, 32, { align:'center' });
-  doc.setDrawColor(240,112,32); doc.setLineWidth(.25); doc.line(10,42,138,42);
-  const rows2 = [
-    ['BOOKING ID',bData.bookingId],['NAME',bData.name],['EMAIL',bData.email],
-    ['PHONE',bData.phone],['VENUE',CFG.venue||'MBA Auditorium'],
-    ['TICKETS',bData.qty+' × ₹'+CFG.ticketPrice],['TOTAL','₹'+bData.amount],
-    ['UTR',bData.utr],['STATUS',(bData.status||'PENDING').toUpperCase()]
-  ];
-  let y2 = 52;
-  rows2.forEach(([k,v]) => {
-    doc.setFontSize(6); doc.setTextColor(120,90,60); doc.text(k, 12, y2);
-    doc.setFontSize(8); doc.setTextColor(240,232,216); doc.text(String(v||''), 12, y2+5);
-    doc.setDrawColor(40,30,20); doc.setLineWidth(.1); doc.line(10,y2+8.5,138,y2+8.5);
-    y2 += 15;
-  });
-  const qrEl2 = document.querySelector('#qrDiv img, #qrDiv canvas');
-  if (qrEl2) {
-    try {
-      const tc = document.createElement('canvas'); tc.width=150; tc.height=150;
-      tc.getContext('2d').drawImage(qrEl2,0,0,150,150);
-      doc.addImage(tc.toDataURL('image/png'),'PNG',59,y2+2,30,30);
-      doc.setFontSize(5); doc.setTextColor(100,80,60);
-      doc.text('SCAN TO VERIFY', 74.5, y2+36, {align:'center'});
-    } catch(e) {}
-  }
-  doc.setFontSize(5); doc.setTextColor(45,35,25);
-  doc.text('Reel to Deal · MBA Fest 2025 · Valid for event entry only', 74,206,{align:'center'});
-  doc.save('ticket-' + (bData.bookingId||'RTD') + '.pdf');
-  if (ev && ev.target) ev.target.textContent = '📄 PDF';
-  showToast('PDF downloaded!', 'success');
-}
-
-function printTkt() { window.print(); }
-
-// ══════════════════════════════════════════
-// HELPERS
-// ══════════════════════════════════════════
-function setStatusMsg(msg, type) {
-  const el = document.getElementById('statusMsg');
-  el.textContent = msg; el.className = `smsg ${type} show`;
-}
-
-function showToast(msg, type = '') {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = `toast ${type} show`;
-  setTimeout(() => t.className = `toast ${type}`, 3200);
-}
-
-// BOOKING LOOKUP
 async function lookupBooking(){
   const q=document.getElementById('lookupInput').value.trim();
   const res=document.getElementById('lookupResult');
   if(!q){showToast('Enter a Booking ID or UTR','info');return;}
-  res.style.display='block';res.textContent='Looking up...';res.style.color='var(--muted)';
+  res.style.display='block';res.innerHTML='<span style="color:var(--muted)">Looking up...</span>';
   try{
-    let data=await sbFetch(`bookings?booking_id=eq.${encodeURIComponent(q)}&select=*`,{method:'GET'}).catch(()=>[]);
-    if(!data||!data.length) data=await sbFetch(`bookings?utr=eq.${encodeURIComponent(q)}&select=*`,{method:'GET'}).catch(()=>[]);
-    if(!data||!data.length){res.textContent='❌ No booking found.';res.style.color='var(--red)';return;}
+    let data=await sbGet(`bookings?booking_id=eq.${encodeURIComponent(q)}&select=*`).catch(()=>[]);
+    if(!data||!data.length) data=await sbGet(`bookings?utr=eq.${encodeURIComponent(q)}&select=*`).catch(()=>[]);
+    if(!data||!data.length){res.innerHTML='<span style="color:var(--red)">❌ No booking found.</span><br><span style="color:var(--muted);font-size:.6rem">Check spelling or contact admin if you believe this is an error.</span>';return;}
     const b=data[0];
     const sc={approved:'var(--green)',pending:'var(--yellow)',rejected:'var(--red)'}[b.status]||'var(--muted)';
+    const icons={approved:'✅',pending:'⏳',rejected:'❌'};
     res.style.color='var(--text)';
-    res.innerHTML=`<strong style="color:var(--orange)">${b.booking_id}</strong><br>Name: ${b.name}<br>Status: <strong style="color:${sc}">${(b.status||'').toUpperCase()}</strong><br>Amount: ₹${b.amount} · ${b.ticket_qty} ticket(s)`;
-  }catch(e){res.textContent='Error: '+e.message;res.style.color='var(--red)';}
+    res.innerHTML=`<strong style="color:var(--gold)">${b.booking_id}</strong><br>👤 ${b.name} · ${b.email}<br>Status: <strong style="color:${sc}">${icons[b.status]||''} ${(b.status||'').toUpperCase()}</strong><br>💰 ₹${b.amount} · ${b.ticket_qty} ticket(s)<br><span style="font-size:.6rem;color:var(--muted)">Booked: ${new Date(b.created_at).toLocaleString('en-IN')}</span>`;
+  }catch(e){res.innerHTML=`<span style="color:var(--red)">Error: ${e.message}</span>`;}
 }
 
-// PAYMENT SUB-STEPS
-function setPSS(n){
-  for(let i=1;i<=4;i++){
-    const el=document.getElementById('pss'+i);if(!el)continue;
-    el.className='pss-item'+(i===n?' active':i<n?' done':'');
-    const dot=el.querySelector('.pss-dot');if(dot)dot.textContent=i<n?'✓':i;
-    if(i<4){const ln=document.getElementById('psl'+i);if(ln)ln.className='pss-line'+(i<n?' done':'');}
-  }
-}
+function setPSS(n){for(let i=1;i<=4;i++){const el=document.getElementById('pss'+i);if(!el)continue;el.className='pss-item'+(i===n?' active':i<n?' done':'');const dot=el.querySelector('.pss-dot');if(dot)dot.textContent=i<n?'✓':i;if(i<4){const ln=document.getElementById('psl'+i);if(ln)ln.className='pss-line'+(i<n?' done':'');}}}
 
-// BOOK ANOTHER
 function bookAnother(){
   bData={};ssFile=null;ocrAmt=false;ocrUpi=false;qty=1;
-  document.getElementById('qrcode').innerHTML='';
+  document.getElementById('qrDiv').innerHTML='';
   document.getElementById('tktCard').className='tkt-card';
-  document.getElementById('fname').value='';
-  document.getElementById('femail').value='';
-  document.getElementById('fphone').value='';
-  ['fname','femail','fphone'].forEach(id=>{const el=document.getElementById(id);el.className='';});
+  ['fname','femail','fphone'].forEach(id=>{const el=document.getElementById(id);if(el){el.value='';el.className='';}});
+  document.getElementById('utrI').value='';
+  ['ssPrev','ocrBox','statusMsg','utrHelp','ssHelp'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.classList.remove('show');
+  });
   chgQty(0);goStep(1);
 }
-
-
-
-// Extra: sync new hero/badge movie name elements after applyConfig
-var _origApply = applyConfig;
-applyConfig = function() {
-  _origApply();
-  var mn = CFG.movieName;
-  var upper = mn.toUpperCase();
-  ['heroMovieName','badgeMovieName'].forEach(function(id){
-    var el=document.getElementById(id); if(el) el.textContent=mn;
-  });
-  ['heroPosterName','infoMovieName2'].forEach(function(id){
-    var el=document.getElementById(id); if(el) el.textContent=upper;
-  });
-  var iv2=document.getElementById('infoVenue2'); if(iv2) iv2.textContent=CFG.venue;
-  var ip2=document.getElementById('infoPrice2'); if(ip2) ip2.textContent='₹'+CFG.ticketPrice;
-  var sm=document.getElementById('stepMeta'); if(sm) sm.textContent=CFG.venue+' · '+CFG.eventDateDisplay;
-};
-// Build hero film holes
-(function(){
-  var hf=document.getElementById('heroFilm');
-  if(hf){var h='';for(var i=0;i<55;i++) h+='<div class="hero-film-hole"></div>';hf.innerHTML=h;}
-})();
-
 </script>
 </body>
 </html>
