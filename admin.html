@@ -3,590 +3,475 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Admin Dashboard — Reel to Deal</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<title>RTD Admin — Reel to Deal</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#080705;--sur:#0f0c08;--s2:#171109;--s3:#1f1710;
-  --orange:#f07020;--ob:#ff8c38;--og:rgba(240,112,32,.12);--og2:rgba(240,112,32,.05);
-  --text:#ede5d5;--muted:#7a6a5a;--border:rgba(240,112,32,.16);
-  --green:#44c488;--red:#e04848;--yellow:#f0c040;--blue:#4c82ff;
+  --bg:#060405;--sur:#0d0a0e;--s2:#141018;--s3:#1c1624;
+  --gold:#d4a853;--gold2:#f0c46a;--goldg:rgba(212,168,83,.12);--goldg2:rgba(212,168,83,.06);
+  --text:#f2ead8;--muted:#6b5f4e;--border:rgba(212,168,83,.15);--border2:rgba(212,168,83,.08);
+  --green:#3ec47a;--red:#e05555;--yellow:#e8b840;--blue:#4c82ff;
   --r8:8px;--r12:12px;--r16:16px;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html{-webkit-tap-highlight-color:transparent;}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
-body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.88' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.25;}
-
-/* AMBIENT */
-.amb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(110px);opacity:.045;will-change:transform;}
-.a1{width:400px;height:400px;background:var(--orange);top:-150px;left:-120px;animation:orb1 18s ease-in-out infinite;}
-@keyframes orb1{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(20px,-24px,0)}}
-
-/* LOAD */
-#ls{position:fixed;inset:0;z-index:10000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
-#ls.out{animation:lsOut .5s ease forwards;}
-@keyframes lsOut{to{opacity:0;visibility:hidden;}}
-.ls-logo{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:8px;color:var(--orange);text-shadow:0 0 38px rgba(240,112,32,.5);animation:lsIn .8s cubic-bezier(.16,1,.3,1) both;}
-@keyframes lsIn{from{opacity:0;letter-spacing:22px}to{opacity:1;letter-spacing:8px}}
-.ls-bar{width:130px;height:2px;background:rgba(240,112,32,.16);border-radius:2px;overflow:hidden;}
-.ls-fill{height:100%;background:var(--orange);animation:lsFill .9s cubic-bezier(.4,0,.2,1) .2s both;}
-@keyframes lsFill{from{width:0}to{width:100%}}
-.ls-sub{font-family:'Space Mono',monospace;font-size:.53rem;letter-spacing:4px;color:var(--muted);animation:fup .5s ease .45s both;}
-@keyframes fup{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 60% 40% at 20% 0%,rgba(212,168,83,.04) 0%,transparent 70%);}
+@keyframes fup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fi{from{opacity:0}to{opacity:1}}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@keyframes pulse{0%,100%{opacity:.2}50%{opacity:1}}
+@keyframes bump{0%{transform:scale(1)}50%{transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes scan{0%,100%{opacity:.3;transform:scaleX(.4)}50%{opacity:1;transform:scaleX(1)}}
+@keyframes rowIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
+
+/* LOAD */
+#ls{position:fixed;inset:0;z-index:10000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .5s,visibility .5s;}
+#ls.out{opacity:0;visibility:hidden;}
+.ls-logo{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:8px;color:var(--gold);text-shadow:0 0 38px rgba(212,168,83,.4);animation:lsIn .8s cubic-bezier(.16,1,.3,1) both;}
+@keyframes lsIn{from{opacity:0;letter-spacing:22px}to{opacity:1;letter-spacing:8px}}
+.ls-bar{width:130px;height:1.5px;background:rgba(212,168,83,.12);border-radius:2px;overflow:hidden;}
+.ls-fill{height:100%;background:var(--gold);animation:lsFill 1s cubic-bezier(.4,0,.2,1) .2s both;}
+@keyframes lsFill{from{width:0}to{width:100%}}
+.ls-sub{font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:4px;color:var(--muted);animation:fup .5s .45s both;}
 
 /* LOGIN */
 #loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;position:relative;z-index:1;}
 .login-card{background:var(--sur);border:1px solid var(--border);border-radius:20px;padding:34px;width:100%;max-width:370px;text-align:center;position:relative;overflow:hidden;}
-.login-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,var(--orange),transparent);animation:scan 4s ease-in-out infinite;}
-@keyframes scan{0%,100%{opacity:.3;transform:scaleX(.4)}50%{opacity:1;transform:scaleX(1)}}
-.login-logo{font-family:'Bebas Neue',sans-serif;font-size:2.6rem;letter-spacing:6px;color:var(--orange);text-shadow:0 0 22px rgba(240,112,32,.32);}
-.login-sub{font-family:'Space Mono',monospace;font-size:.57rem;letter-spacing:3px;color:var(--muted);margin-bottom:24px;margin-top:4px;}
+.login-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,var(--gold),transparent);animation:scan 4s ease-in-out infinite;}
+.login-logo{font-family:'Bebas Neue',sans-serif;font-size:2.4rem;letter-spacing:6px;color:var(--gold);text-shadow:0 0 22px rgba(212,168,83,.28);}
+.login-sub{font-family:'Space Mono',monospace;font-size:.54rem;letter-spacing:3px;color:var(--muted);margin-bottom:24px;margin-top:4px;}
 .pw-wrap{position:relative;margin-bottom:12px;}
-.pw-wrap input{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:12px 44px 12px 14px;color:var(--text);font-family:'Space Mono',monospace;font-size:.85rem;letter-spacing:3px;outline:none;transition:border-color .2s,box-shadow .2s;}
-.pw-wrap input:focus{border-color:var(--orange);box-shadow:0 0 0 3px var(--og);}
+.pw-wrap input{width:100%;background:var(--s2);border:1px solid var(--border2);border-radius:10px;padding:12px 44px 12px 14px;color:var(--text);font-family:'Space Mono',monospace;font-size:.85rem;letter-spacing:3px;outline:none;transition:border-color .2s,box-shadow .2s;}
+.pw-wrap input:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--goldg);}
 .pw-wrap input.error{border-color:var(--red);animation:shake .32s ease;}
 .pw-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:.95rem;padding:4px;transition:color .2s;}
-.pw-eye:hover{color:var(--orange);}
-.btn-login{width:100%;padding:12px;background:linear-gradient(135deg,var(--orange),#c04800);color:#fff;border:none;border-radius:10px;font-family:'Space Mono',monospace;font-size:.78rem;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all .22s;}
-.btn-login:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(240,112,32,.32);}
-.login-err{display:none;color:var(--red);font-family:'Space Mono',monospace;font-size:.68rem;margin-top:9px;letter-spacing:1px;}
+.pw-eye:hover{color:var(--gold);}
+.btn-login{width:100%;padding:12px;background:var(--gold);color:#0a0806;border:none;border-radius:10px;font-family:'Space Mono',monospace;font-size:.78rem;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all .22s;font-weight:700;}
+.btn-login:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(212,168,83,.28);}
+.login-err{display:none;color:var(--red);font-family:'Space Mono',monospace;font-size:.67rem;margin-top:9px;letter-spacing:1px;}
+.login-err.show{display:block;animation:fup .2s ease;}
 
 /* APP */
 #app{display:none;}
 #app.vis{display:block;animation:fi .3s ease;}
 
 /* HEADER */
-.hdr{background:rgba(8,7,5,.88);border-bottom:1px solid var(--border);padding:12px 22px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;position:sticky;top:0;z-index:100;backdrop-filter:blur(16px);}
-.hdr-left{display:flex;flex-direction:column;gap:2px;}
-.hdr-logo{font-family:'Bebas Neue',sans-serif;font-size:1.55rem;letter-spacing:4px;color:var(--orange);}
-.hdr-sub{font-family:'Space Mono',monospace;font-size:.54rem;letter-spacing:1.5px;color:var(--muted);}
+.hdr{background:rgba(6,4,5,.96);border-bottom:1px solid var(--border2);padding:12px 22px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;position:sticky;top:0;z-index:100;backdrop-filter:blur(16px);}
+.hdr-brand{display:flex;align-items:center;gap:12px;}
+.hdr-logo{font-family:'Bebas Neue',sans-serif;font-size:1.55rem;letter-spacing:4px;color:var(--gold);}
+.hdr-divider{width:1px;height:22px;background:var(--border2);}
+.hdr-sub{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:1.5px;color:var(--muted);}
 .hdr-right{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
-.sync-pill{display:inline-flex;align-items:center;gap:5px;background:var(--og2);border:1px solid var(--border);border-radius:100px;padding:5px 11px;font-family:'Space Mono',monospace;font-size:.56rem;letter-spacing:1px;transition:all .3s;}
-.sync-pill.ok{color:var(--green);background:rgba(68,196,136,.07);border-color:rgba(68,196,136,.22);}
-.sync-pill.err{color:var(--red);border-color:rgba(224,72,72,.22);}
-.sync-pill.syncing{color:var(--orange);}
-.sdot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0;}
-.sdot.pulse{animation:sdPulse 2s ease-in-out infinite;}
-.sdot.fast{animation:sdPulse .4s ease-in-out infinite;}
-@keyframes sdPulse{0%,100%{opacity:.25}50%{opacity:1}}
-.hdr-btn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:7px;font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:1px;cursor:pointer;transition:all .2s;white-space:nowrap;}
-.hdr-btn:hover{border-color:var(--orange);color:var(--orange);}
-.hdr-btn.primary{border-color:var(--orange);color:var(--orange);}
-.hdr-btn.primary:hover{background:var(--og);}
-.hdr-btn.danger{border-color:rgba(224,72,72,.3);color:rgba(224,72,72,.7);}
-.hdr-btn.danger:hover{border-color:var(--red);color:var(--red);background:rgba(224,72,72,.07);}
+.sync-pill{display:inline-flex;align-items:center;gap:5px;background:var(--goldg2);border:1px solid var(--border2);border-radius:100px;padding:5px 11px;font-family:'Space Mono',monospace;font-size:.54rem;letter-spacing:1px;transition:all .3s;color:var(--muted);}
+.sync-pill.ok{color:var(--green);background:rgba(62,196,122,.07);border-color:rgba(62,196,122,.22);}
+.sync-pill.err{color:var(--red);border-color:rgba(224,85,85,.22);}
+.sdot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0;animation:pulse 2s ease-in-out infinite;}
+.hdr-btn{background:transparent;border:1px solid var(--border2);color:var(--muted);padding:6px 12px;border-radius:7px;font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:1px;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.hdr-btn:hover{border-color:var(--gold);color:var(--gold);}
+.hdr-btn.danger:hover{border-color:var(--red);color:var(--red);}
 
 /* STATS */
 .stats-row{display:grid;grid-template-columns:repeat(6,1fr);gap:9px;padding:16px 22px;}
-.stat-card{background:var(--sur);border:1px solid var(--border);border-radius:12px;padding:14px 12px;text-align:center;transition:border-color .25s,transform .2s;position:relative;overflow:hidden;}
-.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,currentColor,transparent);opacity:.4;}
-.stat-card:hover{border-color:rgba(240,112,32,.3);transform:translateY(-2px);}
+.stat-card{background:var(--sur);border:1px solid var(--border2);border-radius:12px;padding:14px 12px;text-align:center;transition:border-color .25s,transform .2s;position:relative;overflow:hidden;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:.35;}
+.stat-card.gold::before{background:var(--gold);}
+.stat-card.green::before{background:var(--green);}
+.stat-card.yellow::before{background:var(--yellow);}
+.stat-card.red::before{background:var(--red);}
+.stat-card.blue::before{background:var(--blue);}
+.stat-card.purple::before{background:#b06be0;}
+.stat-card:hover{border-color:rgba(212,168,83,.25);transform:translateY(-2px);}
 .stat-val{font-family:'Bebas Neue',sans-serif;font-size:1.9rem;line-height:1;transition:all .2s;}
-.stat-val.pop{animation:statPop .35s cubic-bezier(.34,1.56,.64,1);}
-@keyframes statPop{0%{transform:scale(1)}50%{transform:scale(1.18)}100%{transform:scale(1)}}
-.stat-lbl{font-family:'Space Mono',monospace;font-size:.54rem;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-top:3px;}
+.stat-val.pop{animation:bump .35s cubic-bezier(.34,1.56,.64,1);}
+.stat-lbl{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-top:3px;}
 
 /* ANALYTICS BAR */
-.analytics-bar{padding:0 22px 14px;display:flex;gap:8px;align-items:center;}
-.rev-pill{background:rgba(68,196,136,.08);border:1px solid rgba(68,196,136,.2);border-radius:8px;padding:8px 14px;font-family:'Space Mono',monospace;font-size:.7rem;color:var(--green);}
-.rev-pill strong{font-size:1.1rem;display:block;}
-.rate-pill{background:var(--og2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-family:'Space Mono',monospace;font-size:.7rem;color:var(--orange);}
-.rate-pill strong{font-size:1.1rem;display:block;}
-.prog-wrap{flex:1;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;}
-.prog-label{font-family:'Space Mono',monospace;font-size:.58rem;color:var(--muted);margin-bottom:5px;display:flex;justify-content:space-between;}
-.prog-bar{height:6px;background:var(--s3);border-radius:100px;overflow:hidden;}
-.prog-fill{height:100%;background:linear-gradient(90deg,var(--orange),var(--green));border-radius:100px;transition:width .6s cubic-bezier(.4,0,.2,1);}
+.analytics-bar{padding:0 22px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.rev-pill{background:rgba(62,196,122,.07);border:1px solid rgba(62,196,122,.18);border-radius:8px;padding:8px 14px;font-family:'Space Mono',monospace;font-size:.68rem;color:var(--green);}
+.rev-pill strong{font-size:1.05rem;display:block;}
+.rate-pill{background:var(--goldg2);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;font-family:'Space Mono',monospace;font-size:.68rem;color:var(--gold);}
+.rate-pill strong{font-size:1.05rem;display:block;}
+.prog-wrap{flex:1;min-width:180px;background:var(--s2);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;}
+.prog-label{font-family:'Space Mono',monospace;font-size:.56rem;color:var(--muted);margin-bottom:5px;display:flex;justify-content:space-between;}
+.prog-bar{height:5px;background:var(--s3);border-radius:100px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--green));border-radius:100px;transition:width .6s cubic-bezier(.4,0,.2,1);}
 
 /* TABS */
-.tabs{display:flex;gap:4px;padding:0 22px;border-bottom:1px solid var(--border);overflow-x:auto;}
-.tab{background:transparent;border:1px solid transparent;color:var(--muted);padding:8px 16px;border-radius:8px 8px 0 0;font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s;border-bottom:none;margin-bottom:-1px;white-space:nowrap;flex-shrink:0;}
-.tab.active{background:var(--sur);border-color:var(--border);border-bottom-color:var(--sur);color:var(--orange);}
-.tab:hover:not(.active){color:var(--orange);}
+.tabs{display:flex;gap:4px;padding:0 22px;border-bottom:1px solid var(--border2);overflow-x:auto;}
+.tab{background:transparent;border:1px solid transparent;color:var(--muted);padding:8px 16px;border-radius:8px 8px 0 0;font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s;border-bottom:none;margin-bottom:-1px;white-space:nowrap;flex-shrink:0;}
+.tab.active{background:var(--sur);border-color:var(--border2);border-bottom-color:var(--sur);color:var(--gold);}
+.tab:hover:not(.active){color:var(--gold);}
 .tab-panel{display:none;}
 .tab-panel.active{display:block;animation:fi .2s ease;}
 
 /* CONTROLS */
 .controls{display:flex;gap:7px;align-items:center;padding:13px 22px;flex-wrap:wrap;}
-.srch{flex:1;min-width:160px;background:var(--sur);border:1px solid var(--border);border-radius:8px;padding:8px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.86rem;outline:none;transition:border-color .2s,box-shadow .2s;}
-.srch:focus{border-color:var(--orange);box-shadow:0 0 0 3px var(--og);}
-.sel{background:var(--sur);border:1px solid var(--border);border-radius:8px;padding:8px 11px;color:var(--text);font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:1px;cursor:pointer;outline:none;transition:border-color .2s;}
-.sel:focus{border-color:var(--orange);}
-.ctrl-btn{padding:8px 13px;border-radius:8px;font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:1px;cursor:pointer;border:1px solid;transition:all .2s;white-space:nowrap;}
-.cb-refresh{border-color:var(--border);color:var(--muted);background:transparent;}
-.cb-refresh:hover{border-color:var(--orange);color:var(--orange);}
-.cb-approve{border-color:rgba(68,196,136,.35);color:var(--green);background:rgba(68,196,136,.07);}
-.cb-approve:hover{background:rgba(68,196,136,.16);}
-.cb-export{border-color:var(--border);color:var(--muted);background:transparent;}
+.srch{flex:1;min-width:160px;background:var(--sur);border:1px solid var(--border2);border-radius:8px;padding:8px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.86rem;outline:none;transition:border-color .2s;}
+.srch:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--goldg);}
+.sel{background:var(--sur);border:1px solid var(--border2);border-radius:8px;padding:8px 11px;color:var(--text);font-family:'Space Mono',monospace;font-size:.63rem;cursor:pointer;outline:none;transition:border-color .2s;}
+.sel:focus{border-color:var(--gold);}
+.ctrl-btn{padding:8px 13px;border-radius:8px;font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:1px;cursor:pointer;border:1px solid;transition:all .2s;white-space:nowrap;}
+.cb-refresh{border-color:var(--border2);color:var(--muted);background:transparent;}
+.cb-refresh:hover{border-color:var(--gold);color:var(--gold);}
+.cb-approve{border-color:rgba(62,196,122,.35);color:var(--green);background:rgba(62,196,122,.07);}
+.cb-approve:hover{background:rgba(62,196,122,.18);}
+.cb-export{border-color:var(--border2);color:var(--muted);background:transparent;}
 .cb-export:hover{border-color:var(--blue);color:var(--blue);}
-
-/* RESULT COUNT */
-.result-count{padding:0 22px 6px;font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted);letter-spacing:1px;}
+.result-count{padding:0 22px 6px;font-family:'Space Mono',monospace;font-size:.58rem;color:var(--muted);}
 
 /* TABLE */
 .tbl-wrap{padding:0 22px 40px;overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:.82rem;min-width:900px;}
-thead tr{border-bottom:1px solid var(--border);}
-th{padding:10px 8px;text-align:left;font-family:'Space Mono',monospace;font-size:.54rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;white-space:nowrap;cursor:pointer;user-select:none;}
-th:hover{color:var(--orange);}
+thead tr{border-bottom:1px solid var(--border2);}
+th{padding:10px 8px;text-align:left;font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;white-space:nowrap;cursor:pointer;user-select:none;}
+th:hover{color:var(--gold);}
 th.sort-asc::after{content:' ▲';font-size:.5rem;}
 th.sort-desc::after{content:' ▼';font-size:.5rem;}
-td{padding:11px 8px;border-bottom:1px solid rgba(255,255,255,.035);vertical-align:middle;}
-tr:hover td{background:rgba(240,112,32,.035);}
+td{padding:11px 8px;border-bottom:1px solid rgba(255,255,255,.028);vertical-align:middle;}
+tr:hover td{background:rgba(212,168,83,.025);}
 tr.row-in{animation:rowIn .3s cubic-bezier(.16,1,.3,1) both;}
-@keyframes rowIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
-.bid{font-family:'Space Mono',monospace;font-size:.7rem;color:var(--orange);}
+.bid{font-family:'Space Mono',monospace;font-size:.68rem;color:var(--gold);}
 .name-cell strong{display:block;font-size:.86rem;}
-.name-cell span{font-size:.68rem;color:var(--muted);}
-.sbadge{display:inline-block;padding:3px 9px;border-radius:100px;font-size:.56rem;font-family:'Space Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;}
-.sbadge.pending{background:rgba(240,192,64,.1);color:var(--yellow);border:1px solid rgba(240,192,64,.28);}
-.sbadge.approved{background:rgba(68,196,136,.1);color:var(--green);border:1px solid rgba(68,196,136,.28);}
-.sbadge.rejected{background:rgba(224,72,72,.1);color:var(--red);border:1px solid rgba(224,72,72,.28);}
-.act-btns{display:flex;gap:4px;}
-.act-btn{padding:4px 8px;border-radius:6px;font-size:.57rem;font-family:'Space Mono',monospace;letter-spacing:1px;cursor:pointer;border:1px solid;transition:all .18s;text-transform:uppercase;}
+.name-cell span{font-size:.66rem;color:var(--muted);}
+.sbadge{display:inline-block;padding:3px 9px;border-radius:100px;font-size:.54rem;font-family:'Space Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;}
+.sbadge.pending{background:rgba(232,184,64,.1);color:var(--yellow);border:1px solid rgba(232,184,64,.28);}
+.sbadge.approved{background:rgba(62,196,122,.1);color:var(--green);border:1px solid rgba(62,196,122,.28);}
+.sbadge.rejected{background:rgba(224,85,85,.1);color:var(--red);border:1px solid rgba(224,85,85,.28);}
+.act-btns{display:flex;gap:4px;flex-wrap:wrap;}
+.act-btn{padding:4px 8px;border-radius:6px;font-size:.55rem;font-family:'Space Mono',monospace;letter-spacing:1px;cursor:pointer;border:1px solid;transition:all .18s;text-transform:uppercase;}
 .act-btn:hover{transform:translateY(-1px);}
-.ap-btn{border-color:rgba(68,196,136,.35);color:var(--green);background:rgba(68,196,136,.06);}
-.ap-btn:hover{background:rgba(68,196,136,.18);}
-.rj-btn{border-color:rgba(224,72,72,.35);color:var(--red);background:rgba(224,72,72,.06);}
-.rj-btn:hover{background:rgba(224,72,72,.18);}
-.em-btn{border-color:rgba(76,130,255,.32);color:var(--blue);background:rgba(76,130,255,.06);}
-.em-btn:hover{background:rgba(76,130,255,.16);}
-.del-btn{border-color:rgba(224,72,72,.2);color:rgba(224,72,72,.55);background:transparent;}
-.del-btn:hover{border-color:var(--red);color:var(--red);background:rgba(224,72,72,.07);}
-.ss-thumb{width:34px;height:34px;object-fit:cover;border-radius:5px;border:1px solid var(--border);cursor:pointer;transition:all .2s;}
-.ss-thumb:hover{transform:scale(1.15);border-color:var(--orange);}
-.ocr-pair{font-family:'Space Mono',monospace;font-size:.58rem;line-height:1.8;}
-.no-data{text-align:center;padding:50px 20px;color:var(--muted);font-family:'Space Mono',monospace;font-size:.75rem;letter-spacing:1px;}
-.no-data .ico{font-size:2.5rem;margin-bottom:12px;display:block;opacity:.3;}
-.loading-row{text-align:center;padding:32px;color:var(--muted);font-family:'Space Mono',monospace;font-size:.72rem;animation:ldPulse 1.4s ease-in-out infinite;}
-@keyframes ldPulse{0%,100%{opacity:.4}50%{opacity:1}}
+.ap-btn{border-color:rgba(62,196,122,.35);color:var(--green);background:rgba(62,196,122,.06);}
+.ap-btn:hover{background:rgba(62,196,122,.18);}
+.rj-btn{border-color:rgba(224,85,85,.35);color:var(--red);background:rgba(224,85,85,.06);}
+.rj-btn:hover{background:rgba(224,85,85,.18);}
+.del-btn{border-color:rgba(224,85,85,.18);color:rgba(224,85,85,.4);background:transparent;}
+.del-btn:hover{border-color:var(--red);color:var(--red);}
+.ss-thumb{width:32px;height:32px;object-fit:cover;border-radius:5px;border:1px solid var(--border2);cursor:pointer;transition:all .2s;display:block;}
+.ss-thumb:hover{transform:scale(1.15);border-color:var(--gold);}
+.ocr-pair{font-family:'Space Mono',monospace;font-size:.56rem;line-height:1.9;}
+.no-data{text-align:center;padding:50px 20px;color:var(--muted);font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:2px;}
+.spn{width:14px;height:14px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:inline-block;vertical-align:middle;margin-right:5px;}
 
 /* SETTINGS */
-.settings-wrap{padding:22px;max-width:720px;}
-.sec-head{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:3px;color:var(--orange);margin-bottom:2px;}
-.sec-sub{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:2px;color:var(--muted);margin-bottom:18px;}
-.info-box{border-radius:10px;padding:11px 14px;margin-bottom:16px;font-family:'Space Mono',monospace;font-size:.68rem;line-height:1.7;}
-.info-box.green{background:rgba(68,196,136,.07);border:1px solid rgba(68,196,136,.2);color:var(--green);}
-.info-box.warn{background:rgba(240,192,64,.06);border:1px solid rgba(240,192,64,.2);color:var(--yellow);}
-.info-box.err{background:rgba(224,72,72,.07);border:1px solid rgba(224,72,72,.2);color:var(--red);display:none;}
-.s-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:18px;}
-.s-group{display:flex;flex-direction:column;gap:5px;}
-.s-group.full{grid-column:1/-1;}
-.s-group label{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
-.s-group input,.s-group select{background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:10px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none;transition:border-color .2s,box-shadow .2s;width:100%;}
-.s-group input:focus{border-color:var(--orange);box-shadow:0 0 0 3px var(--og);}
-.toggle-row{display:flex;align-items:center;justify-content:space-between;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:12px 15px;grid-column:1/-1;}
-.tg-lbl span{font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:1px;color:var(--text);display:block;}
-.tg-lbl small{font-family:'Space Mono',monospace;font-size:.57rem;color:var(--muted);display:block;margin-top:3px;line-height:1.5;}
-.toggle{position:relative;width:44px;height:24px;flex-shrink:0;}
-.toggle input{opacity:0;width:0;height:0;}
-.tg-sl{position:absolute;inset:0;background:var(--s3);border:1px solid var(--border);border-radius:24px;cursor:pointer;transition:all .3s;}
-.tg-sl::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:2px;background:var(--muted);border-radius:50%;transition:all .3s cubic-bezier(.34,1.56,.64,1);}
-.toggle input:checked+.tg-sl{background:rgba(68,196,136,.16);border-color:var(--green);}
-.toggle input:checked+.tg-sl::before{transform:translateX(20px);background:var(--green);box-shadow:0 0 6px rgba(68,196,136,.4);}
-.save-btn{width:100%;padding:12px;background:linear-gradient(135deg,var(--orange),#c04800);color:#fff;border:none;border-radius:10px;font-family:'Space Mono',monospace;font-size:.78rem;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all .22s;position:relative;overflow:hidden;}
-.save-btn:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(240,112,32,.32);}
-.save-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none;}
-.save-status{text-align:center;font-family:'Space Mono',monospace;font-size:.68rem;margin-top:9px;min-height:18px;}
+.settings-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;padding:16px 22px;}
+.stg-card{background:var(--sur);border:1px solid var(--border2);border-radius:14px;padding:20px;position:relative;overflow:hidden;}
+.stg-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.35;}
+.stg-title{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:3px;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:7px;}
+.fg{margin-bottom:12px;}
+.fg label{display:block;font-family:'Space Mono',monospace;font-size:.56rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:5px;}
+.fg input,.fg select,.fg textarea{width:100%;background:var(--s2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.86rem;outline:none;transition:border-color .2s,box-shadow .2s;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--goldg);}
+.fg textarea{resize:vertical;min-height:70px;font-size:.8rem;line-height:1.6;}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border2);}
+.toggle-row:last-child{border:none;}
+.toggle-lbl{font-family:'Space Mono',monospace;font-size:.65rem;color:var(--text);}
+.toggle-sub{font-size:.58rem;color:var(--muted);margin-top:2px;}
+.toggle{position:relative;width:38px;height:20px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;position:absolute;}
+.toggle-track{position:absolute;inset:0;background:var(--s3);border-radius:20px;cursor:pointer;transition:background .28s;border:1px solid var(--border2);}
+.toggle input:checked+.toggle-track{background:var(--green);}
+.toggle-knob{position:absolute;top:3px;left:3px;width:12px;height:12px;background:#fff;border-radius:50%;transition:transform .28s cubic-bezier(.34,1.56,.64,1);pointer-events:none;box-shadow:0 1px 4px rgba(0,0,0,.4);}
+.toggle input:checked~.toggle-knob{transform:translateX(18px);}
+.stg-btn{width:100%;padding:10px;border-radius:8px;font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:2px;cursor:pointer;transition:all .2s;margin-top:4px;}
+.btn-save{background:var(--gold);color:#0a0806;border:none;font-weight:700;}
+.btn-save:hover{background:var(--gold2);transform:translateY(-1px);}
+.btn-save:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.btn-del-stg{background:rgba(224,85,85,.07);border:1px solid rgba(224,85,85,.25);color:var(--red);}
+.btn-del-stg:hover{background:rgba(224,85,85,.16);}
+.stg-msg{font-family:'Space Mono',monospace;font-size:.63rem;margin-top:8px;padding:7px 10px;border-radius:6px;display:none;}
+.stg-msg.ok{background:rgba(62,196,122,.09);border:1px solid rgba(62,196,122,.28);color:var(--green);display:block;animation:fup .2s ease;}
+.stg-msg.err{background:rgba(224,85,85,.09);border:1px solid rgba(224,85,85,.28);color:var(--red);display:block;animation:fup .2s ease;}
 
-/* DANGER ZONE */
-.dz{margin-top:28px;padding-top:22px;border-top:1px solid rgba(224,72,72,.18);}
-.dz-head{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:2px;color:var(--red);margin-bottom:9px;}
-.dz-desc{font-family:'Space Mono',monospace;font-size:.62rem;color:var(--muted);margin-bottom:14px;line-height:1.6;}
-.dz-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:9px;}
-.dz-card{background:rgba(224,72,72,.04);border:1px solid rgba(224,72,72,.18);border-radius:11px;padding:14px;transition:all .22s;}
-.dz-card:hover{border-color:rgba(224,72,72,.38);background:rgba(224,72,72,.07);}
-.dz-title{font-family:'Space Mono',monospace;font-size:.66rem;letter-spacing:1px;color:var(--red);text-transform:uppercase;margin-bottom:4px;}
-.dz-text{font-family:'Space Mono',monospace;font-size:.58rem;color:var(--muted);line-height:1.55;margin-bottom:11px;}
-.dz-btn{width:100%;padding:7px 10px;border-radius:7px;font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:1px;cursor:pointer;border:1px solid rgba(224,72,72,.35);color:var(--red);background:transparent;transition:all .2s;text-transform:uppercase;}
-.dz-btn:hover{background:rgba(224,72,72,.12);border-color:var(--red);}
-.dz-btn:disabled{opacity:.35;cursor:not-allowed;}
+/* MOVIE CHANGER HIGHLIGHT */
+.stg-card.movie-changer{border-color:rgba(212,168,83,.3);background:linear-gradient(135deg,var(--sur),rgba(20,16,8,.9));}
+.stg-card.movie-changer::before{opacity:1;animation:scan 3s ease-in-out infinite;}
+.movie-input-wrap{position:relative;}
+.movie-input-wrap input{padding-right:80px;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:2px;color:var(--gold);}
+.movie-prev-lbl{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:.48rem;color:var(--muted);font-family:'Space Mono',monospace;letter-spacing:1px;pointer-events:none;}
 
-/* ANALYTICS TAB */
-.analytics-wrap{padding:22px;}
-.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;}
-.chart-card{background:var(--sur);border:1px solid var(--border);border-radius:13px;padding:18px;}
-.chart-title{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:2px;color:var(--orange);margin-bottom:14px;}
-.bar-chart{display:flex;flex-direction:column;gap:9px;}
-.bar-row{display:flex;align-items:center;gap:9px;font-family:'Space Mono',monospace;font-size:.62rem;}
-.bar-label{width:65px;color:var(--muted);text-align:right;flex-shrink:0;text-transform:uppercase;letter-spacing:1px;}
-.bar-track{flex:1;height:10px;background:var(--s3);border-radius:100px;overflow:hidden;}
-.bar-fill{height:100%;border-radius:100px;transition:width .7s cubic-bezier(.4,0,.2,1);}
-.bar-val{width:38px;color:var(--text);font-weight:600;flex-shrink:0;}
-.donut-wrap{display:flex;align-items:center;gap:14px;}
-.donut-svg{flex-shrink:0;}
-.donut-legend{display:flex;flex-direction:column;gap:7px;}
-.legend-item{display:flex;align-items:center;gap:7px;font-family:'Space Mono',monospace;font-size:.62rem;}
-.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-.recent-list{display:flex;flex-direction:column;gap:7px;}
-.recent-item{background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;}
-.recent-name{font-size:.82rem;font-weight:600;}
-.recent-meta{font-family:'Space Mono',monospace;font-size:.62rem;color:var(--muted);}
+/* USERS / BOOKINGS panel extras */
+.user-card{background:var(--sur);border:1px solid var(--border2);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;transition:border-color .2s;cursor:default;}
+.user-card:hover{border-color:rgba(212,168,83,.22);}
+.user-avatar{width:38px;height:38px;border-radius:50%;background:var(--goldg);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.user-info strong{font-size:.88rem;display:block;}
+.user-info span{font-family:'Space Mono',monospace;font-size:.58rem;color:var(--muted);}
+.user-stats{margin-left:auto;text-align:right;}
+.user-stats strong{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--gold);}
+.user-stats span{font-family:'Space Mono',monospace;font-size:.52rem;color:var(--muted);display:block;}
+.users-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:9px;padding:14px 22px;}
 
 /* IMAGE MODAL */
-.img-modal{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;}
-.img-modal.show{display:flex;background:rgba(0,0,0,.86);backdrop-filter:blur(8px);animation:mdlBg .22s ease;}
-@keyframes mdlBg{from{background:rgba(0,0,0,0)}to{background:rgba(0,0,0,.86)}}
-.mdl-img{max-width:90vw;max-height:88vh;border-radius:10px;border:1px solid var(--border);animation:mdlIn .32s cubic-bezier(.34,1.56,.64,1);}
-@keyframes mdlIn{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:scale(1)}}
-.mdl-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.09);border:none;color:#fff;font-size:1.3rem;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .22s;backdrop-filter:blur(4px);}
-.mdl-close:hover{background:rgba(255,255,255,.18);transform:scale(1.08) rotate(90deg);}
+#imgModal{position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;backdrop-filter:blur(14px);}
+#imgModal.show{display:flex;animation:fi .2s ease;}
+#imgModal img{max-width:90vw;max-height:90vh;border-radius:12px;border:1px solid var(--border2);}
+#imgModal .close-btn{position:absolute;top:18px;right:18px;background:rgba(255,255,255,.08);border:1px solid var(--border2);color:var(--text);width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;transition:all .2s;}
+#imgModal .close-btn:hover{background:rgba(224,85,85,.2);color:var(--red);}
 
-/* CONFIRM */
-.confirm-overlay{position:fixed;inset:0;z-index:2000;display:none;align-items:center;justify-content:center;}
-.confirm-overlay.show{display:flex;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);animation:mdlBg .2s ease;}
-.confirm-box{background:var(--sur);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:330px;width:90%;text-align:center;animation:mdlIn .28s cubic-bezier(.34,1.56,.64,1);}
-.confirm-box h3{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:2px;margin-bottom:7px;}
-.confirm-box h3.g{color:var(--green);}
-.confirm-box h3.r{color:var(--red);}
-.confirm-box h3.o{color:var(--orange);}
-.confirm-box p{font-size:.8rem;color:var(--muted);margin-bottom:17px;line-height:1.55;}
+/* CONFIRM MODAL */
+#confirmModal{position:fixed;inset:0;z-index:9000;display:none;align-items:center;justify-content:center;}
+#confirmModal.show{display:flex;background:rgba(0,0,0,.88);backdrop-filter:blur(12px);animation:fi .2s ease;}
+.confirm-box{background:var(--sur);border:1px solid var(--border);border-radius:16px;padding:22px;max-width:320px;width:90%;text-align:center;}
+.confirm-title{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:3px;margin-bottom:8px;}
+.confirm-msg{font-family:'Space Mono',monospace;font-size:.67rem;color:var(--muted);margin-bottom:18px;line-height:1.75;}
 .confirm-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.cbtn{padding:10px;border-radius:8px;font-family:'Space Mono',monospace;font-size:.68rem;letter-spacing:1px;cursor:pointer;border:1px solid;transition:all .2s;text-transform:uppercase;}
-.cbtn.yes-g{border-color:var(--green);color:var(--green);background:rgba(68,196,136,.07);}
-.cbtn.yes-g:hover{background:rgba(68,196,136,.18);}
-.cbtn.yes-r{border-color:var(--red);color:var(--red);background:rgba(224,72,72,.07);}
-.cbtn.yes-r:hover{background:rgba(224,72,72,.18);}
-.cbtn.no{border-color:var(--border);color:var(--muted);}
-.cbtn.no:hover{border-color:var(--orange);color:var(--orange);}
+.cbtn{padding:10px;border-radius:8px;font-family:'Space Mono',monospace;font-size:.68rem;letter-spacing:2px;cursor:pointer;transition:all .2s;border:1px solid;}
+.cbtn-yes{background:var(--red);border-color:var(--red);color:#fff;}
+.cbtn-yes:hover{opacity:.85;}
+.cbtn-yes.gold{background:var(--gold);border-color:var(--gold);color:#0a0806;}
+.cbtn-no{background:transparent;border-color:var(--border2);color:var(--muted);}
+.cbtn-no:hover{border-color:var(--gold);color:var(--gold);}
 
 /* TOAST */
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(90px);background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:10px 16px;font-family:'Space Mono',monospace;font-size:.73rem;color:var(--text);z-index:10000;transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;max-width:94vw;backdrop-filter:blur(10px);}
-.toast.show{transform:translateX(-50%) translateY(0);}
+.toast{position:fixed;bottom:20px;right:22px;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;font-family:'Space Mono',monospace;font-size:.7rem;color:var(--text);z-index:20000;transform:translateY(80px);transition:transform .3s cubic-bezier(.34,1.56,.64,1);backdrop-filter:blur(10px);max-width:300px;}
+.toast.show{transform:translateY(0);}
 .toast.success{border-color:var(--green);color:var(--green);}
 .toast.error{border-color:var(--red);color:var(--red);}
-.toast.info{border-color:var(--orange);color:var(--orange);}
+.toast.info{border-color:var(--gold);color:var(--gold);}
+.toast.warn{border-color:var(--yellow);color:var(--yellow);}
 
-@media(max-width:1100px){.stats-row{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:700px){.stats-row{grid-template-columns:repeat(2,1fr)}.chart-grid{grid-template-columns:1fr}.hdr{padding:10px 14px}.controls{padding:10px 14px}.tbl-wrap{padding:0 14px 30px}.settings-wrap,.analytics-wrap{padding:14px}}
-@media(max-width:500px){.s-grid{grid-template-columns:1fr}}
+@media(max-width:768px){
+  .stats-row{grid-template-columns:repeat(3,1fr);}
+  .settings-grid{grid-template-columns:1fr;}
+  .hdr{padding:10px 14px;}.tbl-wrap{padding:0 14px 40px;}
+  .controls,.stats-row,.analytics-bar,.tabs,.result-count,.users-grid{padding-left:14px;padding-right:14px;}
+}
+@media(max-width:480px){.stats-row{grid-template-columns:repeat(2,1fr);}}
 </style>
 </head>
 <body>
 
-<div class="amb a1"></div>
-
-<!-- LOAD -->
 <div id="ls">
-  <div class="ls-logo">🎬 RTD Admin</div>
+  <div class="ls-logo">🎬 REEL TO DEAL</div>
   <div class="ls-bar"><div class="ls-fill"></div></div>
-  <div class="ls-sub">LOADING DASHBOARD...</div>
+  <div class="ls-sub">ADMIN PANEL · LOADING</div>
 </div>
 
 <!-- LOGIN -->
-<div id="loginScreen">
+<div id="loginScreen" style="display:none;">
   <div class="login-card">
-    <div class="login-logo">🎬 Admin</div>
-    <div class="login-sub">REEL TO DEAL · SECURE ACCESS</div>
+    <div class="login-logo">🎬 RTD</div>
+    <div class="login-sub">Admin Access · Reel to Deal</div>
     <div class="pw-wrap">
-      <input type="password" id="pw" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')login()">
-      <button class="pw-eye" onclick="togglePw(this)" title="Show/Hide">👁</button>
+      <input type="password" id="pwInput" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')doLogin()">
+      <button class="pw-eye" onclick="togglePw()" id="eyeBtn">👁</button>
     </div>
-    <button class="btn-login" onclick="login()">Access Dashboard →</button>
-    <div class="login-err" id="loginErr">Incorrect password. Try again.</div>
+    <button class="btn-login" onclick="doLogin()">Unlock Panel</button>
+    <div class="login-err" id="loginErr">⚠ Incorrect password. Please try again.</div>
+    <p style="font-family:'Space Mono',monospace;font-size:.52rem;color:var(--muted);margin-top:14px;letter-spacing:1px">This panel is for authorised event staff only.</p>
   </div>
 </div>
 
 <!-- APP -->
 <div id="app">
-
-  <!-- HEADER -->
   <div class="hdr">
-    <div class="hdr-left">
-      <div class="hdr-logo">RTD Admin</div>
-      <div class="hdr-sub">REEL TO DEAL · BOOKING MANAGEMENT</div>
+    <div class="hdr-brand">
+      <div class="hdr-logo">🎬 Reel to Deal</div>
+      <div class="hdr-divider"></div>
+      <div class="hdr-sub">ADMIN PANEL</div>
     </div>
     <div class="hdr-right">
-      <div class="sync-pill syncing" id="syncPill">
-        <div class="sdot pulse" id="syncDot"></div>
-        <span id="syncTxt">Connecting...</span>
-      </div>
-      <button class="hdr-btn" id="refBtn" onclick="manualRefresh()">↻ Refresh</button>
-      <button class="hdr-btn primary" onclick="switchTab('settings')">⚙ Settings</button>
-      <button class="hdr-btn primary" onclick="switchTab('analytics')">📊 Analytics</button>
-      <button class="hdr-btn danger" onclick="logout()">Logout</button>
+      <div class="sync-pill" id="syncPill"><div class="sdot"></div><span id="syncTxt">Loading...</span></div>
+      <button class="hdr-btn" onclick="loadAll()">↺ Refresh</button>
+      <button class="hdr-btn" onclick="exportCSV()">⬇ CSV</button>
+      <a href="index.html" style="text-decoration:none"><button class="hdr-btn">🎟 Booking Page</button></a>
+      <button class="hdr-btn danger" onclick="confirmLogout()">Logout</button>
     </div>
   </div>
 
   <!-- STATS -->
-  <div class="stats-row">
-    <div class="stat-card" style="color:var(--orange);"><div class="stat-val" id="stTotal">0</div><div class="stat-lbl">Total</div></div>
-    <div class="stat-card" style="color:var(--yellow);"><div class="stat-val" id="stPending">0</div><div class="stat-lbl">Pending</div></div>
-    <div class="stat-card" style="color:var(--green);"><div class="stat-val" id="stApproved">0</div><div class="stat-lbl">Approved</div></div>
-    <div class="stat-card" style="color:var(--red);"><div class="stat-val" id="stRejected">0</div><div class="stat-lbl">Rejected</div></div>
-    <div class="stat-card" style="color:var(--orange);"><div class="stat-val" id="stTickets" style="font-size:1.6rem;">0</div><div class="stat-lbl">Tickets Sold</div></div>
-    <div class="stat-card" style="color:var(--green);"><div class="stat-val" id="stRevenue" style="font-size:1.4rem;">₹0</div><div class="stat-lbl">Revenue</div></div>
+  <div class="stats-row" id="statsRow">
+    <div class="stat-card gold"><div class="stat-val" id="stTotal" style="color:var(--gold)">—</div><div class="stat-lbl">Total</div></div>
+    <div class="stat-card green"><div class="stat-val" id="stApproved" style="color:var(--green)">—</div><div class="stat-lbl">Approved</div></div>
+    <div class="stat-card yellow"><div class="stat-val" id="stPending" style="color:var(--yellow)">—</div><div class="stat-lbl">Pending</div></div>
+    <div class="stat-card red"><div class="stat-val" id="stRejected" style="color:var(--red)">—</div><div class="stat-lbl">Rejected</div></div>
+    <div class="stat-card blue"><div class="stat-val" id="stTickets" style="color:var(--blue)">—</div><div class="stat-lbl">Tickets</div></div>
+    <div class="stat-card purple"><div class="stat-val" id="stRevenue" style="color:#b06be0">—</div><div class="stat-lbl">Revenue</div></div>
   </div>
 
-  <!-- APPROVAL PROGRESS BAR -->
   <div class="analytics-bar">
-    <div class="rev-pill"><small>Confirmed Revenue</small><strong id="aRevenue">₹0</strong></div>
-    <div class="rate-pill"><small>Approval Rate</small><strong id="aRate">0%</strong></div>
+    <div class="rev-pill"><span>Total Revenue</span><strong id="revPill">₹0</strong></div>
+    <div class="rate-pill"><span>Approval Rate</span><strong id="ratePill">0%</strong></div>
     <div class="prog-wrap">
-      <div class="prog-label"><span>Approval Progress</span><span id="progText">0 / 0 approved</span></div>
+      <div class="prog-label"><span>Verified Bookings</span><span id="progLbl">0 / 0</span></div>
       <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
     </div>
   </div>
 
   <!-- TABS -->
   <div class="tabs">
-    <button class="tab active" id="tab-bookings" onclick="switchTab('bookings')">📋 Bookings</button>
-    <button class="tab" id="tab-analytics" onclick="switchTab('analytics')">📊 Analytics</button>
-    <button class="tab" id="tab-settings" onclick="switchTab('settings')">⚙ Settings</button>
+    <button class="tab active" onclick="switchTab('bookings',this)">📋 Bookings</button>
+    <button class="tab" onclick="switchTab('users',this)">👥 Users</button>
+    <button class="tab" onclick="switchTab('settings',this)">⚙ Settings</button>
   </div>
 
-  <!-- ─── BOOKINGS TAB ─── -->
-  <div class="tab-panel active" id="panel-bookings">
+  <!-- BOOKINGS PANEL -->
+  <div class="tab-panel active" id="tab-bookings">
     <div class="controls">
-      <input class="srch" id="srch" placeholder="🔍  Search name, ID, email, phone, UTR..." oninput="filterTable()">
-      <select class="sel" id="stFilter" onchange="filterTable()">
+      <input class="srch" id="srchInput" placeholder="🔍 Search name, email, phone, booking ID, UTR..." oninput="filterTable()">
+      <select class="sel" id="statusFilter" onchange="filterTable()">
         <option value="">All Status</option>
         <option value="pending">Pending</option>
         <option value="approved">Approved</option>
         <option value="rejected">Rejected</option>
       </select>
-      <select class="sel" id="sortCol" onchange="filterTable()">
-        <option value="created_at">Sort: Date</option>
-        <option value="amount">Sort: Amount</option>
-        <option value="name">Sort: Name</option>
-        <option value="status">Sort: Status</option>
+      <select class="sel" id="sortSel" onchange="filterTable()">
+        <option value="newest">Newest First</option>
+        <option value="oldest">Oldest First</option>
+        <option value="amount_high">Amount ↓</option>
+        <option value="name_az">Name A-Z</option>
       </select>
-      <button class="ctrl-btn cb-refresh" id="refBtn2" onclick="manualRefresh()">↻</button>
-      <button class="ctrl-btn cb-approve" onclick="bulkApprove()">✓ Approve All Pending</button>
-      <button class="ctrl-btn cb-export" onclick="exportCSV()">⬇ CSV</button>
+      <button class="ctrl-btn cb-refresh" onclick="loadAll()">↺ Refresh</button>
+      <button class="ctrl-btn cb-approve" onclick="approveAllPending()">✓ Approve All Pending</button>
+      <button class="ctrl-btn cb-export" onclick="exportCSV()">⬇ Export CSV</button>
     </div>
     <div class="result-count" id="resultCount"></div>
     <div class="tbl-wrap">
       <table>
         <thead>
           <tr>
-            <th>#</th>
-            <th onclick="setSort('booking_id')">Booking ID</th>
-            <th onclick="setSort('name')">Name / Email</th>
-            <th>Phone</th>
-            <th onclick="setSort('ticket_qty')">Qty</th>
-            <th onclick="setSort('amount')">Amount</th>
+            <th onclick="sortBy('booking_id')">Booking ID</th>
+            <th onclick="sortBy('name')">Name / Contact</th>
+            <th onclick="sortBy('ticket_qty')">Qty</th>
+            <th onclick="sortBy('amount')">Amount</th>
             <th>UTR</th>
-            <th>Screenshot</th>
             <th>OCR</th>
-            <th onclick="setSort('status')">Status</th>
-            <th onclick="setSort('created_at')">Date</th>
+            <th>Screenshot</th>
+            <th onclick="sortBy('status')">Status</th>
+            <th onclick="sortBy('created_at')">Date</th>
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody id="tblBody">
-          <tr><td colspan="12" class="loading-row">Loading bookings...</td></tr>
-        </tbody>
+        <tbody id="tbl"></tbody>
       </table>
+      <div id="noDataMsg" class="no-data" style="display:none">No bookings found</div>
     </div>
   </div>
 
-  <!-- ─── ANALYTICS TAB ─── -->
-  <div class="tab-panel" id="panel-analytics">
-    <div class="analytics-wrap">
-      <div class="sec-head">📊 Analytics</div>
-      <div class="sec-sub">BOOKING STATISTICS AND TRENDS</div>
-      <div class="chart-grid">
-        <div class="chart-card">
-          <div class="chart-title">Status Distribution</div>
-          <div class="donut-wrap">
-            <svg class="donut-svg" width="100" height="100" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(255,255,255,.05)" stroke-width="16"/>
-              <circle id="donutApp" cx="50" cy="50" r="38" fill="none" stroke="#44c488" stroke-width="16" stroke-dasharray="0 240" stroke-linecap="round" transform="rotate(-90 50 50)" style="transition:stroke-dasharray .7s ease;"/>
-              <circle id="donutPen" cx="50" cy="50" r="38" fill="none" stroke="#f0c040" stroke-width="16" stroke-dasharray="0 240" stroke-linecap="round" transform="rotate(-90 50 50)" stroke-dashoffset="0" style="transition:all .7s ease;"/>
-              <circle id="donutRej" cx="50" cy="50" r="38" fill="none" stroke="#e04848" stroke-width="16" stroke-dasharray="0 240" stroke-linecap="round" transform="rotate(-90 50 50)" style="transition:all .7s ease;"/>
-              <text x="50" y="46" text-anchor="middle" fill="#ede5d5" font-size="12" font-family="'Bebas Neue'" id="donutTotal">0</text>
-              <text x="50" y="58" text-anchor="middle" fill="#7a6a5a" font-size="6" font-family="monospace">TOTAL</text>
-            </svg>
-            <div class="donut-legend">
-              <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div><span id="lgApp">Approved: 0</span></div>
-              <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div><span id="lgPen">Pending: 0</span></div>
-              <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div><span id="lgRej">Rejected: 0</span></div>
+  <!-- USERS PANEL -->
+  <div class="tab-panel" id="tab-users">
+    <div class="controls">
+      <input class="srch" id="userSearch" placeholder="🔍 Search users..." oninput="renderUsers()">
+      <select class="sel" id="userSort" onchange="renderUsers()">
+        <option value="recent">Most Recent</option>
+        <option value="most_tickets">Most Tickets</option>
+        <option value="highest_spend">Highest Spend</option>
+        <option value="name_az">Name A-Z</option>
+      </select>
+    </div>
+    <div class="result-count" id="userCount"></div>
+    <div class="users-grid" id="usersGrid"></div>
+  </div>
+
+  <!-- SETTINGS PANEL -->
+  <div class="tab-panel" id="tab-settings">
+    <div class="settings-grid">
+
+      <!-- MOVIE NAME CHANGER (HIGHLIGHTED) -->
+      <div class="stg-card movie-changer" style="grid-column:1/-1">
+        <div class="stg-title">🎬 Movie Name & Poster</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="fg">
+            <label>Movie / Event Name</label>
+            <div class="movie-input-wrap">
+              <input type="text" id="stgMovieName" placeholder="e.g. The Dark Knight" oninput="previewMovieName()">
+              <span class="movie-prev-lbl" id="moviePrevLbl">PREVIEW</span>
             </div>
           </div>
+          <div class="fg">
+            <label>Movie Poster URL (optional)</label>
+            <input type="text" id="stgPosterUrl" placeholder="https://... or leave empty">
+          </div>
         </div>
-        <div class="chart-card">
-          <div class="chart-title">Revenue Breakdown</div>
-          <div class="bar-chart" id="revenueChart"></div>
+        <div style="background:var(--s2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-family:'Space Mono',monospace;font-size:.65rem;color:var(--muted);line-height:1.8">
+          💡 Changing the movie name updates the booking page live. Users will see the new name immediately after save.
+          A valid poster URL will show the movie poster in the hero section and on tickets.
         </div>
-        <div class="chart-card" style="grid-column:1/-1;">
-          <div class="chart-title">Recent Bookings</div>
-          <div class="recent-list" id="recentList"></div>
-        </div>
+        <button class="stg-btn btn-save" onclick="saveMovieName()">🎬 Save Movie Name & Poster</button>
+        <div class="stg-msg" id="movieMsg"></div>
       </div>
-    </div>
-  </div>
 
-  <!-- ─── SETTINGS TAB ─── -->
-  <div class="tab-panel" id="panel-settings">
-    <div class="settings-wrap">
+      <!-- EVENT DETAILS -->
+      <div class="stg-card">
+        <div class="stg-title">📅 Event Details</div>
+        <div class="fg"><label>Event Date (ISO format)</label><input type="datetime-local" id="stgEventDate"></div>
+        <div class="fg"><label>Display Date / Time</label><input type="text" id="stgEventDateDisplay" placeholder="e.g. FEB 17, 2025 · 1:00 PM"></div>
+        <div class="fg"><label>Venue</label><input type="text" id="stgVenue" placeholder="e.g. MBA Auditorium"></div>
+        <div class="fg"><label>Notice / Announcement (shown on booking page)</label><textarea id="stgDescription" placeholder="Leave blank for no notice..."></textarea></div>
+        <button class="stg-btn btn-save" onclick="saveSettings('event')">Save Event Details</button>
+        <div class="stg-msg" id="eventMsg"></div>
+      </div>
 
-      <div class="sec-head">⚙ Event Settings</div>
-      <div class="sec-sub">SYNCED TO SUPABASE · LIVE FOR ALL USERS</div>
+      <!-- PRICING -->
+      <div class="stg-card">
+        <div class="stg-title">💰 Pricing & Limits</div>
+        <div class="fg"><label>Ticket Price (₹)</label><input type="number" id="stgPrice" placeholder="100" min="1"></div>
+        <div class="fg"><label>Max Tickets Per Booking</label><input type="number" id="stgMaxTix" placeholder="5" min="1" max="20"></div>
+        <button class="stg-btn btn-save" onclick="saveSettings('pricing')">Save Pricing</button>
+        <div class="stg-msg" id="pricingMsg"></div>
+      </div>
 
-      <div class="info-box green">✅ Settings are stored in Supabase <code>app_settings</code> table. Changes save instantly and all visitors see the updated info — no cache, no delay.</div>
-      <div class="info-box err" id="settingsErrBox">❌ <span id="settingsErrMsg">Could not load settings from Supabase.</span> Ensure the <code>app_settings</code> table exists with <code>id=1</code>.</div>
+      <!-- UPI SETTINGS -->
+      <div class="stg-card">
+        <div class="stg-title">📲 UPI Payment Details</div>
+        <div class="fg"><label>UPI ID</label><input type="text" id="stgUpi" placeholder="yourname@bank"></div>
+        <div class="fg"><label>Payee Display Name</label><input type="text" id="stgPayee" placeholder="REEL TO DEAL"></div>
+        <div style="background:rgba(212,168,83,.06);border:1px solid var(--border2);border-radius:8px;padding:10px;font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted);margin-bottom:10px;line-height:1.75">
+          ⚠ Changing UPI ID will affect all new bookings. Existing bookings are unaffected.
+        </div>
+        <button class="stg-btn btn-save" onclick="saveSettings('upi')">Save UPI Details</button>
+        <div class="stg-msg" id="upiMsg"></div>
+      </div>
 
-      <div class="s-grid">
-        <div class="s-group">
-          <label>Movie / Event Name</label>
-          <input type="text" id="cfg-movie" placeholder="e.g. Reel to Deal">
-        </div>
-        <div class="s-group">
-          <label>Venue</label>
-          <input type="text" id="cfg-venue" placeholder="e.g. MBA Auditorium">
-        </div>
-        <div class="s-group">
-          <label>Event Date &amp; Time</label>
-          <input type="datetime-local" id="cfg-date">
-        </div>
-        <div class="s-group">
-          <label>Display Date (on tickets)</label>
-          <input type="text" id="cfg-datedisplay" placeholder="e.g. FEB 17, 2025 · 1:00 PM">
-        </div>
-        <div class="s-group">
-          <label>Ticket Price (₹)</label>
-          <input type="number" id="cfg-price" min="1" placeholder="100">
-        </div>
-        <div class="s-group">
-          <label>Max Tickets Per Booking</label>
-          <input type="number" id="cfg-maxtickets" min="1" max="20" placeholder="10">
-        </div>
-        <div class="s-group full">
-          <label>UPI ID</label>
-          <input type="text" id="cfg-upi" placeholder="yourname@bankname">
-        </div>
-        <div class="s-group">
-          <label>Payee Name</label>
-          <input type="text" id="cfg-payee" placeholder="e.g. REEL TO DEAL">
-        </div>
-        <div class="s-group full" style="border:1px solid rgba(124,111,255,.15);border-radius:12px;padding:16px;background:rgba(124,111,255,.04);margin-top:4px;">
-          <label style="color:var(--orange);letter-spacing:2px;font-size:.62rem;font-family:'Space Mono',monospace;margin-bottom:8px;display:block">&#127916; MOVIE POSTER IMAGE</label>
-          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-            <div id="posterPreviewBox" style="width:64px;height:92px;border-radius:8px;overflow:hidden;border:2px solid rgba(124,111,255,.3);background:#100d1e;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;">
-              <img id="adminPosterPreview" style="width:100%;height:100%;object-fit:cover;display:none" alt="">
-              <span id="adminPosterIcon">&#127916;</span>
-            </div>
-            <div style="flex:1;min-width:180px">
-              <div style="font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted);letter-spacing:1px;margin-bottom:8px">Paste a direct image URL (JPG/PNG/WebP) or upload:</div>
-              <input type="text" id="cfg-poster-url" placeholder="https://example.com/poster.jpg" style="width:100%;margin-bottom:8px" oninput="previewPoster(this.value)">
-              <div style="position:relative;display:inline-block">
-                <label style="display:inline-flex;align-items:center;gap:6px;background:rgba(124,111,255,.1);border:1px solid rgba(124,111,255,.25);border-radius:7px;padding:7px 12px;cursor:pointer;font-family:'Space Mono',monospace;font-size:.63rem;letter-spacing:1px;color:rgba(200,180,255,.8);transition:all .2s;text-transform:uppercase" onmouseover="this.style.background='rgba(124,111,255,.2)'" onmouseout="this.style.background='rgba(124,111,255,.1)'">
-                  &#128247; Upload Image
-                  <input type="file" id="cfg-poster-file" accept="image/*" onchange="uploadPosterImage(event)" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%">
-                </label>
-              </div>
-              <div id="posterUploadStatus" style="margin-top:6px;font-family:'Space Mono',monospace;font-size:.62rem;color:var(--muted)"></div>
-            </div>
+      <!-- AUTOMATION -->
+      <div class="stg-card">
+        <div class="stg-title">🤖 Automation & Verification</div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-lbl">Auto-Approve</div>
+            <div class="toggle-sub">Auto-approve when OCR fully verifies amount & UPI</div>
           </div>
+          <label class="toggle"><input type="checkbox" id="stgAutoApprove"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
         </div>
         <div class="toggle-row">
-          <div class="tg-lbl">
-            <span>🤖 Auto-Approve Bookings</span>
-            <small>ON = Auto-approve when OCR verifies amount AND UPI ID. OFF = All bookings need manual approval.</small>
+          <div>
+            <div class="toggle-lbl">Require Screenshot</div>
+            <div class="toggle-sub">Users must upload payment screenshot</div>
           </div>
-          <label class="toggle">
-            <input type="checkbox" id="cfg-autoapprove">
-            <span class="tg-sl"></span>
-          </label>
+          <label class="toggle"><input type="checkbox" id="stgRequireSS" checked><div class="toggle-track"></div><div class="toggle-knob"></div></label>
         </div>
-      </div>
-
-      <button class="save-btn" id="saveBtn" onclick="saveSettings()">💾 Save &amp; Sync to Supabase</button>
-      <div class="save-status" id="saveStatus"></div>
-
-      <!-- TEST BOOKING -->
-      <div style="margin-top:28px;background:rgba(96,165,250,.05);border:1px solid rgba(96,165,250,.2);border-radius:14px;padding:20px;">
-        <div style="font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:3px;color:#60a5fa;margin-bottom:6px;text-transform:uppercase;">🧪 Test Booking</div>
-        <div style="font-size:.78rem;color:var(--muted);line-height:1.7;margin-bottom:16px;">Creates a <strong style="color:var(--text)">real test entry</strong> in the database using current settings, then lets you view and delete it. Useful for verifying the full booking flow end-to-end before your event.</div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
-          <div>
-            <div style="font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:1px;color:var(--muted);margin-bottom:5px;text-transform:uppercase">Test Name</div>
-            <input type="text" id="test-name" value="Test User" style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 11px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none;">
-          </div>
-          <div>
-            <div style="font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:1px;color:var(--muted);margin-bottom:5px;text-transform:uppercase">Test Email</div>
-            <input type="email" id="test-email" value="test@example.com" style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 11px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none;">
-          </div>
-          <div>
-            <div style="font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:1px;color:var(--muted);margin-bottom:5px;text-transform:uppercase">Phone</div>
-            <input type="text" id="test-phone" value="9999999999" style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 11px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none;">
-          </div>
-          <div>
-            <div style="font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:1px;color:var(--muted);margin-bottom:5px;text-transform:uppercase">Qty</div>
-            <input type="number" id="test-qty" value="2" min="1" max="10" style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 11px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none;">
-          </div>
-        </div>
-
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-          <button id="testBookBtn" onclick="runTestBooking()" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);border:none;border-radius:8px;padding:10px 20px;color:#fff;font-family:'Space Mono',monospace;font-size:.68rem;letter-spacing:2px;cursor:pointer;transition:all .2s;text-transform:uppercase;">
-            ▶ Run Test
-          </button>
-          <button id="testDeleteBtn" onclick="deleteTestBooking()" style="display:none;background:rgba(248,113,113,.12);border:1px solid #f87171;border-radius:8px;padding:10px 20px;color:#f87171;font-family:'Space Mono',monospace;font-size:.68rem;letter-spacing:2px;cursor:pointer;transition:all .2s;text-transform:uppercase;">
-            🗑 Delete Test
-          </button>
-        </div>
-
-        <div id="testStatus" style="margin-top:12px;font-family:'Space Mono',monospace;font-size:.7rem;line-height:1.8;display:none;"></div>
-        <div id="testTicketPreview" style="margin-top:14px;display:none;"></div>
+        <button class="stg-btn btn-save" onclick="saveSettings('automation')" style="margin-top:14px">Save Automation Settings</button>
+        <div class="stg-msg" id="autoMsg"></div>
       </div>
 
       <!-- DANGER ZONE -->
-      <div class="dz">
-        <div class="dz-head">⚠ Danger Zone</div>
-        <div class="dz-desc">Database management — all operations are permanent and cannot be undone. Each action requires confirmation.</div>
-        <div class="dz-grid">
-          <div class="dz-card">
-            <div class="dz-title">🗑 Delete All Bookings</div>
-            <div class="dz-text">Permanently wipes every booking from the database. Use with extreme caution.</div>
-            <button class="dz-btn" onclick="dangerConfirm('all','Delete ALL Bookings?','This will permanently remove EVERY booking record. Cannot be undone.')">Delete Everything</button>
-          </div>
-          <div class="dz-card">
-            <div class="dz-title">⏳ Clear Pending</div>
-            <div class="dz-text">Removes all bookings with status "pending". Approved records are kept safe.</div>
-            <button class="dz-btn" onclick="dangerConfirm('pending','Clear Pending Bookings?','Permanently delete all PENDING bookings. Approved bookings are unaffected.')">Clear Pending</button>
-          </div>
-          <div class="dz-card">
-            <div class="dz-title">✅ Clear Approved</div>
-            <div class="dz-text">Removes approved bookings — useful after the event when archiving is done.</div>
-            <button class="dz-btn" onclick="dangerConfirm('approved','Clear Approved Bookings?','Permanently delete all APPROVED booking records.')">Clear Approved</button>
-          </div>
-          <div class="dz-card">
-            <div class="dz-title">✗ Clear Rejected</div>
-            <div class="dz-text">Removes all rejected bookings to clean up the dashboard view.</div>
-            <button class="dz-btn" onclick="dangerConfirm('rejected','Clear Rejected Bookings?','Permanently delete all REJECTED booking records.')">Clear Rejected</button>
-          </div>
-          <div class="dz-card">
-            <div class="dz-title">⚙ Reset Event Config</div>
-            <div class="dz-text">Resets all event settings in Supabase back to factory defaults.</div>
-            <button class="dz-btn" style="border-color:rgba(240,192,64,.35);color:var(--yellow);" onclick="dangerConfirm('resetConfig','Reset Event Config?','All settings will be reset to default values in Supabase.')">Reset to Defaults</button>
-          </div>
-        </div>
+      <div class="stg-card" style="border-color:rgba(224,85,85,.2)">
+        <div class="stg-title" style="color:var(--red)">⚠ Danger Zone</div>
+        <p style="font-family:'Space Mono',monospace;font-size:.63rem;color:var(--muted);margin-bottom:14px;line-height:1.75">These actions are irreversible. Proceed with caution.</p>
+        <button class="stg-btn btn-del-stg" onclick="confirmDeleteAll()">🗑 Delete ALL Bookings</button>
+        <div class="stg-msg" id="dangerMsg"></div>
       </div>
 
     </div>
   </div>
 
-</div><!-- /app -->
-
-<!-- IMAGE MODAL -->
-<div class="img-modal" id="imgModal" onclick="closeImgModal()">
-  <button class="mdl-close" onclick="closeImgModal()">×</button>
-  <img class="mdl-img" id="mdlImg" src="" alt="">
 </div>
 
-<!-- CONFIRM DIALOG -->
-<div class="confirm-overlay" id="confirmOverlay">
+<!-- IMAGE MODAL -->
+<div id="imgModal" onclick="closeImgModal()">
+  <button class="close-btn" onclick="closeImgModal()">✕</button>
+  <img id="modalImg" src="" alt="Screenshot">
+</div>
+
+<!-- CONFIRM MODAL -->
+<div id="confirmModal">
   <div class="confirm-box">
-    <h3 id="cTitle" class="r">Confirm</h3>
-    <p id="cMsg"></p>
+    <div class="confirm-title" id="confirmTitle">Confirm Action</div>
+    <div class="confirm-msg" id="confirmMsg">Are you sure?</div>
     <div class="confirm-btns">
-      <button class="cbtn" id="cYes" onclick="execConfirm()">Confirm</button>
-      <button class="cbtn no" onclick="closeConfirm()">Cancel</button>
+      <button class="cbtn cbtn-yes" id="confirmYes" onclick="confirmExec()">Confirm</button>
+      <button class="cbtn cbtn-no" onclick="closeConfirm()">Cancel</button>
     </div>
   </div>
 </div>
@@ -597,595 +482,364 @@ tr.row-in{animation:rowIn .3s cubic-bezier(.16,1,.3,1) both;}
 'use strict';
 const SB_URL='https://yhrfpcwehtqsppoifhog.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlocmZwY3dlaHRxc3Bwb2lmaG9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1NzQ5MDAsImV4cCI6MjA4NzE1MDkwMH0.Ml1V2zc8j3XCZIuILuapy2Cs4jcBl0i6sHKxFFl6Sqo';
-const ADMIN_PW='reeltodeal2025';
-const DEFAULTS={movie_name:'Reel to Deal',venue:'MBA Auditorium',event_date:'2025-02-17T13:00',event_date_display:'FEB 17, 2025 · 1:00 PM',ticket_price:100,max_tickets:10,upi_id:'hiteshhayagriv@okicici',payee_name:'REEL TO DEAL',auto_approve:true};
+const ADMIN_PW='admin@123';
+let allBookings=[],sortField='created_at',sortDir='desc',confirmCb=null;
 
-let allBookings=[],refInt=null,pendingConfirm=null,prevStatVals={};
-let sortField='created_at',sortDir='desc';
-
-// ─── INIT ───
+// ── INIT ──
 window.addEventListener('load',()=>{
-  setTimeout(()=>{document.getElementById('ls').classList.add('out');setTimeout(()=>document.getElementById('ls').remove(),600);},1100);
+  setTimeout(()=>{
+    document.getElementById('ls').classList.add('out');
+    const loggedIn=sessionStorage.getItem('rtd_admin');
+    document.getElementById('loginScreen').style.display='flex';
+    if(loggedIn==='1') unlock();
+  },1000);
 });
 
-// ─── AUTH ───
-function login(){
-  const pw=document.getElementById('pw').value;
-  if(pw===ADMIN_PW){
-    const ls=document.getElementById('loginScreen');
-    ls.style.transition='opacity .3s';ls.style.opacity='0';
-    setTimeout(()=>{ls.style.display='none';document.getElementById('app').classList.add('vis');
-      loadBookings();loadSettingsForm();refInt=setInterval(loadBookings,15000);},300);
-  } else {
-    const err=document.getElementById('loginErr');err.style.display='block';
-    const pw=document.getElementById('pw');pw.classList.add('error');
-    setTimeout(()=>{err.style.display='none';pw.classList.remove('error');},3000);
-  }
+// ── LOGIN ──
+function doLogin(){
+  const pw=document.getElementById('pwInput').value;
+  const inp=document.getElementById('pwInput');
+  if(pw===ADMIN_PW){sessionStorage.setItem('rtd_admin','1');unlock();}
+  else{inp.classList.add('error');document.getElementById('loginErr').classList.add('show');setTimeout(()=>inp.classList.remove('error'),500);}
 }
-function logout(){
-  clearInterval(refInt);
-  const app=document.getElementById('app');app.style.transition='opacity .25s';app.style.opacity='0';
-  setTimeout(()=>{app.classList.remove('vis');app.style.opacity='';app.style.transition='';
-    const ls=document.getElementById('loginScreen');ls.style.display='flex';ls.style.opacity='0';
-    requestAnimationFrame(()=>{ls.style.transition='opacity .3s';ls.style.opacity='1';});
-    document.getElementById('pw').value='';},250);
+function togglePw(){
+  const inp=document.getElementById('pwInput');
+  inp.type=inp.type==='password'?'text':'password';
+  document.getElementById('eyeBtn').textContent=inp.type==='password'?'👁':'🙈';
 }
-function togglePw(btn){const i=document.getElementById('pw');i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'👁':'🙈';}
-
-// ─── TABS ───
-function switchTab(name){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-  document.getElementById('tab-'+name).classList.add('active');
-  document.getElementById('panel-'+name).classList.add('active');
-  if(name==='settings')loadSettingsForm();
-  if(name==='analytics')renderAnalytics();
+function unlock(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('app').classList.add('vis');
+  loadAll();loadSettings();
+}
+function confirmLogout(){
+  openConfirm('Logout','Exit the admin panel?',()=>{sessionStorage.removeItem('rtd_admin');location.reload();},'gold');
 }
 
-// ─── SUPABASE HELPERS ───
-async function sbFetch(ep,opts={}){
-  const url=`${SB_URL}/rest/v1/${ep}`;
-  const headers={'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':opts.prefer||'return=representation',...(opts.headers||{})};
-  const res=await fetch(url,{...opts,headers});
-  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||`HTTP ${res.status}`);}
-  if(res.status===204)return null;
+// ── API ──
+async function sbGet(ep){
+  const res=await fetch(`${SB_URL}/rest/v1/${ep}`,{headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`}});
+  if(!res.ok)throw new Error('HTTP '+res.status);
   return res.json();
 }
+async function sbPatch(table,filter,body){
+  const res=await fetch(`${SB_URL}/rest/v1/${table}?${filter}`,{method:'PATCH',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(body)});
+  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'HTTP '+res.status);}
+  return res.json();
+}
+async function sbPost(table,body){
+  const res=await fetch(`${SB_URL}/rest/v1/${table}`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(body)});
+  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'HTTP '+res.status);}
+  return res.json();
+}
+async function sbDelete(table,filter){
+  const res=await fetch(`${SB_URL}/rest/v1/${table}?${filter}`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`}});
+  if(!res.ok)throw new Error('HTTP '+res.status);
+}
 
-// ─── SYNC PILL ───
-function setSyncState(state,msg){
-  const p=document.getElementById('syncPill'),d=document.getElementById('syncDot'),t=document.getElementById('syncTxt');
-  p.className='sync-pill '+state;
-  d.className='sdot'+(state==='syncing'?' fast':' pulse');
+function setSyncPill(state,msg){
+  const p=document.getElementById('syncPill'),t=document.getElementById('syncTxt');
+  p.className='sync-pill '+(state==='ok'?'ok':state==='err'?'err':'');
   t.textContent=msg;
 }
 
-// ─── LOAD BOOKINGS ───
-async function loadBookings(){
-  setSyncState('syncing','Loading...');
+// ── LOAD ALL ──
+async function loadAll(){
+  setSyncPill('','Syncing...');
   try{
-    const data=await sbFetch('bookings?select=*&order=created_at.desc&limit=500',{method:'GET',headers:{'Range':'0-499'}});
-    allBookings=data||[];
-    updateStats();filterTable();
-    setSyncState('ok',`Synced · ${new Date().toLocaleTimeString()}`);
-    setTimeout(()=>setSyncState('ok',`${allBookings.length} bookings`),3000);
-  }catch(err){
-    document.getElementById('tblBody').innerHTML=`<tr><td colspan="12" class="loading-row" style="color:var(--red)">⚠ ${err.message}</td></tr>`;
-    setSyncState('err','Connection error');
+    allBookings=await sbGet('bookings?select=*&order=created_at.desc');
+    updateStats();filterTable();renderUsers();
+    setSyncPill('ok','Live ✓ — '+allBookings.length+' bookings');
+  }catch(e){
+    setSyncPill('err','Error: '+e.message);
+    showToast('Failed to load: '+e.message,'error');
   }
 }
 
-async function manualRefresh(){
-  const btn=document.getElementById('refBtn'),btn2=document.getElementById('refBtn2');
-  [btn,btn2].forEach(b=>{if(b){b.style.opacity='.5';b.innerHTML='↻';b.style.animation='spin .5s linear infinite';}});
-  await loadBookings();
-  [btn,btn2].forEach(b=>{if(b){b.style.opacity='';b.style.animation='';b.innerHTML=b===btn?'↻ Refresh':'↻';}});
-  showToast('Refreshed ✓','success');
-}
-
-// ─── STATS ───
+// ── STATS ──
 function updateStats(){
-  const t=allBookings.length,p=allBookings.filter(b=>b.status==='pending').length;
-  const a=allBookings.filter(b=>b.status==='approved').length,rj=allBookings.filter(b=>b.status==='rejected').length;
-  const allTickets=allBookings.reduce((s,b)=>s+Number(b.ticket_qty||0),0);
-  const rev=allBookings.filter(b=>b.status==='approved').reduce((s,b)=>s+Number(b.amount||0),0);
-  animStat('stTotal',t);animStat('stPending',p);animStat('stApproved',a);animStat('stRejected',rj);
-  animStat('stTickets',allTickets);animStat('stRevenue','₹'+rev.toLocaleString('en-IN'));
-  // progress bar
-  const rate=t>0?Math.round(a/t*100):0;
-  document.getElementById('aRevenue').textContent='₹'+rev.toLocaleString('en-IN');
-  document.getElementById('aRate').textContent=rate+'%';
+  const total=allBookings.length;
+  const approved=allBookings.filter(b=>b.status==='approved').length;
+  const pending=allBookings.filter(b=>b.status==='pending').length;
+  const rejected=allBookings.filter(b=>b.status==='rejected').length;
+  const tickets=allBookings.reduce((s,b)=>s+(b.ticket_qty||0),0);
+  const revenue=allBookings.filter(b=>b.status==='approved').reduce((s,b)=>s+(b.amount||0),0);
+  const ids=['stTotal','stApproved','stPending','stRejected','stTickets','stRevenue'];
+  const vals=[total,approved,pending,rejected,tickets,'₹'+revenue];
+  ids.forEach((id,i)=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    const nv=String(vals[i]);
+    if(el.textContent!==nv){el.textContent=nv;el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');}
+  });
+  document.getElementById('revPill').textContent='₹'+revenue;
+  const rate=total>0?Math.round(approved/total*100):0;
+  document.getElementById('ratePill').textContent=rate+'%';
+  document.getElementById('progLbl').textContent=approved+' / '+total;
   document.getElementById('progFill').style.width=rate+'%';
-  document.getElementById('progText').textContent=`${a} / ${t} approved`;
-}
-function animStat(id,val){
-  const el=document.getElementById(id);if(!el)return;
-  const sv=String(val);if(prevStatVals[id]===sv)return;
-  el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');
-  el.textContent=sv;prevStatVals[id]=sv;
 }
 
-// ─── SORT ───
-function setSort(field){
+// ── FILTER + RENDER TABLE ──
+function filterTable(){
+  const q=document.getElementById('srchInput').value.toLowerCase();
+  const sf=document.getElementById('statusFilter').value;
+  const sortSel=document.getElementById('sortSel').value;
+  let rows=[...allBookings];
+  if(q)rows=rows.filter(b=>[b.booking_id,b.name,b.email,b.phone,b.utr].some(v=>v&&String(v).toLowerCase().includes(q)));
+  if(sf)rows=rows.filter(b=>b.status===sf);
+  if(sortSel==='oldest')rows.sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+  else if(sortSel==='amount_high')rows.sort((a,b)=>(b.amount||0)-(a.amount||0));
+  else if(sortSel==='name_az')rows.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+  else rows.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  document.getElementById('resultCount').textContent='Showing '+rows.length+' of '+allBookings.length+' bookings';
+  const tbody=document.getElementById('tbl');
+  const noData=document.getElementById('noDataMsg');
+  if(!rows.length){tbody.innerHTML='';noData.style.display='block';return;}
+  noData.style.display='none';
+  tbody.innerHTML=rows.map((b,i)=>`
+    <tr class="row-in" style="animation-delay:${i*.025}s">
+      <td><span class="bid">${b.booking_id||'—'}</span></td>
+      <td><div class="name-cell"><strong>${esc(b.name||'—')}</strong><span>${esc(b.email||'')} · ${esc(b.phone||'')}</span></div></td>
+      <td style="font-family:'Space Mono',monospace;font-size:.8rem;text-align:center">${b.ticket_qty||1}</td>
+      <td style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--gold)">₹${b.amount||0}</td>
+      <td style="font-family:'Space Mono',monospace;font-size:.65rem;color:var(--muted);max-width:110px;overflow:hidden;text-overflow:ellipsis">${esc(b.utr||'—')}</td>
+      <td><div class="ocr-pair">
+        <span style="color:${b.ocr_amount_match?'var(--green)':'var(--red)'}">${b.ocr_amount_match?'✓':'✗'} Amt</span><br>
+        <span style="color:${b.ocr_upi_match?'var(--green)':'var(--red)'}">${b.ocr_upi_match?'✓':'✗'} UPI</span>
+      </div></td>
+      <td>${b.screenshot_url?`<img class="ss-thumb" src="${b.screenshot_url}" onclick="openImg('${b.screenshot_url}')" alt="SS">`:'<span style="color:var(--muted);font-size:.6rem">none</span>'}</td>
+      <td><span class="sbadge ${b.status||'pending'}">${b.status||'pending'}</span></td>
+      <td style="font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted);white-space:nowrap">${fmtDate(b.created_at)}</td>
+      <td><div class="act-btns">
+        ${b.status!=='approved'?`<button class="act-btn ap-btn" onclick="updateStatus('${b.id}','approved')">✓ OK</button>`:''}
+        ${b.status!=='rejected'?`<button class="act-btn rj-btn" onclick="updateStatus('${b.id}','rejected')">✗ Rej</button>`:''}
+        <button class="act-btn del-btn" onclick="confirmDeleteOne('${b.id}','${esc(b.booking_id||'')}')">🗑</button>
+      </div></td>
+    </tr>`).join('');
+}
+
+function esc(s){return String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fmtDate(d){if(!d)return'—';const dt=new Date(d);return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short'})+'<br><span style="font-size:.56rem">'+dt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})+'</span>';}
+
+function sortBy(field){
   if(sortField===field)sortDir=sortDir==='asc'?'desc':'asc';
   else{sortField=field;sortDir='asc';}
+  allBookings.sort((a,b)=>{
+    const va=a[field]||'',vb=b[field]||'';
+    const cmp=typeof va==='number'?va-vb:String(va).localeCompare(String(vb));
+    return sortDir==='asc'?cmp:-cmp;
+  });
   filterTable();
 }
 
-// ─── FILTER + RENDER ───
-function filterTable(){
-  const q=document.getElementById('srch').value.toLowerCase().trim();
-  const st=document.getElementById('stFilter').value;
-  let rows=allBookings.filter(b=>{
-    const match=!q||[b.name,b.booking_id,b.email,b.phone,b.utr].some(v=>String(v||'').toLowerCase().includes(q));
-    return match&&(!st||b.status===st);
-  });
-  // sort
-  rows.sort((a,b)=>{
-    let va=a[sortField]||'',vb=b[sortField]||'';
-    if(typeof va==='number'||!isNaN(Number(va))){va=Number(va);vb=Number(vb);}
-    const cmp=va<vb?-1:va>vb?1:0;
-    return sortDir==='asc'?cmp:-cmp;
-  });
-  document.getElementById('resultCount').textContent=`Showing ${rows.length} of ${allBookings.length} bookings`;
-  renderTable(rows);
+// ── UPDATE STATUS ──
+async function updateStatus(id,status){
+  try{
+    await sbPatch('bookings','id=eq.'+id,{status});
+    const b=allBookings.find(x=>x.id==id);
+    if(b)b.status=status;
+    updateStats();filterTable();renderUsers();
+    showToast(`Booking ${status==='approved'?'✅ approved':'❌ rejected'}`,status==='approved'?'success':'warn');
+    setTimeout(()=>loadAll(),800);
+  }catch(e){showToast('Error: '+e.message,'error');}
 }
 
-function renderTable(rows){
-  const tbody=document.getElementById('tblBody');
-  if(!rows.length){
-    tbody.innerHTML=`<tr><td colspan="12"><div class="no-data"><span class="ico">🎬</span>No bookings found</div></td></tr>`;return;
-  }
-  tbody.innerHTML=rows.map((b,i)=>{
-    const dt=new Date(b.created_at).toLocaleDateString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
-    const badge=`<span class="sbadge ${b.status||'pending'}">${b.status||'pending'}</span>`;
-    const ss=b.screenshot_url?`<img class="ss-thumb" src="${b.screenshot_url}" onclick="openImgModal('${b.screenshot_url}')" loading="lazy" alt="SS">`:'<span style="color:var(--muted);font-size:.7rem;font-family:monospace">—</span>';
-    const ocr=b.ocr_verified!=null?`<div class="ocr-pair">${b.ocr_amount_match?'✅':'❌'} Amt<br>${b.ocr_upi_match?'✅':'❌'} UPI</div>`:'<span style="color:var(--muted);font-size:.7rem">—</span>';
-    const sa=b.name?.replace(/'/g,"\\'"),sb2=b.booking_id?.replace(/'/g,"\\'"),sc=b.email?.replace(/'/g,"\\'");
-    let acts='<div class="act-btns">';
-    if(b.status!=='approved')acts+=`<button class="act-btn ap-btn" onclick="confirmStatus('${b.id}','approved','${sb2||sa}')">✓</button>`;
-    if(b.status!=='rejected')acts+=`<button class="act-btn rj-btn" onclick="confirmStatus('${b.id}','rejected','${sb2||sa}')">✗</button>`;
-    acts+=`<button class="act-btn em-btn" onclick="emailUser('${sc}','${sa}','${sb2||''}','${b.status||'pending'}')">✉</button>`;
-    acts+=`<button class="act-btn del-btn" onclick="confirmDelete('${b.id}','${sb2||sa}')">🗑</button>`;
-    acts+='</div>';
-    return`<tr class="row-in" style="animation-delay:${Math.min(i,.18)*0.025}s">
-      <td style="color:var(--muted);font-size:.7rem">${i+1}</td>
-      <td><span class="bid">${b.booking_id||'—'}</span></td>
-      <td><div class="name-cell"><strong>${b.name||'—'}</strong><span>${b.email||''}</span></div></td>
-      <td style="font-family:monospace;font-size:.76rem">${b.phone||'—'}</td>
-      <td style="text-align:center;font-weight:600">${b.ticket_qty||0}</td>
-      <td style="color:var(--orange);font-weight:600">₹${b.amount||0}</td>
-      <td style="font-family:monospace;font-size:.68rem;max-width:95px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${b.utr||''}">${b.utr||'—'}</td>
-      <td>${ss}</td><td>${ocr}</td><td>${badge}</td>
-      <td style="font-size:.68rem;color:var(--muted);white-space:nowrap">${dt}</td>
-      <td>${acts}</td>
-    </tr>`;
-  }).join('');
-}
-
-// ─── INDIVIDUAL STATUS / DELETE ───
-function confirmStatus(id,status,label){
-  pendingConfirm={type:'status',id,status};
-  const t=document.getElementById('cTitle'),m=document.getElementById('cMsg'),y=document.getElementById('cYes');
-  if(status==='approved'){t.className='g';t.textContent='✓ Approve Booking';y.className='cbtn yes-g';y.textContent='Yes, Approve';}
-  else{t.className='r';t.textContent='✗ Reject Booking';y.className='cbtn yes-r';y.textContent='Yes, Reject';}
-  m.textContent=`${status==='approved'?'Approve':'Reject'} booking for "${label}"?`;
-  document.getElementById('confirmOverlay').classList.add('show');
-}
-function confirmDelete(id,label){
-  pendingConfirm={type:'delete',id};
-  const t=document.getElementById('cTitle'),m=document.getElementById('cMsg'),y=document.getElementById('cYes');
-  t.className='r';t.textContent='🗑 Delete Booking';y.className='cbtn yes-r';y.textContent='Yes, Delete';
-  m.textContent=`Permanently delete booking "${label}"? Cannot be undone.`;
-  document.getElementById('confirmOverlay').classList.add('show');
-}
-function closeConfirm(){document.getElementById('confirmOverlay').classList.remove('show');pendingConfirm=null;}
-async function execConfirm(){
-  if(!pendingConfirm)return;
-  const pc=pendingConfirm;closeConfirm();
-  if(pc.type==='status'){
-    try{
-      await sbFetch(`bookings?id=eq.${pc.id}`,{method:'PATCH',body:JSON.stringify({status:pc.status}),prefer:'return=minimal'});
-      const b=allBookings.find(x=>x.id===pc.id);if(b)b.status=pc.status;
-      updateStats();filterTable();showToast(`Booking ${pc.status} ✓`,pc.status==='approved'?'success':'error');
-    }catch(e){showToast('Error: '+e.message,'error');}
-  } else if(pc.type==='delete'){
-    try{
-      await sbFetch(`bookings?id=eq.${pc.id}`,{method:'DELETE',prefer:'return=minimal'});
-      allBookings=allBookings.filter(b=>b.id!==pc.id);
-      updateStats();filterTable();showToast('Booking deleted ✓','success');
-    }catch(e){showToast('Error: '+e.message,'error');}
-  } else if(pc.type==='danger'){
-    await execDanger(pc.action);
-  }
-}
-
-// ─── BULK APPROVE ───
-async function bulkApprove(){
+// ── APPROVE ALL PENDING ──
+async function approveAllPending(){
   const pending=allBookings.filter(b=>b.status==='pending');
   if(!pending.length){showToast('No pending bookings','info');return;}
-  pendingConfirm={type:'_bulk',items:pending};
-  const t=document.getElementById('cTitle'),m=document.getElementById('cMsg'),y=document.getElementById('cYes');
-  t.className='g';t.textContent='✓ Bulk Approve';y.className='cbtn yes-g';y.textContent=`Approve All ${pending.length}`;
-  m.textContent=`Approve all ${pending.length} pending bookings at once?`;
-  document.getElementById('confirmOverlay').classList.add('show');
-
-  // patch execConfirm for bulk
-  const _orig=window.execConfirm;
-  window.execConfirm=async function(){
-    if(!pendingConfirm||pendingConfirm.type!=='_bulk'){_orig&&_orig();return;}
-    const items=pendingConfirm.items;closeConfirm();
-    window.execConfirm=_orig;
-    setSyncState('syncing','Approving...');let done=0;
-    for(const b of items){
-      try{await sbFetch(`bookings?id=eq.${b.id}`,{method:'PATCH',body:JSON.stringify({status:'approved'}),prefer:'return=minimal'});b.status='approved';done++;}catch(e){}
-    }
-    updateStats();filterTable();setSyncState('ok','Done');showToast(`${done}/${items.length} approved ✓`,'success');
-  };
+  openConfirm('Approve All Pending',`Approve all ${pending.length} pending bookings?`,async()=>{
+    try{
+      let done=0;
+      for(const b of pending){await sbPatch('bookings','id=eq.'+b.id,{status:'approved'});done++;}
+      showToast(`✅ ${done} bookings approved`,'success');
+      setTimeout(loadAll,600);
+    }catch(e){showToast('Error: '+e.message,'error');}
+  },'gold');
 }
 
-// ─── EXPORT CSV ───
+// ── DELETE ──
+function confirmDeleteOne(id,bid){
+  openConfirm('Delete Booking',`Delete booking "${bid}"? This cannot be undone.`,async()=>{
+    try{
+      await sbDelete('bookings','id=eq.'+id);
+      showToast('Booking deleted','info');
+      setTimeout(loadAll,500);
+    }catch(e){showToast('Error: '+e.message,'error');}
+  });
+}
+function confirmDeleteAll(){
+  openConfirm('DELETE ALL BOOKINGS','This will permanently delete ALL booking records. This cannot be undone.',async()=>{
+    try{
+      await sbDelete('bookings','id=neq.0');
+      allBookings=[];updateStats();filterTable();renderUsers();
+      showToast('All bookings deleted','warn');
+    }catch(e){showToast('Error: '+e.message,'error');}
+  });
+}
+
+// ── USERS ──
+function renderUsers(){
+  const q=(document.getElementById('userSearch')?.value||'').toLowerCase();
+  const sort=(document.getElementById('userSort')?.value)||'recent';
+  const userMap={};
+  allBookings.forEach(b=>{
+    const key=b.email||b.phone||b.name;if(!key)return;
+    if(!userMap[key])userMap[key]={name:b.name,email:b.email,phone:b.phone,bookings:[],totalTickets:0,totalSpend:0,lastDate:null};
+    userMap[key].bookings.push(b);
+    userMap[key].totalTickets+=(b.ticket_qty||0);
+    if(b.status==='approved')userMap[key].totalSpend+=(b.amount||0);
+    const d=new Date(b.created_at);
+    if(!userMap[key].lastDate||d>userMap[key].lastDate)userMap[key].lastDate=d;
+  });
+  let users=Object.values(userMap);
+  if(q)users=users.filter(u=>[u.name,u.email,u.phone].some(v=>v&&v.toLowerCase().includes(q)));
+  if(sort==='most_tickets')users.sort((a,b)=>b.totalTickets-a.totalTickets);
+  else if(sort==='highest_spend')users.sort((a,b)=>b.totalSpend-a.totalSpend);
+  else if(sort==='name_az')users.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+  else users.sort((a,b)=>b.lastDate-a.lastDate);
+  document.getElementById('userCount').textContent=users.length+' unique users';
+  const grid=document.getElementById('usersGrid');
+  if(!users.length){grid.innerHTML='<p style="color:var(--muted);font-family:Space Mono,monospace;font-size:.72rem;padding:30px;text-align:center">No users found</p>';return;}
+  grid.innerHTML=users.map((u,i)=>`
+    <div class="user-card" style="animation:rowIn .3s ease ${i*.04}s both">
+      <div class="user-avatar">${(u.name||'?')[0].toUpperCase()}</div>
+      <div class="user-info">
+        <strong>${esc(u.name||'—')}</strong>
+        <span>${esc(u.email||'')}${u.phone?' · '+u.phone:''}</span>
+        <span style="color:var(--muted);margin-top:1px">${u.bookings.length} booking(s) · Last: ${u.lastDate?u.lastDate.toLocaleDateString('en-IN'):'—'}</span>
+      </div>
+      <div class="user-stats">
+        <strong>${u.totalTickets}</strong>
+        <span>tickets</span>
+        <strong style="color:var(--green);font-size:.9rem">₹${u.totalSpend}</strong>
+        <span>spent</span>
+      </div>
+    </div>`).join('');
+}
+
+// ── SETTINGS LOAD ──
+async function loadSettings(){
+  try{
+    const data=await sbGet('app_settings?id=eq.1&select=*');
+    if(data&&data.length>0){
+      const s=data[0];
+      setValue('stgMovieName',s.movie_name||'');
+      setValue('stgPosterUrl',s.movie_poster_url||'');
+      setValue('stgEventDate',s.event_date||'');
+      setValue('stgEventDateDisplay',s.event_date_display||'');
+      setValue('stgVenue',s.venue||'');
+      setValue('stgDescription',s.event_description||'');
+      setValue('stgPrice',s.ticket_price||'');
+      setValue('stgMaxTix',s.max_tickets||'');
+      setValue('stgUpi',s.upi_id||'');
+      setValue('stgPayee',s.payee_name||'');
+      const aa=document.getElementById('stgAutoApprove');if(aa)aa.checked=Boolean(s.auto_approve);
+    }
+  }catch(e){console.warn('Settings load failed:',e);}
+}
+
+function setValue(id,val){const el=document.getElementById(id);if(el)el.value=val;}
+
+function previewMovieName(){
+  const v=document.getElementById('stgMovieName').value;
+  const lbl=document.getElementById('moviePrevLbl');
+  if(lbl)lbl.textContent=v?v.toUpperCase().slice(0,12):'PREVIEW';
+}
+
+async function saveMovieName(){
+  const name=document.getElementById('stgMovieName').value.trim();
+  const poster=document.getElementById('stgPosterUrl').value.trim();
+  if(!name){showStgMsg('movieMsg','Movie name cannot be empty','err');return;}
+  const btn=document.querySelector('.movie-changer .btn-save');
+  btn.disabled=true;btn.innerHTML='<span class="spn"></span>Saving...';
+  try{
+    await upsertSettings({movie_name:name,movie_poster_url:poster});
+    showStgMsg('movieMsg','✅ Movie name updated successfully!','ok');
+    showToast('Movie name saved: '+name,'success');
+  }catch(e){showStgMsg('movieMsg','Error: '+e.message,'err');}
+  finally{btn.disabled=false;btn.innerHTML='🎬 Save Movie Name & Poster';}
+}
+
+async function saveSettings(section){
+  const map={
+    event:{stgEventDate:'event_date',stgEventDateDisplay:'event_date_display',stgVenue:'venue',stgDescription:'event_description'},
+    pricing:{stgPrice:'ticket_price',stgMaxTix:'max_tickets'},
+    upi:{stgUpi:'upi_id',stgPayee:'payee_name'},
+    automation:{stgAutoApprove:'auto_approve',stgRequireSS:'require_screenshot'}
+  };
+  const msgId={event:'eventMsg',pricing:'pricingMsg',upi:'upiMsg',automation:'autoMsg'}[section];
+  const fields=map[section];
+  const body={};
+  for(const [inputId,col] of Object.entries(fields)){
+    const el=document.getElementById(inputId);if(!el)continue;
+    body[col]=el.type==='checkbox'?el.checked:(el.value.trim()||null);
+    if(col==='ticket_price'||col==='max_tickets')body[col]=Number(el.value)||null;
+  }
+  try{
+    await upsertSettings(body);
+    showStgMsg(msgId,'✅ Settings saved!','ok');
+    showToast('Settings saved','success');
+  }catch(e){showStgMsg(msgId,'Error: '+e.message,'err');}
+}
+
+async function upsertSettings(body){
+  const res=await fetch(`${SB_URL}/rest/v1/app_settings?id=eq.1`,{method:'PATCH',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(body)});
+  if(!res.ok){
+    // If no row exists, insert
+    const res2=await fetch(`${SB_URL}/rest/v1/app_settings`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({id:1,...body})});
+    if(!res2.ok)throw new Error('Save failed HTTP '+res2.status);
+  }
+}
+
+function showStgMsg(id,msg,type){
+  const el=document.getElementById(id);if(!el)return;
+  el.textContent=msg;el.className='stg-msg '+type;
+  setTimeout(()=>{el.className='stg-msg';},4500);
+}
+
+// ── EXPORT CSV ──
 function exportCSV(){
   if(!allBookings.length){showToast('No data to export','info');return;}
-  const cols=['booking_id','name','email','phone','ticket_qty','amount','utr','status','ocr_verified','ocr_amount_match','ocr_upi_match','movie_name','created_at'];
-  const hdr=cols.join(',');
-  const rows=allBookings.map(b=>cols.map(k=>`"${String(b[k]??'').replace(/"/g,'""')}"`).join(','));
-  const csv=[hdr,...rows].join('\n');
-  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download=`rtd-bookings-${new Date().toISOString().slice(0,10)}.csv`;a.click();
-  showToast(`Exported ${allBookings.length} bookings ⬇`,'success');
+  const headers=['Booking ID','Name','Email','Phone','Tickets','Amount','UTR','Status','OCR Amount','OCR UPI','Movie','Created At'];
+  const rows=allBookings.map(b=>[b.booking_id,b.name,b.email,b.phone,b.ticket_qty,b.amount,b.utr,b.status,b.ocr_amount_match?'Yes':'No',b.ocr_upi_match?'Yes':'No',b.movie_name,b.created_at].map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(','));
+  const csv=[headers.join(','),...rows].join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+  a.download='rtd-bookings-'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();showToast('CSV exported ('+allBookings.length+' rows)','success');
 }
 
-// ─── EMAIL USER ───
-function emailUser(email,name,bid,status){
-  const emoji={'pending':'⏳','approved':'✅','rejected':'❌'}[status]||'📌';
-  const s=encodeURIComponent(`Your Reel to Deal Booking – ${bid}`);
-  const b=encodeURIComponent(`Dear ${name},\n\nYour booking ${bid} is currently: ${emoji} ${status.toUpperCase()}\n\nThank you for participating in Reel to Deal MBA Fest 2025!\n\n— Admin`);
-  window.location.href=`mailto:${email}?subject=${s}&body=${b}`;
+// ── TAB SWITCH ──
+function switchTab(name,btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
 }
 
-// ─── SETTINGS LOAD (from app_settings row id=1) ───
-async function loadSettingsForm(){
-  setSyncState('syncing','Loading settings...');
-  try{
-    const data=await sbFetch('app_settings?id=eq.1&select=*',{method:'GET'});
-    if(!data||!data.length)throw new Error('No settings row found (id=1)');
-    fillSettingsForm(data[0]);
-    document.getElementById('settingsErrBox').style.display='none';
-    setSyncState('ok','Settings loaded');
-  }catch(e){
-    fillSettingsForm(DEFAULTS);
-    document.getElementById('settingsErrBox').style.display='block';
-    document.getElementById('settingsErrMsg').textContent=e.message;
-    setSyncState('err','Settings error');
-  }
+// ── IMAGE MODAL ──
+function openImg(url){document.getElementById('modalImg').src=url;document.getElementById('imgModal').classList.add('show');}
+function closeImgModal(){document.getElementById('imgModal').classList.remove('show');}
+
+// ── CONFIRM MODAL ──
+function openConfirm(title,msg,cb,btnStyle){
+  document.getElementById('confirmTitle').textContent=title;
+  document.getElementById('confirmMsg').textContent=msg;
+  const yes=document.getElementById('confirmYes');
+  yes.className='cbtn cbtn-yes'+(btnStyle==='gold'?' gold':'');
+  confirmCb=cb;
+  document.getElementById('confirmModal').classList.add('show');
 }
-function fillSettingsForm(s){
-  document.getElementById('cfg-movie').value=s.movie_name||'';
-  document.getElementById('cfg-venue').value=s.venue||'';
-  try{document.getElementById('cfg-date').value=(s.event_date||'').slice(0,16);}catch(e){}
-  document.getElementById('cfg-datedisplay').value=s.event_date_display||'';
-  document.getElementById('cfg-price').value=s.ticket_price||100;
-  document.getElementById('cfg-maxtickets').value=s.max_tickets||10;
-  document.getElementById('cfg-upi').value=s.upi_id||'';
-  document.getElementById('cfg-payee').value=s.payee_name||'';
-  document.getElementById('cfg-autoapprove').checked=!!s.auto_approve;
-  var pu=s.movie_poster_url||''; document.getElementById('cfg-poster-url').value=pu; previewPoster(pu);
-}
+function confirmExec(){closeConfirm();if(confirmCb)confirmCb();}
+function closeConfirm(){document.getElementById('confirmModal').classList.remove('show');confirmCb=null;}
 
-// ─── SETTINGS SAVE (PATCH app_settings row id=1) ───
-async function saveSettings(){
-  const btn=document.getElementById('saveBtn');btn.textContent='⏳ Saving...';btn.disabled=true;
-  const payload={
-    movie_name:document.getElementById('cfg-movie').value.trim()||DEFAULTS.movie_name,
-    venue:document.getElementById('cfg-venue').value.trim()||DEFAULTS.venue,
-    event_date:document.getElementById('cfg-date').value||DEFAULTS.event_date,
-    event_date_display:document.getElementById('cfg-datedisplay').value.trim()||DEFAULTS.event_date_display,
-    ticket_price:Number(document.getElementById('cfg-price').value)||DEFAULTS.ticket_price,
-    max_tickets:Number(document.getElementById('cfg-maxtickets').value)||DEFAULTS.max_tickets,
-    upi_id:document.getElementById('cfg-upi').value.trim()||DEFAULTS.upi_id,
-    payee_name:document.getElementById('cfg-payee').value.trim()||DEFAULTS.payee_name,
-    auto_approve:document.getElementById('cfg-autoapprove').checked,
-    movie_poster_url:document.getElementById('cfg-poster-url').value.trim(),
-    updated_at:new Date().toISOString(),
-  };
-  try{
-    await sbFetch('app_settings?id=eq.1',{method:'PATCH',body:JSON.stringify(payload),prefer:'return=minimal'});
-    const ss=document.getElementById('saveStatus');ss.style.color='var(--green)';ss.textContent='✅ Saved to Supabase! All users will see updates on next page load.';
-    setTimeout(()=>ss.textContent='',6000);
-    setSyncState('ok','Settings saved · '+new Date().toLocaleTimeString());
-    showToast('Settings saved & synced ✓','success');
-  }catch(e){
-    const ss=document.getElementById('saveStatus');ss.style.color='var(--red)';ss.textContent='❌ Save failed: '+e.message;
-    showToast('Save failed','error');setSyncState('err','Save error');
-  }finally{btn.textContent='💾 Save & Sync to Supabase';btn.disabled=false;}
-}
-
-// ─── DANGER ZONE ───
-function dangerConfirm(action,title,msg){
-  pendingConfirm={type:'danger',action};
-  const t=document.getElementById('cTitle'),m=document.getElementById('cMsg'),y=document.getElementById('cYes');
-  t.className=action==='resetConfig'?'o':'r';t.textContent=title;
-  y.className=action==='resetConfig'?'cbtn yes-g':'cbtn yes-r';
-  y.textContent=action==='resetConfig'?'Yes, Reset':'Yes, Delete';
-  m.textContent=msg;
-  document.getElementById('confirmOverlay').classList.add('show');
-}
-async function execDanger(action){
-  setSyncState('syncing','Processing...');
-  try{
-    if(action==='resetConfig'){
-      await sbFetch('app_settings?id=eq.1',{method:'PATCH',body:JSON.stringify({...DEFAULTS,updated_at:new Date().toISOString()}),prefer:'return=minimal'});
-      fillSettingsForm(DEFAULTS);showToast('Config reset to defaults ✓','info');
-    } else {
-      const ep=action==='all'?'bookings':`bookings?status=eq.${action}`;
-      await sbFetch(ep,{method:'DELETE',prefer:'return=minimal'});
-      await loadBookings();
-      const labels={all:'All bookings deleted',pending:'Pending cleared',approved:'Approved cleared',rejected:'Rejected cleared'};
-      showToast(labels[action]||'Done ✓','success');
-    }
-    setSyncState('ok','Done');
-  }catch(e){showToast('Error: '+e.message,'error');setSyncState('err','Error');}
-}
-
-// ─── ANALYTICS ───
-function renderAnalytics(){
-  const t=allBookings.length,a=allBookings.filter(b=>b.status==='approved').length;
-  const p=allBookings.filter(b=>b.status==='pending').length,r=allBookings.filter(b=>b.status==='rejected').length;
-  const C=2*Math.PI*38;
-  // donut
-  const appPct=t>0?a/t:0,penPct=t>0?p/t:0,rejPct=t>0?r/t:0;
-  const appDash=appPct*C,penDash=penPct*C,rejDash=rejPct*C;
-  const donutApp=document.getElementById('donutApp');
-  donutApp.style.strokeDasharray=`${appDash} ${C-appDash}`;
-  const donutPen=document.getElementById('donutPen');
-  donutPen.style.strokeDasharray=`${penDash} ${C-penDash}`;
-  donutPen.style.strokeDashoffset=-appDash;
-  const donutRej=document.getElementById('donutRej');
-  donutRej.style.strokeDasharray=`${rejDash} ${C-rejDash}`;
-  donutRej.style.strokeDashoffset=-(appDash+penDash);
-  document.getElementById('donutTotal').textContent=t;
-  document.getElementById('lgApp').textContent=`Approved: ${a}`;
-  document.getElementById('lgPen').textContent=`Pending: ${p}`;
-  document.getElementById('lgRej').textContent=`Rejected: ${r}`;
-  // revenue bars
-  const totRev=allBookings.filter(b=>b.status==='approved').reduce((s,b)=>s+Number(b.amount||0),0);
-  const totTix=allBookings.reduce((s,b)=>s+Number(b.ticket_qty||0),0);
-  const maxAmt=Math.max(...allBookings.map(b=>Number(b.amount||0)),1);
-  document.getElementById('revenueChart').innerHTML=`
-    <div class="bar-row"><div class="bar-label">Revenue</div><div class="bar-track"><div class="bar-fill" style="width:${Math.min(100,totRev/5000*100)}%;background:var(--green)"></div></div><div class="bar-val">₹${totRev}</div></div>
-    <div class="bar-row"><div class="bar-label">Tickets</div><div class="bar-track"><div class="bar-fill" style="width:${Math.min(100,totTix/100*100)}%;background:var(--orange)"></div></div><div class="bar-val">${totTix}</div></div>
-    <div class="bar-row"><div class="bar-label">Approved</div><div class="bar-track"><div class="bar-fill" style="width:${t>0?a/t*100:0}%;background:var(--green)"></div></div><div class="bar-val">${a}</div></div>
-    <div class="bar-row"><div class="bar-label">Pending</div><div class="bar-track"><div class="bar-fill" style="width:${t>0?p/t*100:0}%;background:var(--yellow)"></div></div><div class="bar-val">${p}</div></div>
-    <div class="bar-row"><div class="bar-label">Rejected</div><div class="bar-track"><div class="bar-fill" style="width:${t>0?r/t*100:0}%;background:var(--red)"></div></div><div class="bar-val">${r}</div></div>
-  `;
-  // recent bookings (last 8)
-  const recent=[...allBookings].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,8);
-  document.getElementById('recentList').innerHTML=recent.length?recent.map(b=>{
-    const col={approved:'var(--green)',pending:'var(--yellow)',rejected:'var(--red)'}[b.status]||'var(--muted)';
-    const dt=new Date(b.created_at).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
-    return`<div class="recent-item">
-      <div><div class="recent-name">${b.name||'—'}</div><div class="recent-meta">${b.booking_id||''} · ${dt}</div></div>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span style="font-weight:600;color:var(--orange)">₹${b.amount||0}</span>
-        <span class="sbadge ${b.status||'pending'}">${b.status||'pending'}</span>
-      </div>
-    </div>`;
-  }).join(''):'<div class="no-data"><span class="ico">📊</span>No bookings yet</div>';
-}
-
-// ─── IMAGE MODAL ───
-function openImgModal(url){document.getElementById('mdlImg').src=url;document.getElementById('imgModal').classList.add('show');}
-function closeImgModal(){const m=document.getElementById('imgModal');m.classList.remove('show');}
-
-// ─── TOAST ───
-function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast ${type} show`;setTimeout(()=>t.className=`toast ${type}`,3500);}
-
-function previewPoster(url) {
-  var img = document.getElementById('adminPosterPreview');
-  var icon = document.getElementById('adminPosterIcon');
-  if (url && url.trim()) {
-    img.src = url.trim();
-    img.style.display = 'block';
-    if (icon) icon.style.display = 'none';
-    img.onerror = function() { img.style.display='none'; if(icon) icon.style.display='block'; };
-  } else {
-    img.style.display = 'none';
-    if (icon) icon.style.display = 'block';
-  }
-}
-
-async function uploadPosterImage(event) {
-  var file = event.target.files[0];
-  if (!file) return;
-  var status = document.getElementById('posterUploadStatus');
-  if (file.size > 5 * 1024 * 1024) { status.textContent = '❌ File too large (max 5MB)'; status.style.color='var(--red)'; return; }
-  status.textContent = '⏳ Uploading...'; status.style.color='var(--muted)';
-  try {
-    var fname = 'poster_' + Date.now() + '.' + file.name.split('.').pop();
-    var ab = await file.arrayBuffer();
-    var res = await fetch(SB_URL + '/storage/v1/object/event-assets/' + fname, {
-      method:'POST', headers:{ 'apikey':SB_KEY, 'Authorization':'Bearer '+SB_KEY, 'Content-Type':file.type, 'x-upsert':'true' },
-      body:ab
-    });
-    if (!res.ok) throw new Error('Upload failed: HTTP ' + res.status);
-    var publicUrl = SB_URL + '/storage/v1/object/public/event-assets/' + fname;
-    document.getElementById('cfg-poster-url').value = publicUrl;
-    previewPoster(publicUrl);
-    status.textContent = '✅ Uploaded! Save settings to apply.'; status.style.color='var(--green)';
-  } catch(e) {
-    // Fallback: use base64 data URL (works but won't persist)
-    var reader = new FileReader();
-    reader.onload = function(ev) {
-      document.getElementById('cfg-poster-url').value = ev.target.result;
-      previewPoster(ev.target.result);
-      status.textContent = '⚠ Using local preview — paste a hosted URL for persistence.'; status.style.color='var(--yellow)';
-    };
-    reader.readAsDataURL(file);
-  }
-}
-
-// ── TEST BOOKING ──────────────────────────────────────
-var _testBookingId = null;
-
-async function runTestBooking() {
-  var btn = document.getElementById('testBookBtn');
-  var status = document.getElementById('testStatus');
-  var preview = document.getElementById('testTicketPreview');
-  var deleteBtn = document.getElementById('testDeleteBtn');
-
-  var name  = (document.getElementById('test-name').value || 'Test User').trim();
-  var email = (document.getElementById('test-email').value || 'test@example.com').trim();
-  var phone = (document.getElementById('test-phone').value || '9999999999').trim();
-  var qty   = parseInt(document.getElementById('test-qty').value) || 1;
-
-  btn.textContent = '⏳ Creating...';
-  btn.disabled = true;
-  status.style.display = 'block';
-  status.style.color = 'var(--muted)';
-  status.innerHTML = '⏳ Inserting test booking into database...';
-  preview.style.display = 'none';
-  deleteBtn.style.display = 'none';
-
-  try {
-    // Load latest settings for price/movie name
-    var cfgRes = await sbFetch('app_settings?id=eq.1&select=*');
-    var cfg = cfgRes[0] || {};
-    var price  = cfg.ticket_price || 100;
-    var movie  = cfg.movie_name || 'Reel to Deal';
-    var evDate = cfg.event_date || '';
-    var venue  = cfg.venue || 'MBA Auditorium';
-
-    // Generate unique test booking ID + UTR
-    var bid = 'TEST-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2,5).toUpperCase();
-    var utr = '999' + Date.now().toString().slice(-9); // fake 12-digit UTR
-
-    var payload = {
-      booking_id:   bid,
-      name:         name,
-      email:        email,
-      phone:        phone,
-      ticket_qty:   qty,
-      amount:       price * qty,
-      utr:          utr,
-      screenshot_url: '',
-      status:       'pending',
-      ocr_verified: false,
-      ocr_amount_match: false,
-      ocr_upi_match: false,
-      movie_name:   movie,
-      event_date:   evDate
-    };
-
-    await sbFetch('bookings', { method:'POST', body:JSON.stringify(payload), prefer:'return=minimal' });
-    _testBookingId = bid;
-
-    status.style.color = '#34d399';
-    status.innerHTML = [
-      '✅ <strong>Test booking created!</strong>',
-      '📋 Booking ID: <code style="color:#a78bfa">' + bid + '</code>',
-      '👤 Name: ' + name + ' &nbsp;|&nbsp; 📧 ' + email + ' &nbsp;|&nbsp; 📱 ' + phone,
-      '🎟 Qty: ' + qty + ' &nbsp;|&nbsp; 💰 ₹' + (price*qty) + ' &nbsp;|&nbsp; 🎬 ' + movie,
-      '🔢 UTR: <code>' + utr + '</code> &nbsp;|&nbsp; Status: <span style="color:#fbbf24">⏳ Pending</span>',
-      '<span style="color:#60a5fa;font-size:.62rem">↳ Visible in Bookings tab. Click "Delete Test" to clean up.</span>'
-    ].join('<br>');
-
-    // Show ticket preview card inline
-    preview.style.display = 'block';
-    preview.innerHTML = buildTestTicketHTML({
-      bookingId: bid, name, email, phone, qty,
-      amount: price*qty, utr, movie, venue,
-      dateDisplay: cfg.event_date_display || evDate,
-      posterUrl: cfg.movie_poster_url || ''
-    });
-
-    deleteBtn.style.display = 'inline-block';
-    showToast('Test booking created ✓', 'success');
-
-    // Refresh bookings list if on that tab
-    if (document.getElementById('panel-bookings').classList.contains('active')) {
-      loadBookings();
-    }
-  } catch(e) {
-    status.style.color = 'var(--red)';
-    status.innerHTML = '❌ Failed: ' + e.message;
-    showToast('Test failed: ' + e.message, 'error');
-  } finally {
-    btn.textContent = '▶ Run Test';
-    btn.disabled = false;
-  }
-}
-
-async function deleteTestBooking() {
-  if (!_testBookingId) return;
-  var deleteBtn = document.getElementById('testDeleteBtn');
-  var status = document.getElementById('testStatus');
-  deleteBtn.textContent = '⏳ Deleting...';
-  deleteBtn.disabled = true;
-  try {
-    await sbFetch('bookings?booking_id=eq.' + encodeURIComponent(_testBookingId), { method:'DELETE' });
-    status.style.color = '#fbbf24';
-    status.innerHTML = '🗑 Test booking <code>' + _testBookingId + '</code> deleted from database.';
-    document.getElementById('testTicketPreview').style.display = 'none';
-    deleteBtn.style.display = 'none';
-    _testBookingId = null;
-    showToast('Test booking deleted', 'info');
-    if (document.getElementById('panel-bookings').classList.contains('active')) {
-      loadBookings();
-    }
-  } catch(e) {
-    status.innerHTML = '❌ Delete failed: ' + e.message;
-    deleteBtn.disabled = false;
-    deleteBtn.textContent = '🗑 Delete Test';
-  }
-}
-
-function buildTestTicketHTML(d) {
-  var posterHtml = d.posterUrl
-    ? '<img src="'+d.posterUrl+'" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;border-radius:6px" crossorigin="anonymous">'
-    : '<span style="font-size:1.4rem;opacity:.5">🎬</span>';
-  return `
-  <div style="background:var(--card);border:1px solid rgba(167,139,250,.2);border-radius:14px;overflow:hidden;max-width:380px;box-shadow:0 0 40px rgba(167,139,250,.08),0 16px 40px rgba(0,0,0,.4);">
-    <div style="height:3px;background:linear-gradient(90deg,transparent,#fbbf24,#a78bfa,#f472b6,transparent)"></div>
-    <!-- Hero -->
-    <div style="position:relative;min-height:110px;background:linear-gradient(160deg,#100d1e,#1a1232);display:flex;align-items:flex-end;overflow:hidden;">
-      <div style="position:absolute;inset:-10px;background-size:cover;background-position:center;filter:blur(14px) brightness(.2) saturate(1.6);opacity:${d.posterUrl?'1':'0'};background-image:${d.posterUrl?'url('+d.posterUrl+')':'none'};transition:opacity .6s;"></div>
-      <div style="position:absolute;left:14px;bottom:-20px;z-index:4;width:52px;height:74px;border-radius:7px;overflow:hidden;border:2px solid rgba(167,139,250,.4);box-shadow:0 5px 20px rgba(0,0,0,.6);background:#120e1e;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
-        ${posterHtml}
-      </div>
-      <div style="position:relative;z-index:3;flex:1;padding:12px 14px 22px 80px;">
-        <div style="font-family:'Space Mono',monospace;font-size:.48rem;letter-spacing:3px;color:rgba(196,181,253,.5);text-transform:uppercase;margin-bottom:3px">TEST TICKET &middot; MBA 2025</div>
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:3px;color:#f0ebff;">${d.movie}</div>
-        <div style="font-family:'Space Mono',monospace;font-size:.52rem;color:rgba(255,255,255,.35);margin-top:3px">${d.dateDisplay||d.venue}</div>
-      </div>
-    </div>
-    <!-- Perf -->
-    <div style="display:flex;align-items:center;overflow:visible;margin:0">
-      <div style="width:20px;height:20px;border-radius:50%;background:#0a0810;flex-shrink:0;margin-left:-10px"></div>
-      <div style="flex:1;border-top:2px dashed rgba(167,139,250,.13);margin:0 4px"></div>
-      <div style="width:20px;height:20px;border-radius:50%;background:#0a0810;flex-shrink:0;margin-right:-10px"></div>
-    </div>
-    <!-- Body -->
-    <div style="padding:24px 16px 14px;">
-      ${[
-        ['Booking ID', '<span style="font-family:monospace;font-size:.76rem;color:#a78bfa">'+d.bookingId+'</span>'],
-        ['Name', d.name],
-        ['Email', d.email],
-        ['Phone', d.phone],
-        ['Tickets', d.qty + ' ticket' + (d.qty>1?'s':'')],
-        ['Amount', '₹' + d.amount],
-        ['UTR', '<span style="font-family:monospace;font-size:.76rem">'+d.utr+'</span>'],
-        ['Status', '<span style="background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.28);padding:2px 8px;border-radius:100px;font-size:.56rem;font-family:monospace;letter-spacing:1px;text-transform:uppercase;font-weight:700">⏳ Pending</span>'],
-      ].map(([k,v]) =>
-        '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.82rem">'
-        +'<span style="font-family:monospace;font-size:.58rem;letter-spacing:1px;color:#6d6285;text-transform:uppercase">'+k+'</span>'
-        +'<span style="font-weight:600;text-align:right;max-width:60%">'+v+'</span>'
-        +'</div>'
-      ).join('')}
-      <div style="background:rgba(96,165,250,.07);border:1px dashed rgba(96,165,250,.25);border-radius:8px;padding:9px 12px;margin-top:12px;font-family:'Space Mono',monospace;font-size:.62rem;color:#60a5fa;letter-spacing:1px;text-align:center">
-        🧪 TEST ENTRY — Click "Delete Test" to remove from DB
-      </div>
-    </div>
-  </div>`;
+// ── TOAST ──
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className=`toast ${type} show`;
+  setTimeout(()=>t.className=`toast ${type}`,4000);
 }
 </script>
 </body>
