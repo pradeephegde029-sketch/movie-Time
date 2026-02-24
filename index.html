@@ -3,1054 +3,1632 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Reel to Deal — Book Your Ticket</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.1/tesseract.min.js"></script>
+<title>Reel to Deal — Book Tickets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=JetBrains+Mono:wght@300;400;500;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#060405;--sur:#0d0a0e;--s2:#141018;--s3:#1c1624;
-  --gold:#d4a853;--gold2:#f0c46a;--goldg:rgba(212,168,83,.12);--goldg2:rgba(212,168,83,.06);
-  --text:#f2ead8;--muted:#6b5f4e;--border:rgba(212,168,83,.15);--border2:rgba(212,168,83,.08);
-  --green:#3ec47a;--red:#e05555;--yellow:#e8b840;--blue:#4c82ff;
-  --r8:8px;--r12:12px;--r16:16px;
+/* ══════════════════════════════════════════════
+   DESIGN TOKENS
+══════════════════════════════════════════════ */
+:root {
+  --bg:       #06050a;
+  --bg2:      #0c0b12;
+  --sur:      #12101a;
+  --sur2:     #181524;
+  --sur3:     #201d2e;
+  --sur4:     #2a263c;
+  --border:   rgba(255,255,255,0.07);
+  --border2:  rgba(255,255,255,0.12);
+
+  --gold:     #d4a843;
+  --gold2:    #f0c760;
+  --gold3:    #fbe49a;
+  --goldglow: rgba(212,168,67,0.18);
+  --goldrim:  rgba(212,168,67,0.35);
+
+  --text:     #ede8d8;
+  --muted:    #8a7e6a;
+  --faint:    #3d3830;
+
+  --green:    #3dd68c;
+  --greendim: rgba(61,214,140,0.14);
+  --red:      #f05252;
+  --reddim:   rgba(240,82,82,0.14);
+  --yellow:   #fbbf24;
+  --yellowdim:rgba(251,191,36,0.14);
+  --blue:     #60a5fa;
+  --bluedim:  rgba(96,165,250,0.14);
+  --purple:   #a78bfa;
+  --purpledim:rgba(167,139,250,0.14);
+
+  --r6: 6px; --r10: 10px; --r14: 14px; --r20: 20px; --r28: 28px;
+  --ease: cubic-bezier(0.16,1,0.3,1);
 }
-*{margin:0;padding:0;box-sizing:border-box;}
-html{scroll-behavior:smooth;-webkit-tap-highlight-color:transparent;}
-body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 70% 40% at 50% 0%,rgba(212,168,83,.04) 0%,transparent 70%),radial-gradient(ellipse 40% 30% at 80% 85%,rgba(212,168,83,.025) 0%,transparent 60%);}
-#ls{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .6s,visibility .6s;}
-#ls.out{opacity:0;visibility:hidden;pointer-events:none;}
-.ls-reel{font-size:3rem;animation:lsR .7s cubic-bezier(.34,1.56,.64,1);}
-@keyframes lsR{from{opacity:0;transform:scale(.3) rotate(-20deg)}to{opacity:1;transform:scale(1)}}
-.ls-title{font-family:'Bebas Neue',sans-serif;font-size:2.4rem;letter-spacing:10px;color:var(--gold);text-shadow:0 0 40px rgba(212,168,83,.4);animation:lsT .9s cubic-bezier(.16,1,.3,1) .15s both;}
-@keyframes lsT{from{opacity:0;letter-spacing:24px}to{opacity:1;letter-spacing:10px}}
-.ls-sub{font-family:'Space Mono',monospace;font-size:.48rem;letter-spacing:5px;color:var(--muted);text-transform:uppercase;animation:fup .5s .5s both;}
-.ls-bar{width:120px;height:1.5px;background:rgba(212,168,83,.1);border-radius:2px;overflow:hidden;}
-.ls-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));animation:lsF 1.4s ease .3s both;}
-@keyframes lsF{from{width:0}to{width:100%}}
-@keyframes fup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-@keyframes fi{from{opacity:0}to{opacity:1}}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
-@keyframes bump{0%{transform:scale(1)}50%{transform:scale(1.14)}100%{transform:scale(1)}}
-@keyframes pulse{0%,100%{opacity:.25}50%{opacity:1}}
-@keyframes flip{0%{transform:scaleY(1)}45%{transform:scaleY(.2);opacity:.1}100%{transform:scaleY(1)}}
-@keyframes rowIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
-@keyframes scan{0%,100%{opacity:.3;transform:scaleX(.4)}50%{opacity:1;transform:scaleX(1)}}
 
-.sync-bar{display:flex;align-items:center;justify-content:center;gap:7px;padding:7px 18px;font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:2px;color:var(--muted);background:rgba(6,4,5,.97);border-bottom:1px solid var(--border2);backdrop-filter:blur(12px);position:relative;z-index:10;transition:all .4s;}
-.sync-bar.live{color:var(--green);}.sync-bar.err{color:var(--red);}
-.sdot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0;animation:pulse 2s ease-in-out infinite;}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; -webkit-tap-highlight-color: transparent; }
 
-/* HERO */
-.cinema-hero{position:relative;overflow:hidden;min-height:min(62vw,480px);display:flex;flex-direction:column;justify-content:flex-end;background:#050304;}
-#heroPosterBg{position:absolute;inset:-20px;z-index:0;background-size:cover;background-position:center;filter:blur(28px) brightness(.18) saturate(1.5);opacity:0;transition:opacity 1s ease;}
-.hero-vignette{position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(to bottom,rgba(6,4,5,.28) 0%,transparent 35%,transparent 52%,var(--bg) 100%);}
-.hero-film{position:absolute;top:0;left:0;right:0;height:18px;z-index:5;background:rgba(0,0,0,.82);display:flex;gap:2px;align-items:center;padding:4px 8px;overflow:hidden;}
-.hero-film-hole{width:11px;height:8px;border-radius:2px;background:rgba(212,168,83,.18);flex-shrink:0;}
-.hero-stage{position:relative;z-index:6;display:flex;align-items:flex-end;gap:20px;padding:32px 20px 0;}
-.poster-card{flex-shrink:0;width:min(110px,26vw);aspect-ratio:2/3;border-radius:10px;overflow:hidden;position:relative;border:1.5px solid rgba(212,168,83,.38);box-shadow:0 0 40px rgba(212,168,83,.12),0 20px 50px rgba(0,0,0,.75);background:#120e08;transform:perspective(500px) rotateY(-5deg) rotate(-1deg);transition:transform .5s cubic-bezier(.34,1.56,.64,1);}
-.poster-card:hover{transform:perspective(500px) rotateY(0) rotate(0) scale(1.03);}
-#heroPosterImg{width:100%;height:100%;object-fit:cover;display:none;position:absolute;inset:0;}
-#heroPosterIcon{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:linear-gradient(160deg,#1c1408,#0e0c04);}
-.pi-ico{font-size:2rem;opacity:.4;}.pi-txt{font-family:'Bebas Neue',sans-serif;font-size:.7rem;letter-spacing:2px;color:rgba(212,168,83,.4);text-align:center;}
-.poster-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 30%,rgba(255,255,255,.06) 50%,transparent 70%);transform:translateX(-100%);animation:shine 8s ease-in-out infinite 3s;pointer-events:none;}
-@keyframes shine{0%,75%,100%{transform:translateX(-100%)}40%{transform:translateX(100%)}}
-.hero-info{flex:1;padding-bottom:8px;min-width:0;}
-.hero-eyebrow{font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:4px;color:rgba(212,168,83,.6);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
-.hero-eyebrow::before{content:'';display:block;width:16px;height:1px;background:var(--gold);flex-shrink:0;}
-.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.2rem,9vw,4rem);line-height:.92;word-break:break-word;margin-bottom:14px;color:var(--text);letter-spacing:2px;}
-.hero-title span{color:var(--gold);}
-.hero-pills{display:flex;flex-wrap:wrap;gap:6px;}
-.hero-pill{display:inline-flex;align-items:center;gap:4px;background:rgba(212,168,83,.07);border:1px solid rgba(212,168,83,.14);border-radius:100px;padding:4px 11px;font-family:'Space Mono',monospace;font-size:.53rem;letter-spacing:1px;color:var(--muted);}
-.hero-pill strong{color:var(--text);}
-.hero-bottom{position:relative;z-index:6;display:flex;align-items:center;justify-content:space-between;padding:18px 20px 22px;flex-wrap:wrap;gap:12px;}
-.hero-price{display:flex;align-items:baseline;gap:5px;}
-.hero-amt{font-family:'Bebas Neue',sans-serif;font-size:3.2rem;line-height:1;color:var(--gold);text-shadow:0 0 24px rgba(212,168,83,.3);}
-.hero-per{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:2px;color:var(--muted);}
-.hero-btn{background:var(--gold);border:none;border-radius:6px;padding:13px 28px;color:#0a0806;font-family:'Bebas Neue',sans-serif;font-size:1.05rem;letter-spacing:4px;cursor:pointer;box-shadow:0 0 28px rgba(212,168,83,.25),0 4px 16px rgba(0,0,0,.5);transition:all .25s cubic-bezier(.34,1.56,.64,1);}
-.hero-btn:hover{transform:translateY(-2px) scale(1.04);box-shadow:0 0 44px rgba(212,168,83,.45),0 8px 24px rgba(0,0,0,.5);}
-.hero-btn:active{transform:scale(.97);}
-
-.info-strip{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:5px 16px;padding:9px 20px;background:rgba(6,4,5,.95);border-bottom:1px solid var(--border2);backdrop-filter:blur(12px);position:relative;z-index:5;}
-.info-item{font-family:'Space Mono',monospace;font-size:.56rem;letter-spacing:1px;color:var(--muted);display:flex;align-items:center;gap:5px;}
-.info-item strong{color:var(--text);}
-.info-sep{width:1px;height:12px;background:var(--border2);flex-shrink:0;}
-
-.wrap{max-width:560px;margin:0 auto;padding:22px 16px 80px;position:relative;z-index:1;}
-.notice-banner{background:var(--goldg2);border:1px solid var(--border);border-radius:var(--r12);padding:12px 15px;margin-bottom:16px;font-family:'Space Mono',monospace;font-size:.67rem;line-height:1.7;color:var(--gold);display:none;}
-.notice-banner.show{display:block;animation:fup .35s ease both;}
-
-/* COUNTDOWN */
-.cd-card{background:var(--sur);border:1px solid var(--border);border-radius:var(--r16);padding:18px;margin-bottom:20px;text-align:center;position:relative;overflow:hidden;}
-.cd-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,var(--gold),transparent);animation:scan 4s ease-in-out infinite;}
-.cd-label{font-family:'Space Mono',monospace;font-size:.54rem;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:12px;}
-.cd-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;max-width:280px;margin:0 auto;}
-.cd-unit{background:var(--s2);border:1px solid var(--border2);border-radius:9px;padding:10px 5px;}
-.cd-n{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:var(--gold);line-height:1;display:block;text-shadow:0 0 14px rgba(212,168,83,.25);}
-.cd-n.flip{animation:flip .22s ease;}
-.cd-t{font-family:'Space Mono',monospace;font-size:.43rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-top:2px;display:block;}
-.cd-live{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:4px;color:var(--red);animation:livP 1.5s ease-in-out infinite;}
-@keyframes livP{0%,100%{opacity:1}50%{opacity:.3}}
-
-/* STEPS */
-.steps{display:flex;align-items:center;justify-content:center;margin-bottom:26px;}
-.si{display:flex;flex-direction:column;align-items:center;gap:4px;}
-.sn{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted);background:var(--sur);transition:all .35s cubic-bezier(.34,1.56,.64,1);}
-.si.active .sn{border-color:var(--gold);color:var(--gold);background:var(--goldg);box-shadow:0 0 14px rgba(212,168,83,.2);transform:scale(1.1);}
-.si.done .sn{border-color:var(--green);background:rgba(62,196,122,.1);color:var(--green);}
-.si.done .sn::after{content:'✓';}
-.sl{font-size:.48rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;font-family:'Space Mono',monospace;white-space:nowrap;transition:color .3s;}
-.si.active .sl{color:var(--gold);}
-.sc{width:40px;height:1px;background:var(--border2);margin:0 3px;margin-bottom:16px;flex-shrink:0;transition:background .4s;}
-.sc.done{background:var(--green);}
-.sec{display:none;}.sec.active{display:block;animation:secIn .38s cubic-bezier(.16,1,.3,1) both;}
-@keyframes secIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-
-.card{background:var(--sur);border:1px solid var(--border);border-radius:var(--r16);padding:20px;margin-bottom:12px;position:relative;overflow:hidden;}
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.35;}
-.card-title{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:3px;color:var(--gold);margin-bottom:16px;}
-
-/* STEP 1 */
-.tsel{background:var(--sur);border:1px solid var(--border);border-radius:var(--r16);margin-bottom:12px;overflow:hidden;position:relative;}
-.tsel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
-.movie-badge{display:flex;align-items:center;gap:14px;padding:14px 18px 12px;border-bottom:1px solid var(--border2);background:linear-gradient(135deg,var(--goldg2),transparent);}
-.mini-poster{width:44px;height:64px;border-radius:6px;overflow:hidden;flex-shrink:0;border:1px solid rgba(212,168,83,.28);background:#120e08;position:relative;display:flex;align-items:center;justify-content:center;font-size:1.1rem;}
-#miniPosterImg{width:100%;height:100%;object-fit:cover;display:none;position:absolute;inset:0;}
-.badge-name{font-family:'Bebas Neue',sans-serif;font-size:1.15rem;letter-spacing:2px;color:var(--text);}
-.badge-meta{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:1px;color:var(--muted);margin-top:3px;}
-.qty-zone{padding:18px 18px 14px;}
-.t-display{text-align:center;margin-bottom:14px;}
-.t-cnt{font-family:'Bebas Neue',sans-serif;font-size:5.5rem;color:var(--gold);line-height:1;text-shadow:0 0 30px rgba(212,168,83,.18);display:block;}
-.t-cnt.bump{animation:bump .28s cubic-bezier(.34,1.56,.64,1);}
-.t-lbl{font-family:'Space Mono',monospace;font-size:.54rem;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-top:4px;}
-.qty-ctrl{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:12px;}
-.qbtn{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--gold);background:transparent;color:var(--gold);font-size:1.3rem;cursor:pointer;transition:all .22s cubic-bezier(.34,1.56,.64,1);display:flex;align-items:center;justify-content:center;}
-.qbtn:hover{background:var(--gold);color:#0a0806;box-shadow:0 0 20px rgba(212,168,83,.3);transform:scale(1.08);}
-.qbtn:active{transform:scale(.93);}
-.qbtn:disabled{opacity:.2;cursor:not-allowed;transform:none;box-shadow:none;}
-.price-bd{background:rgba(6,4,5,.5);border-radius:var(--r8);padding:12px;border:1px solid var(--border2);}
-.pr{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:.85rem;color:var(--muted);}
-.pr.tot{border-top:1px solid var(--border2);margin-top:7px;padding-top:10px;color:var(--text);font-weight:600;}
-#totD{color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:1px;}
-#totD.bump{animation:bump .22s cubic-bezier(.34,1.56,.64,1);}
-
-/* FORM */
-.fg{margin-bottom:14px;}
-label{display:block;font-size:.59rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-family:'Space Mono',monospace;}
-input[type="text"],input[type="email"],input[type="tel"]{width:100%;background:var(--s2);border:1px solid var(--border2);border-radius:var(--r8);padding:12px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;transition:border-color .22s,box-shadow .22s;-webkit-appearance:none;}
-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--goldg);}
-input.errf{border-color:var(--red)!important;animation:shake .3s ease;}
-input.okf{border-color:var(--green)!important;}
-.ferr{color:var(--red);font-size:.62rem;margin-top:5px;display:none;font-family:'Space Mono',monospace;line-height:1.5;}
-.ferr.show{display:block;animation:fup .2s ease;}
-
-/* UPI BOX */
-.upi-box{background:linear-gradient(135deg,var(--s2),var(--s3));border:1px solid var(--border);border-radius:var(--r16);padding:18px;margin-bottom:12px;position:relative;overflow:hidden;}
-.upi-box::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:var(--gold);opacity:.5;}
-.amt-lbl{font-size:.58rem;letter-spacing:3px;color:var(--muted);text-transform:uppercase;font-family:'Space Mono',monospace;text-align:center;display:block;}
-.amt-big{font-family:'Bebas Neue',sans-serif;font-size:3.6rem;color:var(--gold);text-shadow:0 0 28px rgba(212,168,83,.25);line-height:1;text-align:center;margin:4px 0;}
-.upi-row{display:flex;align-items:center;justify-content:space-between;background:rgba(6,4,5,.45);border:1px solid var(--border2);border-radius:8px;padding:10px 13px;margin-bottom:8px;}
-.upi-lbl{font-size:.56rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;font-family:'Space Mono',monospace;display:block;margin-bottom:2px;}
-.upi-val{font-family:'Space Mono',monospace;font-size:.86rem;color:var(--text);font-weight:700;}
-.copy-btn{background:var(--goldg);border:1px solid var(--gold);color:var(--gold);padding:6px 12px;border-radius:6px;font-size:.6rem;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:1px;transition:all .2s;flex-shrink:0;}
-.copy-btn:hover{background:rgba(212,168,83,.18);}
-.copy-btn.copied{border-color:var(--green);color:var(--green);}
-
-/* TIMER */
-.tmr-box{display:flex;align-items:center;gap:12px;background:var(--s2);border:1px solid var(--border2);border-radius:var(--r8);padding:11px 14px;margin-bottom:14px;position:relative;overflow:hidden;}
-.tmr-prog{position:absolute;bottom:0;left:0;height:2px;background:linear-gradient(90deg,var(--green),var(--yellow),var(--red));transition:width 1s linear;}
-.tmr-num{font-family:'Space Mono',monospace;font-size:1.3rem;font-weight:700;color:var(--gold);letter-spacing:2px;transition:color .3s;}
-.tmr-num.warn{color:var(--red);animation:tw .9s ease-in-out infinite;}
-@keyframes tw{0%,100%{opacity:1}50%{opacity:.35}}
-
-/* PSS */
-.pss-item{display:flex;align-items:center;gap:4px;font-family:'Space Mono',monospace;font-size:.53rem;color:var(--muted);transition:color .3s;}
-.pss-item.active{color:var(--gold);}.pss-item.done{color:var(--green);}
-.pss-dot{width:20px;height:20px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:.6rem;flex-shrink:0;transition:all .3s;}
-.pss-item.active .pss-dot{background:var(--goldg);animation:psA 1.8s ease-in-out infinite;}
-@keyframes psA{0%,100%{box-shadow:0 0 0 0 rgba(212,168,83,.25)}50%{box-shadow:0 0 0 4px rgba(212,168,83,0)}}
-.pss-line{flex:1;height:1px;background:var(--border2);min-width:8px;transition:background .4s;}
-.pss-line.done{background:var(--green);}
-
-/* UPI APPS */
-.upi-apps{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px;}
-.app-btn{background:var(--s2);border:1px solid var(--border2);border-radius:var(--r8);padding:10px 6px;text-align:center;cursor:pointer;transition:all .2s;display:block;color:var(--text);}
-.app-btn:hover{border-color:var(--gold);background:var(--goldg2);transform:translateY(-2px);}
-.app-icon{font-size:1.4rem;display:block;margin-bottom:3px;}
-.app-name{font-size:.54rem;letter-spacing:1px;color:var(--muted);font-family:'Space Mono',monospace;}
-
-/* UPLOAD */
-.up-zone{border:2px dashed var(--border);border-radius:var(--r12);padding:22px;text-align:center;cursor:pointer;transition:all .22s;position:relative;}
-.up-zone:hover,.up-zone.drag{border-color:var(--gold);border-style:solid;background:var(--goldg2);}
-.up-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
-.up-icon{font-size:2rem;margin-bottom:7px;display:block;}
-.up-text{color:var(--muted);font-size:.78rem;}
-.up-text strong{color:var(--gold);}
-.up-prev{width:100%;max-height:300px;object-fit:contain;border-radius:9px;margin-top:12px;display:none;border:1px solid var(--border2);}
-.up-prev.show{display:block;animation:fi .3s ease;}
-.ocr-box{background:var(--s2);border-radius:8px;padding:11px 13px;margin-top:9px;font-family:'Space Mono',monospace;display:none;}
-.ocr-box.show{display:block;animation:fi .25s ease;}
-.ocr-item{display:flex;align-items:center;gap:7px;padding:3px 0;color:var(--muted);font-size:.67rem;}
-.ocr-item.ok{color:var(--green);}.ocr-item.fail{color:var(--red);}
-.ocr-spin{width:12px;height:12px;border:2px solid rgba(212,168,83,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .65s linear infinite;flex-shrink:0;}
-
-/* BUTTONS */
-.btn{width:100%;padding:13px 20px;border-radius:var(--r8);font-size:.8rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;font-family:'Space Mono',monospace;cursor:pointer;transition:all .22s;border:none;-webkit-tap-highlight-color:transparent;}
-.btn-p{background:var(--gold);color:#0a0806;}
-.btn-p:hover{background:var(--gold2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(212,168,83,.25);}
-.btn-p:active{transform:scale(.98);}
-.btn-p:disabled{opacity:.38;cursor:not-allowed;transform:none!important;box-shadow:none!important;}
-.btn-s{background:transparent;border:1px solid var(--border);color:var(--muted);margin-top:8px;}
-.btn-s:hover{border-color:var(--gold);color:var(--gold);}
-.btn-g{background:rgba(62,196,122,.1);border:1px solid var(--green);color:var(--green);}
-.btn-g:hover{background:rgba(62,196,122,.18);transform:translateY(-2px);}
-.btn-wa{background:rgba(37,211,102,.08);border:1px solid #25d366;color:#25d366;}
-.btn-wa:hover{background:rgba(37,211,102,.18);}
-.btn-bl{background:rgba(76,130,255,.08);border:1px solid var(--blue);color:var(--blue);margin:0;}
-.btn-bl:hover{background:rgba(76,130,255,.18);}
-
-/* STATUS MSGS */
-.smsg{border-radius:8px;padding:11px 14px;margin-bottom:12px;font-size:.74rem;font-family:'Space Mono',monospace;line-height:1.6;display:none;}
-.smsg.show{display:block;animation:fup .22s ease;}
-.smsg.error{background:rgba(224,85,85,.09);border:1px solid rgba(224,85,85,.28);color:var(--red);}
-.smsg.success{background:rgba(62,196,122,.09);border:1px solid rgba(62,196,122,.28);color:var(--green);}
-.smsg.info{background:var(--goldg2);border:1px solid var(--border);color:var(--gold);}
-
-/* HELP BOX */
-.help-box{background:rgba(212,168,83,.05);border:1px solid rgba(212,168,83,.18);border-radius:9px;padding:11px 14px;margin-top:8px;font-family:'Space Mono',monospace;font-size:.62rem;line-height:1.85;color:var(--muted);display:none;}
-.help-box.show{display:block;animation:fup .2s ease;}
-.help-box strong{color:var(--gold);}
-.help-box .tip{color:var(--muted);margin-top:5px;padding-top:5px;border-top:1px solid var(--border2);}
-.help-box .tip strong{color:var(--text);}
-
-/* LOOKUP */
-.lookup-box{background:var(--goldg2);border:1px solid var(--border);border-radius:var(--r12);padding:14px;margin-top:12px;}
-.lookup-title{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:2px;color:var(--muted);margin-bottom:10px;text-transform:uppercase;}
-.lookup-row{display:flex;gap:7px;}
-.lookup-row input{flex:1;border-radius:8px;}
-.lookup-btn{padding:10px 14px;background:rgba(62,196,122,.1);border:1px solid var(--green);color:var(--green);border-radius:8px;font-family:'Space Mono',monospace;font-size:.62rem;cursor:pointer;white-space:nowrap;transition:all .2s;flex-shrink:0;}
-.lookup-btn:hover{background:rgba(62,196,122,.2);}
-.lookup-result{margin-top:9px;background:var(--s2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;font-family:'Space Mono',monospace;font-size:.68rem;line-height:1.85;display:none;}
-
-/* TICKET */
-.tkt-card{background:var(--sur);border-radius:var(--r16);overflow:hidden;border:1px solid rgba(212,168,83,.2);box-shadow:0 0 60px rgba(212,168,83,.07),0 24px 60px rgba(0,0,0,.6);animation:tktIn .7s cubic-bezier(.16,1,.3,1) both;}
-.tkt-card.glow-green{border-color:rgba(62,196,122,.25);box-shadow:0 0 60px rgba(62,196,122,.08),0 24px 60px rgba(0,0,0,.6);}
-@keyframes tktIn{from{opacity:0;transform:scale(.9) translateY(18px)}to{opacity:1;transform:scale(1) translateY(0)}}
-.tkt-topbar{height:2.5px;background:linear-gradient(90deg,transparent,var(--gold),var(--gold2),transparent);}
-.tkt-hero{position:relative;min-height:132px;overflow:hidden;display:flex;align-items:flex-end;background:linear-gradient(160deg,#120e08,#1c1408);}
-#tktPosterBg{position:absolute;inset:-10px;background-size:cover;background-position:center;filter:blur(14px) brightness(.18) saturate(1.6);opacity:0;transition:opacity .6s;}
-.tkt-thumb{position:absolute;left:16px;bottom:-22px;z-index:5;width:58px;height:84px;border-radius:7px;overflow:hidden;border:1.5px solid rgba(212,168,83,.38);box-shadow:0 6px 24px rgba(0,0,0,.7);background:#120e08;display:flex;align-items:center;justify-content:center;font-size:1.3rem;}
-#tktPosterImg{width:100%;height:100%;object-fit:cover;display:none;position:absolute;inset:0;}
-.tkt-hero-txt{position:relative;z-index:3;flex:1;padding:14px 16px 26px 90px;}
-.tkt-label-sm{font-family:'Space Mono',monospace;font-size:.48rem;letter-spacing:3px;color:rgba(212,168,83,.45);text-transform:uppercase;margin-bottom:4px;}
-.tkt-hero-movie{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:3px;color:var(--text);line-height:1;}
-.tkt-hero-date{font-family:'Space Mono',monospace;font-size:.54rem;color:rgba(255,255,255,.32);margin-top:5px;}
-.tkt-perf{display:flex;align-items:center;overflow:visible;}
-.tkt-nc{width:22px;height:22px;border-radius:50%;background:var(--bg);flex-shrink:0;}
-.tkt-nc-l{margin-left:-11px;}.tkt-nc-r{margin-right:-11px;margin-left:auto;}
-.tkt-dash{flex:1;border:none;height:0;border-top:2px dashed rgba(212,168,83,.12);margin:0 4px;}
-.tkt-body{padding:28px 16px 16px;}
-.tkt-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.82rem;}
-.tkt-row:last-child{border:none;}
-.tkt-k{color:var(--muted);font-family:'Space Mono',monospace;font-size:.57rem;letter-spacing:1px;text-transform:uppercase;}
-.tkt-v{font-weight:600;text-align:right;max-width:58%;}
-.tkt-qr{display:flex;flex-direction:column;align-items:center;padding:16px;border-top:2px dashed rgba(212,168,83,.1);gap:8px;background:linear-gradient(to bottom,transparent,rgba(212,168,83,.02));}
-.tkt-qr-lbl{font-family:'Space Mono',monospace;font-size:.48rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
-.sbadge{display:inline-block;padding:3px 10px;border-radius:100px;font-size:.56rem;letter-spacing:1.5px;font-family:'Space Mono',monospace;text-transform:uppercase;font-weight:700;}
-.sbadge.pending{background:rgba(232,184,64,.1);color:var(--yellow);border:1px solid rgba(232,184,64,.28);}
-.sbadge.approved{background:rgba(62,196,122,.1);color:var(--green);border:1px solid rgba(62,196,122,.28);animation:appG 2.5s ease-in-out infinite;}
-@keyframes appG{0%,100%{box-shadow:0 0 0 0 rgba(62,196,122,.2)}50%{box-shadow:0 0 0 4px rgba(62,196,122,0)}}
-.sbadge.rejected{background:rgba(224,85,85,.1);color:var(--red);border:1px solid rgba(224,85,85,.28);}
-.fstrip{display:flex;gap:4px;padding:5px 10px;opacity:.15;pointer-events:none;overflow:hidden;}
-.fhole{width:12px;height:8px;border-radius:3px;background:var(--gold);flex-shrink:0;}
-.dl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:12px;}
-.dl-grid .btn{font-size:.6rem;padding:10px 4px;margin:0;}
-.dl-full{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:7px;}
-
-/* MODALS */
-#softModal,#emailModal{position:fixed;inset:0;z-index:5000;display:none;align-items:center;justify-content:center;}
-#softModal.show,#emailModal.show{display:flex;background:rgba(0,0,0,.9);backdrop-filter:blur(14px);animation:mdlBg .22s ease;}
-@keyframes mdlBg{from{background:rgba(0,0,0,0)}to{background:rgba(0,0,0,.9)}}
-.modal-inner{background:var(--sur);border:1px solid rgba(212,168,83,.2);border-radius:var(--r16);padding:20px;max-width:340px;width:90%;position:relative;animation:mdlIn .35s cubic-bezier(.34,1.56,.64,1);}
-@keyframes mdlIn{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:scale(1)}}
-.modal-close{position:absolute;top:11px;right:11px;background:rgba(255,255,255,.06);border:none;color:var(--muted);width:27px;height:27px;border-radius:50%;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;transition:all .2s;}
-.modal-close:hover{background:rgba(224,85,85,.15);color:var(--red);transform:rotate(90deg);}
-.modal-title{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:3px;color:var(--gold);text-align:center;margin-bottom:12px;}
-#tktCanvas{width:100%;border-radius:8px;border:1px solid var(--border2);display:block;margin-bottom:12px;}
-.email-prev{background:var(--s2);border:1px solid var(--border2);border-radius:8px;padding:12px;font-family:'Space Mono',monospace;font-size:.63rem;line-height:1.75;color:var(--text);max-height:200px;overflow-y:auto;margin-bottom:12px;white-space:pre-wrap;}
-.email-modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
-.spn{width:14px;height:14px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px;}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(90px);background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;font-family:'Space Mono',monospace;font-size:.7rem;color:var(--text);z-index:10000;transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;max-width:92vw;backdrop-filter:blur(10px);}
-.toast.show{transform:translateX(-50%) translateY(0);}
-.toast.success{border-color:var(--green);color:var(--green);}
-.toast.error{border-color:var(--red);color:var(--red);}
-.toast.info{border-color:var(--gold);color:var(--gold);}
-.cf{position:fixed;pointer-events:none;z-index:9991;animation:cfFall var(--dur) ease-out var(--del) both;}
-@keyframes cfFall{from{transform:translate(0,-10px) rotate(0);opacity:1}to{transform:translate(var(--dx),100vh) rotate(600deg);opacity:0}}
-.adm-lnk{text-align:center;padding-top:18px;margin-top:24px;border-top:1px solid var(--border2);}
-.adm-lnk a{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted);text-decoration:none;letter-spacing:2px;transition:color .2s;}
-.adm-lnk a:hover{color:var(--gold);}
-@media(max-width:480px){
-  .upi-apps{grid-template-columns:repeat(2,1fr)}
-  .sc{width:26px}.card{padding:16px 13px}
-  .dl-grid{grid-template-columns:1fr 1fr}.dl-grid>*:nth-child(3){grid-column:1/-1}
-  .hero-stage{padding:20px 14px 0}.poster-card{width:min(90px,24vw)}
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
+
+/* Ambient background orbs */
+.orb {
+  position: fixed; border-radius: 50%; filter: blur(80px);
+  pointer-events: none; z-index: 0;
+}
+.orb-1 { width:500px; height:500px; background:rgba(212,168,67,0.05); top:-100px; left:50%; transform:translateX(-50%); }
+.orb-2 { width:300px; height:300px; background:rgba(96,165,250,0.04); bottom:10%; right:-80px; }
+.orb-3 { width:250px; height:250px; background:rgba(167,139,250,0.04); top:40%; left:-60px; }
+
+/* Film grain overlay */
+body::after {
+  content:''; position:fixed; inset:0; z-index:0; opacity:0.018; pointer-events:none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ══════════════════════════════════════════════
+   SPLASH
+══════════════════════════════════════════════ */
+#splash {
+  position:fixed; inset:0; z-index:9999;
+  background:var(--bg);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px;
+  transition: opacity 0.9s var(--ease), visibility 0.9s;
+}
+#splash.gone { opacity:0; visibility:hidden; pointer-events:none; }
+.sp-icon { font-size:3rem; animation: reelSpin 1.2s ease-in-out infinite; }
+@keyframes reelSpin { 0%,100%{transform:rotate(0)} 50%{transform:rotate(180deg)} }
+.sp-logo {
+  font-family:'Playfair Display',serif; font-weight:900;
+  font-size:clamp(2rem,8vw,3.8rem);
+  background:linear-gradient(135deg,var(--gold3),var(--gold2),var(--gold));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+.sp-logo em { font-style:italic; }
+.sp-sub { font-family:'JetBrains Mono',monospace; font-size:0.62rem; letter-spacing:0.3em; color:var(--muted); text-transform:uppercase; }
+.sp-track { width:180px; height:2px; background:var(--sur3); border-radius:2px; overflow:hidden; }
+.sp-fill  { height:100%; background:linear-gradient(90deg,var(--gold),var(--gold2)); animation:splashFill 1.6s var(--ease) forwards; }
+@keyframes splashFill { from{width:0} to{width:100%} }
+
+/* ══════════════════════════════════════════════
+   TOPBAR
+══════════════════════════════════════════════ */
+#topbar {
+  position:sticky; top:0; z-index:200;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:13px 18px;
+  background:rgba(6,5,10,0.88); backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border);
+}
+.tb-brand { font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:700; color:var(--gold2); }
+.tb-brand em { font-style:italic; color:var(--gold3); }
+.tb-right { display:flex; align-items:center; gap:8px; }
+
+.nav-pill {
+  background:none; border:none; cursor:pointer;
+  font-family:'JetBrains Mono',monospace; font-size:0.65rem; letter-spacing:0.08em;
+  text-transform:uppercase; color:var(--muted);
+  padding:6px 11px; border-radius:100px;
+  transition:all 0.2s;
+}
+.nav-pill.active { background:var(--goldglow); color:var(--gold2); border:1px solid var(--goldrim); }
+.nav-pill:hover:not(.active) { color:var(--gold2); }
+
+.sync-chip {
+  display:flex; align-items:center; gap:5px;
+  font-family:'JetBrains Mono',monospace; font-size:0.58rem; letter-spacing:0.08em;
+  color:var(--muted); padding:4px 8px; border-radius:100px;
+  border:1px solid var(--border);
+}
+.sync-dot { width:6px; height:6px; border-radius:50%; background:var(--green); }
+.sync-dot.off { background:var(--red); box-shadow:none !important; }
+.sync-dot:not(.off) { animation:syncPulse 2.5s infinite; box-shadow:0 0 0 0 rgba(61,214,140,0.4); }
+@keyframes syncPulse { 0%,100%{box-shadow:0 0 0 0 rgba(61,214,140,0.4)} 50%{box-shadow:0 0 0 5px rgba(61,214,140,0)} }
+
+.bell-btn {
+  position:relative; background:none; border:none; cursor:pointer;
+  font-size:1.15rem; color:var(--muted); padding:5px;
+  transition:color 0.2s;
+}
+.bell-btn:hover { color:var(--gold2); }
+.bell-badge {
+  position:absolute; top:1px; right:1px;
+  background:var(--red); color:#fff;
+  font-family:'JetBrains Mono',monospace; font-size:0.5rem; font-weight:700;
+  width:13px; height:13px; border-radius:50%;
+  display:none; align-items:center; justify-content:center;
+}
+
+/* ══════════════════════════════════════════════
+   LIVE STATS BANNER
+══════════════════════════════════════════════ */
+.stats-banner {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:1px; background:var(--border);
+  border-bottom:1px solid var(--border);
+  position:relative; z-index:1;
+}
+.stat-cell {
+  background:var(--bg2); padding:10px 16px;
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+  transition:background 0.3s;
+}
+.stat-cell:hover { background:var(--sur); }
+.stat-cell-icon { font-size:0.9rem; }
+.stat-cell-val {
+  font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700;
+  color:var(--text); transition:color 0.4s;
+}
+.stat-cell-val.flash { color:var(--gold2) !important; }
+.stat-cell-lbl { font-family:'JetBrains Mono',monospace; font-size:0.55rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); }
+.stat-cell.free .stat-cell-val { color:var(--green); }
+.stat-cell.free .stat-cell-icon { color:var(--green); }
+
+/* Free ticket ribbon */
+.free-ribbon {
+  background:linear-gradient(90deg,var(--greendim),rgba(61,214,140,0.06));
+  border:1px solid rgba(61,214,140,0.2); border-radius:var(--r10);
+  padding:10px 16px; margin-bottom:16px;
+  display:flex; align-items:center; gap:10px;
+  animation:slideDown 0.4s var(--ease) both;
+}
+@keyframes slideDown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+.free-ribbon-icon { font-size:1.4rem; flex-shrink:0; }
+.free-ribbon-text h4 { font-size:0.9rem; font-weight:600; color:var(--green); margin-bottom:2px; }
+.free-ribbon-text p { font-family:'JetBrains Mono',monospace; font-size:0.62rem; color:var(--muted); letter-spacing:0.04em; }
+.free-ribbon.hidden { display:none; }
+
+/* Sold out banner */
+.soldout-banner {
+  background:linear-gradient(135deg,var(--reddim),rgba(240,82,82,0.06));
+  border:1px solid rgba(240,82,82,0.25); border-radius:var(--r14);
+  padding:24px; text-align:center; margin:20px 0;
+}
+.soldout-banner h3 { font-family:'Playfair Display',serif; font-size:1.4rem; color:var(--red); margin-bottom:8px; }
+.soldout-banner p { font-family:'JetBrains Mono',monospace; font-size:0.65rem; color:var(--muted); letter-spacing:0.05em; }
+
+/* ══════════════════════════════════════════════
+   MAIN LAYOUT
+══════════════════════════════════════════════ */
+.wrap { max-width:620px; margin:0 auto; padding:0 16px 120px; position:relative; z-index:1; }
+.view { display:none; }
+.view.active { display:block; animation:viewIn 0.4s var(--ease) both; }
+@keyframes viewIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+
+/* ══════════════════════════════════════════════
+   HERO
+══════════════════════════════════════════════ */
+.hero { text-align:center; padding:40px 0 32px; position:relative; }
+.hero::before {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(ellipse 70% 50% at 50% 0%, rgba(212,168,67,0.07), transparent 70%);
+  pointer-events:none;
+}
+.hero-eyebrow {
+  display:inline-flex; align-items:center; gap:8px;
+  font-family:'JetBrains Mono',monospace; font-size:0.62rem; letter-spacing:0.22em;
+  text-transform:uppercase; color:var(--gold);
+  margin-bottom:14px;
+}
+.hero-eyebrow::before, .hero-eyebrow::after {
+  content:''; display:block; width:24px; height:1px;
+  background:var(--gold); opacity:0.4;
+}
+.hero h1 {
+  font-family:'Playfair Display',serif; font-weight:900;
+  font-size:clamp(2.6rem,9vw,5rem); line-height:1.0;
+  background:linear-gradient(135deg,var(--gold3) 0%,var(--gold2) 45%,var(--gold) 75%,#7a5510 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  margin-bottom:12px;
+}
+.hero h1 em { font-style:italic; }
+.hero-desc { color:var(--muted); font-size:0.9rem; max-width:400px; margin:0 auto 22px; line-height:1.7; }
+.event-pill {
+  display:inline-flex; align-items:center; gap:8px;
+  background:var(--sur2); border:1px solid var(--border2);
+  border-radius:100px; padding:7px 16px;
+  font-family:'JetBrains Mono',monospace; font-size:0.65rem; letter-spacing:0.04em; color:var(--text);
+}
+.event-pill span { color:var(--gold2); }
+
+/* ══════════════════════════════════════════════
+   WIZARD PROGRESS
+══════════════════════════════════════════════ */
+.wizard {
+  display:flex; align-items:center;
+  margin:24px 0 28px; padding:0 4px;
+  font-family:'JetBrains Mono',monospace; font-size:0.6rem; letter-spacing:0.06em;
+}
+.wstep { flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; position:relative; }
+.wstep::after {
+  content:''; position:absolute; top:13px; left:50%;
+  width:100%; height:1px; background:var(--sur4);
+  transition:background 0.4s;
+}
+.wstep:last-child::after { display:none; }
+.wstep.done::after { background:var(--gold); }
+.wnum {
+  width:26px; height:26px; border-radius:50%;
+  border:1.5px solid var(--sur4); background:var(--sur);
+  display:flex; align-items:center; justify-content:center;
+  font-size:0.68rem; color:var(--muted);
+  position:relative; z-index:1; transition:all 0.3s;
+}
+.wstep.active .wnum { border-color:var(--gold2); background:var(--goldglow); color:var(--gold2); box-shadow:0 0 14px var(--goldglow); }
+.wstep.done  .wnum { border-color:var(--gold); background:var(--gold); color:var(--bg); }
+.wstep.done  .wnum::after { content:'✓'; }
+.wstep.done  .wnum span { display:none; }
+.wlabel { color:var(--faint); text-align:center; text-transform:uppercase; }
+.wstep.active .wlabel { color:var(--gold2); }
+.wstep.done   .wlabel { color:var(--muted); }
+
+/* Step panels */
+.step-pane { display:none; }
+.step-pane.active { display:block; animation:stepIn 0.35s var(--ease) both; }
+@keyframes stepIn { from{opacity:0;transform:translateX(18px)} to{opacity:1;transform:translateX(0)} }
+
+/* ══════════════════════════════════════════════
+   CARDS / PANELS
+══════════════════════════════════════════════ */
+.card {
+  background:var(--sur); border:1px solid var(--border);
+  border-radius:var(--r20); padding:22px;
+  margin-bottom:14px; position:relative; overflow:hidden;
+}
+.card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg,transparent,var(--goldrim),transparent);
+  opacity:0; transition:opacity 0.3s;
+}
+.card:hover::before { opacity:1; }
+.card-title {
+  font-family:'Playfair Display',serif; font-size:1rem; font-weight:700;
+  color:var(--text); margin-bottom:18px;
+  display:flex; align-items:center; gap:9px;
+}
+.sec-label {
+  font-family:'JetBrains Mono',monospace; font-size:0.6rem; letter-spacing:0.2em;
+  text-transform:uppercase; color:var(--gold);
+  padding-left:11px; border-left:2px solid var(--gold);
+  margin-bottom:14px;
+}
+
+/* ══════════════════════════════════════════════
+   MOVIE CARD
+══════════════════════════════════════════════ */
+.movie-card {
+  background:linear-gradient(140deg,var(--sur2),var(--sur));
+  border:1.5px solid var(--border2);
+  border-radius:var(--r20); padding:18px;
+  display:flex; gap:14px; align-items:flex-start;
+  margin-bottom:18px; position:relative; overflow:hidden;
+  cursor:pointer; transition:all 0.3s;
+}
+.movie-card::after {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(ellipse 80% 60% at 50% 0%, rgba(212,168,67,0.04), transparent);
+  pointer-events:none;
+}
+.movie-card:hover { border-color:var(--goldrim); transform:translateY(-2px); box-shadow:0 8px 32px rgba(0,0,0,0.5); }
+.movie-card.selected { border-color:var(--gold2); box-shadow:0 0 0 2px var(--goldglow), 0 8px 32px rgba(0,0,0,0.5); }
+.poster {
+  width:58px; height:82px; border-radius:10px;
+  background:linear-gradient(160deg,#2a1f0e,#140f06);
+  border:1px solid var(--goldrim);
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.7rem; flex-shrink:0;
+}
+.movie-info h3 { font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; margin-bottom:5px; }
+.movie-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+.movie-tag {
+  background:var(--sur3); border-radius:4px; padding:2px 7px;
+  font-family:'JetBrains Mono',monospace; font-size:0.6rem; color:var(--muted);
+}
+.movie-price { font-family:'Playfair Display',serif; font-size:1.15rem; color:var(--gold2); font-weight:700; }
+.movie-price.free-price { color:var(--green); }
+.sel-badge {
+  position:absolute; top:11px; right:11px;
+  background:var(--gold2); color:var(--bg);
+  font-family:'JetBrains Mono',monospace; font-size:0.55rem; letter-spacing:0.1em;
+  padding:3px 8px; border-radius:4px; font-weight:700;
+}
+
+/* ══════════════════════════════════════════════
+   QTY SELECTOR
+══════════════════════════════════════════════ */
+.qty-row {
+  display:flex; align-items:center; justify-content:space-between;
+  background:var(--sur2); border:1px solid var(--border);
+  border-radius:var(--r14); padding:14px 18px; margin-bottom:14px;
+}
+.qty-lbl { font-family:'JetBrains Mono',monospace; font-size:0.7rem; color:var(--muted); letter-spacing:0.05em; }
+.qty-ctrl { display:flex; align-items:center; gap:12px; }
+.qty-btn {
+  width:32px; height:32px; border-radius:50%;
+  border:1.5px solid var(--goldrim); background:transparent;
+  color:var(--gold2); font-size:1.1rem; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:all 0.2s;
+}
+.qty-btn:hover { background:var(--goldglow); }
+.qty-btn:active { transform:scale(0.88); }
+.qty-btn:disabled { opacity:0.3; cursor:not-allowed; }
+.qty-num {
+  font-family:'Playfair Display',serif; font-size:1.9rem; font-weight:700;
+  color:var(--text); min-width:34px; text-align:center;
+}
+
+/* ══════════════════════════════════════════════
+   PRICE BREAKDOWN
+══════════════════════════════════════════════ */
+.price-box {
+  background:linear-gradient(140deg,rgba(212,168,67,0.06),rgba(212,168,67,0.02));
+  border:1px solid var(--goldrim); border-radius:var(--r14);
+  padding:16px 18px; font-family:'JetBrains Mono',monospace;
+  margin-bottom:18px; position:relative; overflow:hidden;
+}
+.price-box::before {
+  content:'PRICE BREAKDOWN'; position:absolute; top:8px; right:12px;
+  font-size:0.5rem; letter-spacing:0.2em; color:var(--gold); opacity:0.5;
+}
+.pr-row { display:flex; justify-content:space-between; align-items:center; padding:5px 0; }
+.pr-row .k { font-size:0.68rem; color:var(--muted); }
+.pr-row .v { font-size:0.75rem; color:var(--text); }
+.pr-row.free-row .v { color:var(--green); font-weight:700; }
+.pr-row.total-row { border-top:1px solid var(--goldrim); margin-top:8px; padding-top:12px; }
+.pr-row.total-row .k { color:var(--gold); font-weight:500; }
+.pr-row.total-row .v { color:var(--gold2); font-size:1.05rem; font-family:'Playfair Display',serif; font-weight:700; }
+.free-badge-inline {
+  display:inline-flex; align-items:center; gap:4px;
+  background:var(--greendim); border:1px solid rgba(61,214,140,0.25);
+  color:var(--green); font-size:0.6rem; padding:2px 7px; border-radius:100px;
+  vertical-align:middle; margin-left:6px;
+}
+
+/* ══════════════════════════════════════════════
+   FORM
+══════════════════════════════════════════════ */
+.fg { margin-bottom:16px; }
+.fl {
+  display:block; font-family:'JetBrains Mono',monospace; font-size:0.6rem;
+  letter-spacing:0.15em; text-transform:uppercase; color:var(--muted); margin-bottom:7px;
+}
+.fi {
+  width:100%; padding:12px 14px;
+  background:var(--sur2); border:1px solid var(--border);
+  border-radius:var(--r10); color:var(--text);
+  font-family:'Outfit',sans-serif; font-size:0.92rem;
+  transition:all 0.25s; outline:none;
+}
+.fi:focus { border-color:var(--goldrim); box-shadow:0 0 0 3px rgba(212,168,67,0.07); background:var(--sur3); }
+.fi::placeholder { color:var(--faint); }
+.fi.err { border-color:rgba(240,82,82,0.5); }
+.ferr { font-family:'JetBrains Mono',monospace; font-size:0.6rem; color:var(--red); margin-top:4px; display:none; }
+.ferr.show { display:block; animation:errPop 0.2s ease; }
+@keyframes errPop { from{opacity:0;transform:translateY(-3px)} to{opacity:1;transform:translateY(0)} }
+
+/* ══════════════════════════════════════════════
+   PAYMENT STEP
+══════════════════════════════════════════════ */
+.upi-panel {
+  background:linear-gradient(140deg,var(--sur2),var(--sur3));
+  border:1.5px solid var(--goldrim); border-radius:var(--r20);
+  padding:22px; margin-bottom:14px; position:relative; overflow:hidden;
+}
+.upi-panel::before {
+  content:''; position:absolute; top:-40%; left:-40%; width:180%; height:180%;
+  background:radial-gradient(circle, rgba(212,168,67,0.04), transparent 55%);
+  pointer-events:none;
+}
+.upi-amt {
+  font-family:'Playfair Display',serif; font-size:2.8rem; font-weight:900;
+  color:var(--gold2); text-align:center; margin-bottom:4px;
+  transition:color 0.4s;
+}
+.upi-amt.free { color:var(--green); }
+.upi-sub { font-family:'JetBrains Mono',monospace; font-size:0.6rem; letter-spacing:0.18em; color:var(--muted); text-align:center; text-transform:uppercase; margin-bottom:18px; }
+.upi-id-row {
+  background:var(--bg); border:1px solid var(--goldrim);
+  border-radius:var(--r10); padding:11px 14px;
+  display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;
+}
+.upi-id-txt { font-family:'JetBrains Mono',monospace; font-size:0.78rem; color:var(--gold3); letter-spacing:0.04em; }
+.copy-btn {
+  background:var(--goldglow); border:1px solid var(--goldrim);
+  color:var(--gold2); font-family:'JetBrains Mono',monospace;
+  font-size:0.6rem; letter-spacing:0.08em; padding:4px 9px;
+  border-radius:5px; cursor:pointer; transition:all 0.2s;
+}
+.copy-btn:hover { background:rgba(212,168,67,0.2); }
+.upi-apps { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin:14px 0; }
+.app-pill {
+  background:var(--sur3); border:1px solid var(--border);
+  border-radius:var(--r10); padding:7px 13px;
+  font-family:'JetBrains Mono',monospace; font-size:0.62rem;
+  color:var(--muted); cursor:pointer; transition:all 0.2s;
+  text-decoration:none; display:inline-flex; align-items:center; gap:5px;
+}
+.app-pill:hover { border-color:var(--goldrim); color:var(--gold2); background:var(--goldglow); }
+.free-pay-notice {
+  background:var(--greendim); border:1px solid rgba(61,214,140,0.2);
+  border-radius:var(--r10); padding:14px 16px; text-align:center;
+  font-family:'JetBrains Mono',monospace; font-size:0.7rem; color:var(--green);
+  letter-spacing:0.04em; margin-bottom:14px;
+}
+.free-pay-notice strong { display:block; font-size:0.85rem; margin-bottom:4px; }
+
+/* Upload */
+.upload-zone {
+  border:2px dashed rgba(255,255,255,0.1); border-radius:var(--r14);
+  padding:26px 18px; text-align:center; cursor:pointer;
+  transition:all 0.3s; position:relative; overflow:hidden; margin-bottom:14px;
+}
+.upload-zone:hover, .upload-zone.over { border-color:var(--goldrim); background:rgba(212,168,67,0.02); }
+.upload-zone input { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+.upload-icon { font-size:1.8rem; margin-bottom:7px; }
+.upload-title { font-family:'Playfair Display',serif; font-size:0.95rem; margin-bottom:3px; }
+.upload-sub { font-family:'JetBrains Mono',monospace; font-size:0.6rem; color:var(--muted); letter-spacing:0.05em; }
+#previewImg { width:100%; border-radius:var(--r10); margin-top:10px; display:none; max-height:180px; object-fit:cover; border:1px solid var(--goldrim); }
+
+/* ══════════════════════════════════════════════
+   BUTTONS
+══════════════════════════════════════════════ */
+.btn {
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  width:100%; padding:13px 22px;
+  border-radius:var(--r10); border:none; cursor:pointer;
+  font-family:'JetBrains Mono',monospace; font-size:0.75rem;
+  letter-spacing:0.1em; text-transform:uppercase; font-weight:500;
+  transition:all 0.25s; appearance:none; text-decoration:none;
+}
+.btn-gold {
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  color:var(--bg); box-shadow:0 4px 18px rgba(212,168,67,0.22);
+}
+.btn-gold:hover { box-shadow:0 6px 28px rgba(212,168,67,0.38); transform:translateY(-1px); }
+.btn-gold:active { transform:translateY(0); }
+.btn-gold:disabled { opacity:0.4; cursor:not-allowed; transform:none !important; box-shadow:none; }
+.btn-ghost { background:transparent; border:1.5px solid var(--border2); color:var(--muted); }
+.btn-ghost:hover { border-color:var(--goldrim); color:var(--gold2); }
+.btn-red { background:var(--reddim); border:1.5px solid rgba(240,82,82,0.25); color:var(--red); }
+.btn-sm { padding:7px 13px; font-size:0.6rem; width:auto; border-radius:6px; }
+.btn-row { display:flex; gap:9px; margin-top:14px; }
+.btn-row .btn { flex:1; }
+.spin { display:inline-block; width:15px; height:15px; border:2px solid rgba(255,255,255,0.2); border-top-color:currentColor; border-radius:50%; animation:spin360 0.6s linear infinite; }
+@keyframes spin360 { to{transform:rotate(360deg)} }
+
+/* ══════════════════════════════════════════════
+   GENERATED TICKET — CINEMATIC
+══════════════════════════════════════════════ */
+.ticket-shell {
+  position:relative; margin-bottom:18px;
+  filter:drop-shadow(0 0 30px rgba(212,168,67,0.1));
+}
+.ticket-shell::before {
+  content:''; position:absolute; inset:-1px; border-radius:22px; z-index:-1;
+  background:linear-gradient(135deg,var(--gold),var(--gold2) 40%,var(--gold3) 60%,var(--gold));
+  animation:ticketGlow 3s ease-in-out infinite;
+}
+@keyframes ticketGlow { 0%,100%{opacity:0.5} 50%{opacity:1} }
+
+.ticket {
+  background:linear-gradient(160deg,#1e1508,#110d06,#0d0a05);
+  border-radius:21px; overflow:hidden; position:relative;
+}
+
+/* Poster blurred bg strip */
+.ticket-bg {
+  position:absolute; inset:0;
+  background:linear-gradient(135deg,rgba(212,168,67,0.08) 0%,transparent 50%,rgba(96,165,250,0.05) 100%);
+  pointer-events:none;
+}
+
+/* Film perfs */
+.ticket-perfs {
+  position:absolute; top:0; bottom:0; left:0; width:38px;
+  background:repeating-linear-gradient(
+    to bottom,
+    #06050a 0,#06050a 5px,
+    rgba(212,168,67,0.08) 5px, rgba(212,168,67,0.08) 22px
+  );
+  border-right:1px solid rgba(212,168,67,0.12);
+}
+.ticket-perfs span {
+  position:absolute; left:5px; top:50%; transform:translateY(-50%) rotate(180deg);
+  writing-mode:vertical-rl;
+  font-family:'JetBrains Mono',monospace; font-size:0.48rem; letter-spacing:0.2em;
+  color:rgba(212,168,67,0.2); text-transform:uppercase;
+}
+
+.ticket-head {
+  padding:20px 20px 16px 52px; position:relative;
+  background:linear-gradient(160deg,rgba(212,168,67,0.1),transparent 70%);
+}
+.t-brand {
+  font-family:'JetBrains Mono',monospace; font-size:0.55rem; letter-spacing:0.28em;
+  text-transform:uppercase; color:var(--gold); margin-bottom:5px;
+  display:flex; align-items:center; gap:6px;
+}
+.t-movie { font-family:'Playfair Display',serif; font-size:1.45rem; font-weight:900; line-height:1.1; margin-bottom:9px; }
+.t-meta { display:flex; flex-wrap:wrap; gap:12px; }
+.t-meta-item { display:flex; flex-direction:column; gap:2px; }
+.t-meta-k { font-family:'JetBrains Mono',monospace; font-size:0.5rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--faint); }
+.t-meta-v { font-family:'JetBrains Mono',monospace; font-size:0.72rem; color:var(--text); }
+
+/* Tear line */
+.tear-line {
+  height:1px; background:rgba(212,168,67,0.15); position:relative; margin:0;
+}
+.tear-line::before, .tear-line::after {
+  content:''; position:absolute; top:-8px;
+  width:16px; height:16px; border-radius:50%;
+  background:var(--bg); border:1px solid rgba(212,168,67,0.15);
+}
+.tear-line::before { left:-8px; }
+.tear-line::after  { right:-8px; }
+/* Perforated dashes */
+.tear-dashes {
+  position:absolute; top:0; left:20px; right:20px;
+  border-top:1px dashed rgba(212,168,67,0.12);
+}
+
+.ticket-body {
+  padding:16px 20px 16px 52px;
+  display:flex; justify-content:space-between; align-items:center; gap:12px;
+}
+.t-details { flex:1; }
+.t-detail-row {
+  display:flex; justify-content:space-between; padding:5px 0;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+}
+.t-detail-row:last-child { border:none; }
+.t-dk { font-family:'JetBrains Mono',monospace; font-size:0.58rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--faint); }
+.t-dv { font-family:'JetBrains Mono',monospace; font-size:0.68rem; color:var(--text); }
+.t-dv.gold { color:var(--gold2); }
+.t-dv.green { color:var(--green); }
+
+/* QR area */
+.ticket-qr { flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:5px; }
+#qrDiv { background:#fff; border-radius:6px; padding:5px; display:inline-block; }
+#qrDiv img, #qrDiv canvas { display:block !important; }
+.t-qr-lbl { font-family:'JetBrains Mono',monospace; font-size:0.5rem; letter-spacing:0.1em; color:var(--faint); text-transform:uppercase; }
+
+.ticket-foot {
+  padding:11px 20px 11px 52px;
+  background:rgba(0,0,0,0.3);
+  border-top:1px solid rgba(212,168,67,0.08);
+  display:flex; justify-content:space-between; align-items:center;
+}
+.t-tid { font-family:'JetBrains Mono',monospace; font-size:0.65rem; color:var(--gold); letter-spacing:0.1em; }
+
+/* Status badges */
+.sbadge {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:4px 11px; border-radius:100px;
+  font-family:'JetBrains Mono',monospace; font-size:0.58rem;
+  letter-spacing:0.1em; text-transform:uppercase; font-weight:700;
+}
+.sb-pending  { background:var(--yellowdim); color:var(--yellow);  border:1px solid rgba(251,191,36,0.25); }
+.sb-review   { background:var(--bluedim);   color:var(--blue);    border:1px solid rgba(96,165,250,0.25); }
+.sb-approved { background:var(--greendim);  color:var(--green);   border:1px solid rgba(61,214,140,0.3);  animation:approvedPulse 2s infinite; }
+.sb-rejected { background:var(--reddim);    color:var(--red);     border:1px solid rgba(240,82,82,0.25); }
+.sb-free     { background:var(--greendim);  color:var(--green);   border:1px solid rgba(61,214,140,0.3); }
+@keyframes approvedPulse { 0%,100%{box-shadow:0 0 6px rgba(61,214,140,0.15)} 50%{box-shadow:0 0 18px rgba(61,214,140,0.35)} }
+.sbadge .sd { width:5px; height:5px; border-radius:50%; background:currentColor; animation:sdBlink 1.8s infinite; }
+@keyframes sdBlink { 0%,100%{opacity:1} 50%{opacity:0.25} }
+
+/* Free stamp on ticket */
+.free-stamp {
+  position:absolute; top:16px; right:16px;
+  background:linear-gradient(135deg,var(--green),#20c770);
+  color:#fff; font-family:'JetBrains Mono',monospace;
+  font-size:0.58rem; letter-spacing:0.15em; font-weight:700;
+  padding:4px 10px; border-radius:5px;
+  box-shadow:0 0 14px rgba(61,214,140,0.35);
+  text-transform:uppercase;
+}
+
+/* ══════════════════════════════════════════════
+   MY TICKETS — ORDER HISTORY CARDS
+══════════════════════════════════════════════ */
+.tcard {
+  background:var(--sur); border:1px solid var(--border);
+  border-radius:var(--r20); overflow:hidden; margin-bottom:12px;
+  transition:all 0.3s; position:relative;
+}
+.tcard:hover { border-color:rgba(212,168,67,0.18); transform:translateY(-2px); box-shadow:0 10px 32px rgba(0,0,0,0.45); }
+.tcard-head {
+  padding:14px 16px;
+  display:flex; justify-content:space-between; align-items:flex-start;
+  border-bottom:1px solid var(--border);
+}
+.tcard-movie { font-family:'Playfair Display',serif; font-size:0.95rem; font-weight:700; margin-bottom:3px; }
+.tcard-id { font-family:'JetBrains Mono',monospace; font-size:0.58rem; color:var(--muted); letter-spacing:0.07em; }
+.tcard-body {
+  padding:12px 16px;
+  display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;
+  border-bottom:1px solid var(--border);
+}
+.tc-col { display:flex; flex-direction:column; gap:2px; }
+.tc-col-lbl { font-family:'JetBrains Mono',monospace; font-size:0.55rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--faint); }
+.tc-col-val { font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:var(--text); }
+.tc-col-val.green { color:var(--green); }
+.tcard-foot { padding:10px 16px; background:rgba(0,0,0,0.15); display:flex; gap:7px; align-items:center; }
+.tcard-free-strip {
+  position:absolute; left:0; top:0; bottom:0; width:3px;
+  background:linear-gradient(to bottom,var(--green),#20c770);
+}
+
+/* Skeleton loaders */
+.skel { background:linear-gradient(90deg,var(--sur2) 25%,var(--sur3) 50%,var(--sur2) 75%); background-size:400% 100%; animation:skelAnim 1.4s infinite; border-radius:6px; }
+@keyframes skelAnim { from{background-position:100% 0} to{background-position:-100% 0} }
+.skel-card { height:115px; border-radius:var(--r20); margin-bottom:12px; }
+
+/* ══════════════════════════════════════════════
+   NOTIFICATION PANEL
+══════════════════════════════════════════════ */
+#notifPanel {
+  position:fixed; top:54px; right:12px; z-index:500;
+  width:300px; max-width:calc(100vw - 24px);
+  background:var(--sur); border:1px solid var(--border2);
+  border-radius:var(--r20); overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,0.7);
+  display:none;
+}
+#notifPanel.open { display:block; animation:notifIn 0.2s var(--ease); }
+@keyframes notifIn { from{opacity:0;transform:translateY(-8px) scale(0.97)} to{opacity:1;transform:none} }
+.notif-head { padding:12px 16px; background:rgba(0,0,0,0.2); font-family:'JetBrains Mono',monospace; font-size:0.65rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold); display:flex; justify-content:space-between; align-items:center; }
+.notif-clear { background:none; border:none; color:var(--muted); cursor:pointer; font-size:0.65rem; font-family:'JetBrains Mono',monospace; transition:color 0.2s; }
+.notif-clear:hover { color:var(--red); }
+.notif-item { padding:11px 16px; border-bottom:1px solid var(--border); transition:background 0.15s; }
+.notif-item:last-child { border:none; }
+.notif-item:hover { background:rgba(255,255,255,0.02); }
+.ni-msg { font-size:0.8rem; color:var(--text); margin-bottom:2px; }
+.ni-time { font-family:'JetBrains Mono',monospace; font-size:0.55rem; color:var(--muted); }
+.notif-empty { padding:24px; text-align:center; font-family:'JetBrains Mono',monospace; font-size:0.65rem; color:var(--faint); }
+
+/* ══════════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════════ */
+#toastWrap { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:9000; display:flex; flex-direction:column; gap:7px; align-items:center; pointer-events:none; }
+.toast {
+  background:var(--sur2); border:1px solid var(--border2);
+  border-radius:100px; padding:9px 18px;
+  font-family:'JetBrains Mono',monospace; font-size:0.68rem; letter-spacing:0.04em;
+  color:var(--text); white-space:nowrap; pointer-events:auto;
+  animation:toastUp 0.3s var(--ease) both;
+  box-shadow:0 8px 28px rgba(0,0,0,0.6);
+}
+.toast.ok  { border-color:rgba(61,214,140,0.3); background:rgba(61,214,140,0.09); color:var(--green); }
+.toast.err { border-color:rgba(240,82,82,0.3);  background:rgba(240,82,82,0.09);  color:var(--red); }
+.toast.warn{ border-color:rgba(251,191,36,0.3);  background:rgba(251,191,36,0.08); color:var(--yellow); }
+@keyframes toastUp { from{opacity:0;transform:translateY(8px) scale(0.95)} to{opacity:1;transform:none} }
+.toast.bye { animation:toastBye 0.22s ease forwards; }
+@keyframes toastBye { to{opacity:0;transform:scale(0.9)} }
+
+/* ══════════════════════════════════════════════
+   EMPTY STATE
+══════════════════════════════════════════════ */
+.empty { text-align:center; padding:56px 20px; }
+.empty-ico { font-size:2.8rem; margin-bottom:12px; opacity:0.35; }
+.empty-ttl { font-family:'Playfair Display',serif; font-size:1.15rem; color:var(--muted); margin-bottom:7px; }
+.empty-sub { font-family:'JetBrains Mono',monospace; font-size:0.6rem; letter-spacing:0.06em; color:var(--faint); }
 </style>
 </head>
 <body>
-<div id="ls">
-  <div class="ls-reel">🎬</div>
-  <div class="ls-title">Reel to Deal</div>
-  <div class="ls-sub">MBA Fest · Ticket Booking</div>
-  <div class="ls-bar"><div class="ls-fill"></div></div>
+
+<!-- Ambient orbs -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- ── SPLASH ── -->
+<div id="splash">
+  <div class="sp-icon">🎬</div>
+  <div class="sp-logo">Reel <em>to</em> Deal</div>
+  <div class="sp-sub">Premium Cinema Experience</div>
+  <div class="sp-track"><div class="sp-fill"></div></div>
 </div>
 
-<div class="sync-bar loading" id="syncBar">
-  <div class="sdot"></div><span id="syncTxt">Connecting to server...</span>
+<!-- ── TOPBAR ── -->
+<nav id="topbar">
+  <div class="tb-brand">Reel <em>to</em> Deal</div>
+  <div class="tb-right">
+    <div class="sync-chip"><div class="sync-dot" id="syncDot"></div><span id="syncLbl">—</span></div>
+    <button class="nav-pill active" data-v="book" onclick="gotoView('book',this)">Book</button>
+    <button class="nav-pill" data-v="tickets" onclick="gotoView('tickets',this)">My Tickets</button>
+    <button class="bell-btn" onclick="toggleNotif()" id="bellBtn">
+      🔔<span class="bell-badge" id="bellBadge"></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ── LIVE STATS BANNER ── -->
+<div class="stats-banner" id="statsBanner">
+  <div class="stat-cell">
+    <span class="stat-cell-icon">🎟</span>
+    <span class="stat-cell-val" id="bannerTotal">—</span>
+    <span class="stat-cell-lbl">Total Seats</span>
+  </div>
+  <div class="stat-cell">
+    <span class="stat-cell-icon">🎫</span>
+    <span class="stat-cell-val" id="bannerSold">—</span>
+    <span class="stat-cell-lbl">Sold</span>
+  </div>
+  <div class="stat-cell free">
+    <span class="stat-cell-icon">✨</span>
+    <span class="stat-cell-val" id="bannerFree">—</span>
+    <span class="stat-cell-lbl">Free Left</span>
+  </div>
 </div>
 
-<div class="cinema-hero">
-  <div id="heroPosterBg"></div>
-  <div class="hero-vignette"></div>
-  <div class="hero-film" id="heroFilm"></div>
-  <div class="hero-stage">
-    <div class="poster-card">
-      <img id="heroPosterImg" alt="Movie Poster" crossorigin="anonymous">
-      <div id="heroPosterIcon"><span class="pi-ico">🎬</span><div class="pi-txt" id="heroPosterName">REEL TO DEAL</div></div>
+<!-- Notification panel -->
+<div id="notifPanel">
+  <div class="notif-head">
+    <span>Notifications</span>
+    <button class="notif-clear" onclick="clearNotifs()">Clear all</button>
+  </div>
+  <div id="notifList"><div class="notif-empty">No notifications yet</div></div>
+</div>
+
+<!-- Toast container -->
+<div id="toastWrap"></div>
+
+<!-- ────────────────────────────────────────── -->
+<div class="wrap">
+
+  <!-- ══ BOOK VIEW ══ -->
+  <div class="view active" id="view-book">
+    <div class="hero">
+      <div class="hero-eyebrow">🎞 MBA Fest 2025</div>
+      <h1>Reel <em>to</em> Deal</h1>
+      <p class="hero-desc">Experience cinema like never before. Premium seats, unforgettable moments.</p>
+      <div class="event-pill">📍 <span id="herVenue">MBA Auditorium</span>&nbsp;·&nbsp;<span id="herDate">—</span></div>
     </div>
-    <div class="hero-info">
-      <div class="hero-eyebrow">🎞 Now Screening</div>
-      <div class="hero-title" id="heroMovieName">Reel <span>to Deal</span></div>
-      <div class="hero-pills">
-        <div class="hero-pill">📍 <strong id="infoVenue">MBA Auditorium</strong></div>
-        <div class="hero-pill">📅 <strong id="infoDate">—</strong></div>
+
+    <!-- SOLD OUT STATE -->
+    <div class="soldout-banner" id="soldoutBanner" style="display:none">
+      <h3>🎟 Sold Out!</h3>
+      <p>All tickets have been claimed. Check back later or contact the organiser.</p>
+    </div>
+
+    <!-- BOOKING DISABLED STATE -->
+    <div class="soldout-banner" id="disabledBanner" style="display:none; border-color:rgba(251,191,36,0.25); background:var(--yellowdim)">
+      <h3 style="color:var(--yellow)">⏸ Bookings Paused</h3>
+      <p>The admin has temporarily paused ticket bookings.</p>
+    </div>
+
+    <!-- WIZARD + BOOKING FORM (hidden when sold out) -->
+    <div id="bookingForm">
+      <!-- Wizard progress -->
+      <div class="wizard" id="wizBar">
+        <div class="wstep active" id="ws1"><div class="wnum"><span>1</span></div><div class="wlabel">Select</div></div>
+        <div class="wstep" id="ws2"><div class="wnum"><span>2</span></div><div class="wlabel">Details</div></div>
+        <div class="wstep" id="ws3"><div class="wnum"><span>3</span></div><div class="wlabel">Payment</div></div>
+        <div class="wstep" id="ws4"><div class="wnum"><span>4</span></div><div class="wlabel">Ticket</div></div>
       </div>
-    </div>
-  </div>
-  <div class="hero-bottom">
-    <div class="hero-price">
-      <span class="hero-amt" id="infoPrice">₹1</span>
-      <span class="hero-per">/ TICKET</span>
-    </div>
-    <button class="hero-btn" onclick="document.getElementById('bookingWrap').scrollIntoView({behavior:'smooth'})">🎟 BOOK NOW</button>
-  </div>
-</div>
 
-<div class="info-strip">
-  <span class="info-item">🎬 <strong id="infoMovieName2">Reel to Deal</strong></span>
-  <div class="info-sep"></div>
-  <span class="info-item">📍 <strong id="infoVenue2">MBA Auditorium</strong></span>
-  <div class="info-sep"></div>
-  <span class="info-item">🎟 <strong id="infoPrice2">₹1</strong>/ticket</span>
-</div>
-<span id="evBadge" style="display:none"></span>
-
-<div class="wrap" id="bookingWrap">
-  <div class="notice-banner" id="noticeBanner"></div>
-  <div class="cd-card" id="cdCard">
-    <div class="cd-label">🎬 Event Countdown</div>
-    <div class="cd-grid">
-      <div class="cd-unit"><span class="cd-n" id="cdD">00</span><span class="cd-t">Days</span></div>
-      <div class="cd-unit"><span class="cd-n" id="cdH">00</span><span class="cd-t">Hrs</span></div>
-      <div class="cd-unit"><span class="cd-n" id="cdM">00</span><span class="cd-t">Mins</span></div>
-      <div class="cd-unit"><span class="cd-n" id="cdS">00</span><span class="cd-t">Secs</span></div>
-    </div>
-  </div>
-
-  <div class="steps">
-    <div class="si active" id="s1"><div class="sn">1</div><div class="sl">Tickets</div></div>
-    <div class="sc" id="sc1"></div>
-    <div class="si" id="s2"><div class="sn">2</div><div class="sl">Details</div></div>
-    <div class="sc" id="sc2"></div>
-    <div class="si" id="s3"><div class="sn">3</div><div class="sl">Payment</div></div>
-    <div class="sc" id="sc3"></div>
-    <div class="si" id="s4"><div class="sn">4</div><div class="sl">Ticket</div></div>
-  </div>
-
-  <!-- STEP 1 -->
-  <div class="sec active" id="sec1">
-    <div class="fstrip" id="fs1"></div>
-    <div class="tsel">
-      <div class="movie-badge">
-        <div class="mini-poster">
-          <img id="miniPosterImg" alt="" crossorigin="anonymous">
-          <span id="miniPosterIcon">🎬</span>
-        </div>
-        <div>
-          <div class="badge-name" id="badgeMovieName">Reel to Deal</div>
-          <div class="badge-meta" id="stepMeta">MBA Auditorium · —</div>
-        </div>
-      </div>
-      <div class="qty-zone">
-        <div class="t-display">
-          <span class="t-cnt" id="tCnt">1</span>
-          <div class="t-lbl">Ticket(s) Selected</div>
-          <div class="qty-ctrl">
-            <button class="qbtn" id="btnM" onclick="chgQty(-1)">−</button>
-            <button class="qbtn" id="btnP" onclick="chgQty(1)">+</button>
+      <!-- ─ STEP 1: SELECT ─ -->
+      <div class="step-pane active" id="step1">
+        <!-- Free ticket ribbon -->
+        <div class="free-ribbon" id="freeRibbon">
+          <div class="free-ribbon-icon">🎁</div>
+          <div class="free-ribbon-text">
+            <h4>Free Tickets Available!</h4>
+            <p>You qualify for a <strong>FREE</strong> ticket — <span id="ribbonCount">0</span> remaining</p>
           </div>
         </div>
-        <div class="price-bd">
-          <div class="pr"><span>Price per ticket</span><span id="ppt">₹1</span></div>
-          <div class="pr"><span>Quantity</span><span id="qD">1</span></div>
-          <div class="pr tot"><span>Total Amount</span><span id="totD">₹1</span></div>
+
+        <p class="sec-label">Now Showing</p>
+        <div class="movie-card selected" id="movieCard">
+          <div class="poster">🎭</div>
+          <div class="movie-info">
+            <h3 id="mc-name">Reel to Deal</h3>
+            <div class="movie-tags">
+              <span class="movie-tag">Drama · Thriller</span>
+              <span class="movie-tag">2h 15m</span>
+            </div>
+            <div class="movie-price" id="mc-price">₹100<small style="font-size:0.6rem;font-family:'JetBrains Mono',monospace;color:var(--muted)">/seat</small></div>
+          </div>
+          <div class="sel-badge">Selected</div>
+        </div>
+
+        <p class="sec-label" style="margin-top:18px">How many seats?</p>
+        <div class="qty-row">
+          <span class="qty-lbl">Quantity</span>
+          <div class="qty-ctrl">
+            <button class="qty-btn" id="qtyMinus" onclick="chgQty(-1)">−</button>
+            <span class="qty-num" id="qtyNum">1</span>
+            <button class="qty-btn" id="qtyPlus" onclick="chgQty(1)">+</button>
+          </div>
+        </div>
+
+        <div class="price-box" id="priceBox">
+          <div class="pr-row"><span class="k">Price per seat</span><span class="v" id="pricePer">₹100</span></div>
+          <div class="pr-row" id="freeRow" style="display:none"><span class="k">Free seats applied</span><span class="v free-row" id="freeSeats">0</span></div>
+          <div class="pr-row"><span class="k">Seats selected</span><span class="v" id="priceQty">1</span></div>
+          <div class="pr-row"><span class="k">Convenience fee</span><span class="v">₹0</span></div>
+          <div class="pr-row total-row"><span class="k">Total Amount</span><span class="v" id="priceTotal">₹100</span></div>
+        </div>
+        <button class="btn btn-gold" onclick="goStep(2)">Continue to Details →</button>
+      </div>
+
+      <!-- ─ STEP 2: DETAILS ─ -->
+      <div class="step-pane" id="step2">
+        <div class="card">
+          <div class="card-title">👤 Personal Information</div>
+          <div class="fg">
+            <label class="fl">Full Name *</label>
+            <input class="fi" id="inName" type="text" placeholder="Your full name" oninput="vf('inName')">
+            <div class="ferr" id="eN">Name must be at least 2 characters</div>
+          </div>
+          <div class="fg">
+            <label class="fl">Email Address *</label>
+            <input class="fi" id="inEmail" type="email" placeholder="you@college.edu" oninput="vf('inEmail')">
+            <div class="ferr" id="eE">Enter a valid email address</div>
+          </div>
+          <div class="fg">
+            <label class="fl">Mobile Number *</label>
+            <input class="fi" id="inPhone" type="tel" placeholder="10-digit number" maxlength="10" oninput="vf('inPhone')">
+            <div class="ferr" id="eP">Enter a valid 10-digit mobile number</div>
+          </div>
+          <div class="fg">
+            <label class="fl">College / Organisation</label>
+            <input class="fi" id="inCollege" type="text" placeholder="Optional">
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="goStep(1)">← Back</button>
+          <button class="btn btn-gold" onclick="goStep(3)">Proceed to Payment →</button>
         </div>
       </div>
-    </div>
-    <button class="btn btn-p" onclick="goStep(2)">Continue →</button>
-    <div class="lookup-box">
-      <div class="lookup-title">🔍 Check Existing Booking</div>
-      <div class="lookup-row">
-        <input type="text" id="lookupInput" placeholder="Enter Booking ID (RTD-...) or UTR...">
-        <button class="lookup-btn" onclick="lookupBooking()">Check</button>
+
+      <!-- ─ STEP 3: PAYMENT ─ -->
+      <div class="step-pane" id="step3">
+        <!-- Free ticket: no payment needed -->
+        <div id="freePaySection" style="display:none">
+          <div class="free-pay-notice">
+            <strong>🎁 This is a FREE Ticket!</strong>
+            No payment required. Just submit your details below to claim your seat.
+          </div>
+        </div>
+
+        <!-- Paid: show UPI panel -->
+        <div id="paidPaySection">
+          <div class="upi-panel">
+            <div class="upi-amt" id="upiAmt">₹100</div>
+            <div class="upi-sub">Amount to pay via UPI</div>
+            <div class="upi-id-row">
+              <span class="upi-id-txt" id="upiIdTxt">rtd@upi</span>
+              <button class="copy-btn" onclick="copyUPI()">Copy</button>
+            </div>
+            <div class="upi-apps">
+              <a class="app-pill" onclick="openUPI('gpay')">🟢 GPay</a>
+              <a class="app-pill" onclick="openUPI('phonepe')">💜 PhonePe</a>
+              <a class="app-pill" onclick="openUPI('paytm')">🔵 Paytm</a>
+              <a class="app-pill" onclick="openUPI('bhim')">🏛 BHIM</a>
+            </div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--muted);text-align:center;letter-spacing:0.04em;">
+              💡 Pay exact amount · Screenshot required for verification
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">📸 Payment Screenshot</div>
+            <div class="upload-zone" id="uploadZone">
+              <input type="file" id="ssFile" accept="image/*" onchange="onFileSelect(event)">
+              <div class="upload-icon">📎</div>
+              <div class="upload-title">Drop screenshot here</div>
+              <div class="upload-sub">Click to browse · JPG PNG WEBP</div>
+              <img id="previewImg" alt="Preview">
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">🧾 Transaction Details</div>
+          <div class="fg">
+            <label class="fl" id="utrLabel">UTR / Transaction ID *</label>
+            <input class="fi" id="inUTR" type="text" placeholder="Transaction reference number" oninput="vf('inUTR')">
+            <div class="ferr" id="eU">Enter a valid UTR (min. 6 characters)</div>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="goStep(2)">← Back</button>
+          <button class="btn btn-gold" id="submitBtn" onclick="submitBooking()">
+            <span id="submitTxt">Submit Booking</span>
+          </button>
+        </div>
       </div>
-      <div class="lookup-result" id="lookupResult"></div>
+
+      <!-- ─ STEP 4: SUCCESS TICKET ─ -->
+      <div class="step-pane" id="step4">
+        <div style="text-align:center;padding:18px 0 26px">
+          <div style="font-size:2.8rem;margin-bottom:10px" id="successEmoji">🎉</div>
+          <div style="font-family:'Playfair Display',serif;font-size:1.45rem;font-weight:700;color:var(--gold2);margin-bottom:5px">Booking Submitted!</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--muted);letter-spacing:0.04em" id="s4sub">Pending admin verification</div>
+        </div>
+
+        <!-- CINEMATIC TICKET -->
+        <div class="ticket-shell" id="ticketShell">
+          <div class="ticket" id="tktEl">
+            <div class="ticket-bg"></div>
+            <div class="ticket-perfs"><span>Reel&nbsp;to&nbsp;Deal</span></div>
+            <div class="free-stamp" id="tktFreeStamp" style="display:none">✨ FREE</div>
+            <div class="ticket-head">
+              <div class="t-brand">🎬 <span id="tktBrand">Reel to Deal · MBA Fest 2025</span></div>
+              <div class="t-movie" id="tktMovie">—</div>
+              <div class="t-meta">
+                <div class="t-meta-item"><div class="t-meta-k">Date</div><div class="t-meta-v" id="tktDate">—</div></div>
+                <div class="t-meta-item"><div class="t-meta-k">Venue</div><div class="t-meta-v" id="tktVenue">—</div></div>
+                <div class="t-meta-item"><div class="t-meta-k">Seats</div><div class="t-meta-v" id="tktQty">—</div></div>
+              </div>
+            </div>
+            <div class="tear-line"><div class="tear-dashes"></div></div>
+            <div class="ticket-body">
+              <div class="t-details">
+                <div class="t-detail-row"><span class="t-dk">Name</span><span class="t-dv" id="tktName">—</span></div>
+                <div class="t-detail-row"><span class="t-dk">Email</span><span class="t-dv" id="tktEmail">—</span></div>
+                <div class="t-detail-row"><span class="t-dk">Amount</span><span class="t-dv gold" id="tktAmt">—</span></div>
+                <div class="t-detail-row"><span class="t-dk">Type</span><span class="t-dv" id="tktType">—</span></div>
+              </div>
+              <div class="ticket-qr">
+                <div id="qrDiv"></div>
+                <div class="t-qr-lbl">Scan · Verify</div>
+              </div>
+            </div>
+            <div class="ticket-foot">
+              <div class="t-tid" id="tktTid">—</div>
+              <div id="tktStatusBadge" class="sbadge sb-pending"><div class="sd"></div>Pending</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-ghost btn-sm" onclick="dlPDF()" style="flex:1">⬇ PDF</button>
+          <button class="btn btn-ghost btn-sm" onclick="gotoView('tickets',null)" style="flex:1">🎟 My Tickets</button>
+          <button class="btn btn-gold btn-sm" onclick="bookAnother()" style="flex:1">＋ New</button>
+        </div>
+      </div>
+    </div><!-- /bookingForm -->
+  </div><!-- /view-book -->
+
+  <!-- ══ MY TICKETS VIEW ══ -->
+  <div class="view" id="view-tickets">
+    <div style="padding:28px 0 18px">
+      <div style="font-family:'Playfair Display',serif;font-size:1.45rem;font-weight:700;margin-bottom:4px">Your Tickets</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--muted);letter-spacing:0.04em">Saved permanently · synced in real-time</div>
     </div>
+    <div id="skelCards">
+      <div class="skel skel-card"></div>
+      <div class="skel skel-card"></div>
+      <div class="skel skel-card"></div>
+    </div>
+    <div id="tcardList" style="display:none"></div>
   </div>
 
-  <!-- STEP 2 -->
-  <div class="sec" id="sec2">
-    <div class="card">
-      <div class="card-title">👤 Your Details</div>
-      <div class="fg">
-        <label>Full Name</label>
-        <input type="text" id="fname" placeholder="Enter your full name" oninput="valF('fname')">
-        <div class="ferr" id="fnameE">⚠ Please enter your full name (min 2 characters)</div>
-      </div>
-      <div class="fg">
-        <label>Email Address</label>
-        <input type="email" id="femail" placeholder="you@college.edu" oninput="valF('femail')">
-        <div class="ferr" id="femailE">⚠ Enter a valid email — e.g. name@domain.com</div>
-      </div>
-      <div class="fg">
-        <label>Phone Number</label>
-        <input type="tel" id="fphone" placeholder="10-digit mobile number" maxlength="10" oninput="valF('fphone')">
-        <div class="ferr" id="fphoneE">⚠ Enter a valid 10-digit number starting with 6, 7, 8 or 9</div>
-      </div>
-    </div>
-    <button class="btn btn-p" onclick="validateDetails()">Proceed to Payment →</button>
-    <button class="btn btn-s" onclick="goStep(1)">← Back</button>
-  </div>
+</div><!-- /wrap -->
 
-  <!-- STEP 3 -->
-  <div class="sec" id="sec3">
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:13px;padding:2px 0">
-      <div class="pss-item active" id="pss1"><div class="pss-dot">1</div><span>Scan</span></div>
-      <div class="pss-line" id="psl1"></div>
-      <div class="pss-item" id="pss2"><div class="pss-dot">2</div><span>Pay</span></div>
-      <div class="pss-line" id="psl2"></div>
-      <div class="pss-item" id="pss3"><div class="pss-dot">3</div><span>Screenshot</span></div>
-      <div class="pss-line" id="psl3"></div>
-      <div class="pss-item" id="pss4"><div class="pss-dot">4</div><span>Submit</span></div>
-    </div>
-    <div class="tmr-box">
-      <span style="font-size:1.3rem">⏱</span>
-      <div>
-        <div style="font-size:.56rem;color:var(--muted);letter-spacing:2px;font-family:'Space Mono',monospace">COMPLETE PAYMENT IN</div>
-        <div class="tmr-num" id="tmrD">10:00</div>
-      </div>
-      <div class="tmr-prog" id="tmrProg" style="width:100%"></div>
-    </div>
-    <div class="upi-box">
-      <div style="margin-bottom:16px;text-align:center">
-        <span class="amt-lbl">Total Payable</span>
-        <span class="amt-big" id="payAmt">₹1</span>
-        <span class="amt-lbl" id="payInfo">for 1 ticket</span>
-      </div>
-      <div class="upi-row">
-        <div><span class="upi-lbl">UPI ID</span><span class="upi-val" id="upiD"></span></div>
-        <button class="copy-btn" onclick="copyUPI(this)">COPY</button>
-      </div>
-      <div class="upi-row">
-        <div><span class="upi-lbl">Payee Name</span><span class="upi-val" id="payeeD"></span></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">📱 Pay With App</div>
-      <div class="upi-apps" id="upiApps"></div>
-      <p style="font-size:.6rem;color:var(--muted);text-align:center;font-family:'Space Mono',monospace;letter-spacing:1px">TAP APP → VERIFY AMOUNT → PAY → COME BACK HERE</p>
-    </div>
-    <div class="card">
-      <div class="card-title">✅ Verify Payment</div>
-      <div class="smsg" id="statusMsg"></div>
-      <div class="fg">
-        <label>UTR / Transaction ID</label>
-        <input type="text" id="utrI" placeholder="12-digit UTR or Paytm TxnID (starts with T)" oninput="valUTR()">
-        <div class="ferr" id="utrE">⚠ Invalid — enter 12+ digit number or Paytm ID starting with T</div>
-        <div class="help-box" id="utrHelp">
-          <strong>📍 Where to find your UTR / Transaction ID?</strong><br>
-          • <strong>Google Pay / PhonePe:</strong> Open the payment → "Transaction ID" (12 digits)<br>
-          • <strong>Paytm:</strong> Open transaction history → starts with T followed by digits<br>
-          • <strong>BHIM UPI:</strong> Under payment details → "UTR Number"<br>
-          • <strong>Bank SMS:</strong> UTR is mentioned in the payment confirmation message<br>
-          <div class="tip">💡 <strong>Tip:</strong> It's usually 12 digits. If you can't find it, check your UPI app's transaction history.</div>
-        </div>
-      </div>
-      <div class="fg">
-        <label>Payment Screenshot</label>
-        <div class="up-zone" id="upZone">
-          <input type="file" id="ssFile" accept=".jpg,.jpeg,.png,.webp,.heic" onchange="handleFile(event)">
-          <span class="up-icon">📸</span>
-          <p class="up-text">Drop screenshot here or <strong>browse</strong></p>
-          <p style="font-size:.6rem;color:var(--muted);margin-top:4px;font-family:'Space Mono',monospace">JPG · PNG · WEBP · HEIC · MAX 5MB</p>
-        </div>
-        <img class="up-prev" id="ssPrev" alt="">
-        <div class="ocr-box" id="ocrBox">
-          <div class="ocr-item" id="ocrP"><div class="ocr-spin"></div>&nbsp;Analyzing screenshot with AI...</div>
-          <div class="ocr-item" id="ocrA" style="display:none"></div>
-          <div class="ocr-item" id="ocrU" style="display:none"></div>
-        </div>
-        <div class="ferr" id="ssE">⚠ Please upload your payment screenshot</div>
-        <div class="help-box" id="ssHelp">
-          <strong>📸 Screenshot tips:</strong><br>
-          • Screenshot must show the ✅ payment <strong>success screen</strong><br>
-          • The exact amount and UPI ID should be visible<br>
-          • Avoid cropping out important info<br>
-          <div class="tip">💡 <strong>Don't worry:</strong> Even if AI verification fails, admin will manually check your UTR and approve if valid.</div>
-        </div>
-      </div>
-    </div>
-    <button class="btn btn-p" id="subBtn" onclick="submitBooking()">Submit Booking</button>
-    <button class="btn btn-s" onclick="cancelPay()">Cancel & Go Back</button>
-  </div>
-
-  <!-- STEP 4 -->
-  <div class="sec" id="sec4">
-    <div class="smsg show" id="successMsg" style="display:block;margin-bottom:16px"></div>
-    <div class="tkt-card" id="tktCard">
-      <div class="tkt-topbar"></div>
-      <div class="fstrip" id="fs2"></div>
-      <div class="tkt-hero">
-        <div id="tktPosterBg"></div>
-        <div class="tkt-thumb">
-          <img id="tktPosterImg" alt="" crossorigin="anonymous">
-          <span id="tktPosterIcon">🎬</span>
-        </div>
-        <div class="tkt-hero-txt">
-          <div class="tkt-label-sm" id="tktLabel">REEL TO DEAL · MBA FEST</div>
-          <div class="tkt-hero-movie" id="tktTitle">Movie Ticket</div>
-          <div class="tkt-hero-date" id="tktDate">—</div>
-        </div>
-      </div>
-      <div class="tkt-perf"><div class="tkt-nc tkt-nc-l"></div><div class="tkt-dash"></div><div class="tkt-nc tkt-nc-r"></div></div>
-      <div class="tkt-body" id="tktBody"></div>
-      <div class="tkt-qr"><div id="qrDiv"></div><div class="tkt-qr-lbl">Scan to verify at entry</div></div>
-      <div class="fstrip" id="fs3"></div>
-    </div>
-    <div class="dl-grid">
-      <button class="btn btn-p" onclick="dlPDF()">📄 PDF</button>
-      <button class="btn btn-g" onclick="showSoftCopy()">🖼 Image</button>
-      <button class="btn btn-bl" onclick="showEmailModal()">✉ Email</button>
-      <div class="dl-full">
-        <button class="btn btn-wa" onclick="shareWA()">💬 WhatsApp</button>
-        <button class="btn btn-s" onclick="printTkt()" style="margin:0">🖨 Print</button>
-      </div>
-    </div>
-    <div class="card" style="margin-top:12px">
-      <p style="font-size:.7rem;color:var(--muted);line-height:1.9;font-family:'Space Mono',monospace">
-        📌 <strong style="color:var(--gold)">PENDING?</strong> Payment verification usually takes a few minutes. You'll be notified once approved.<br><br>
-        ✅ <strong style="color:var(--green)">APPROVED?</strong> You're confirmed! Show this ticket at the gate.<br><br>
-        🔍 <strong style="color:var(--text)">CHECK STATUS</strong> anytime using your Booking ID in the lookup box below.
-      </p>
-    </div>
-  </div>
-
-  <button class="btn btn-s" onclick="bookAnother()" style="margin-top:6px">+ Book Another Ticket</button>
-  <div class="adm-lnk"><a href="admin.html">Admin Panel →</a></div>
-</div>
-
-<!-- SOFT COPY MODAL -->
-<div id="softModal">
-  <div class="modal-inner">
-    <button class="modal-close" onclick="closeSoftCopy()">✕</button>
-    <div class="modal-title">🎟 Digital Ticket</div>
-    <canvas id="tktCanvas"></canvas>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
-      <button class="btn btn-g" onclick="dlImage()" style="font-size:.66rem;padding:10px;margin:0">⬇ Save</button>
-      <button class="btn btn-s" onclick="closeSoftCopy()" style="font-size:.66rem;padding:10px;margin:0">Close</button>
-    </div>
-  </div>
-</div>
-
-<!-- EMAIL MODAL -->
-<div id="emailModal">
-  <div class="modal-inner" style="border-color:rgba(62,196,122,.22)">
-    <button class="modal-close" onclick="closeEmailModal()">✕</button>
-    <div class="modal-title" style="color:var(--green)">✉ Email Ticket</div>
-    <div class="email-prev" id="emailPrev"></div>
-    <div class="email-modal-grid">
-      <button class="btn btn-g" onclick="sendEmail()" style="font-size:.66rem;padding:10px;margin:0">Open Email App</button>
-      <button class="btn btn-s" onclick="closeEmailModal()" style="font-size:.66rem;padding:10px;margin:0">Cancel</button>
-    </div>
-    <p style="font-size:.56rem;color:var(--muted);margin-top:7px;font-family:'Space Mono',monospace;text-align:center;letter-spacing:1px">Opens your default mail client pre-filled.</p>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
 <script>
 'use strict';
-const SB_URL='https://yhrfpcwehtqsppoifhog.supabase.co';
-const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlocmZwY3dlaHRxc3Bwb2lmaG9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1NzQ5MDAsImV4cCI6MjA4NzE1MDkwMH0.Ml1V2zc8j3XCZIuILuapy2Cs4jcBl0i6sHKxFFl6Sqo';
-const DEFAULTS={movieName:'Reel to Deal',venue:'MBA Auditorium',eventDate:'2025-02-17T13:00',eventDateDisplay:'FEB 17, 2025 · 1:00 PM',ticketPrice:100,maxTickets:10,upiId:'hiteshhayagriv@okicici',payeeName:'REEL TO DEAL',autoApprove:true,eventDescription:'',posterUrl:''};
-let CFG={...DEFAULTS};
-let qty=1,step=1,tmrInt=null,tmrSecs=600;
-let bData={},ssFile=null,ocrAmt=false,ocrUpi=false,rateTs=[];
 
-window.addEventListener('load',async()=>{
-  buildFilmStrips();
-  setSyncState('loading','Connecting to server...');
-  await loadConfig();
-  applyConfig();startCd();buildApps();chgQty(0);initDrag();
-  setTimeout(()=>{const ls=document.getElementById('ls');ls.classList.add('out');setTimeout(()=>ls.style.display='none',600);},1200);
+// ══════════════════════════════════════════════════
+//  SUPABASE CLIENT
+// ══════════════════════════════════════════════════
+const SB_URL = 'https://yhrfpcwehtqsppoifhog.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlocmZwY3dlaHRxc3Bwb2lmaG9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1NzQ5MDAsImV4cCI6MjA4NzE1MDkwMH0.Ml1V2zc8j3XCZIuILuapy2Cs4jcBl0i6sHKxFFl6Sqo';
+const H = { 'apikey':SB_KEY, 'Authorization':'Bearer '+SB_KEY, 'Content-Type':'application/json', 'Prefer':'return=representation' };
+
+const DB = {
+  async get(t,q='')    { const r=await fetch(`${SB_URL}/rest/v1/${t}?${q}`,{headers:H}); if(!r.ok)throw new Error(await r.text()); return r.json(); },
+  async post(t,b)      { const r=await fetch(`${SB_URL}/rest/v1/${t}`,{method:'POST',headers:H,body:JSON.stringify(b)}); if(!r.ok)throw new Error(await r.text()); return r.json(); },
+  async patch(t,q,b)   { const r=await fetch(`${SB_URL}/rest/v1/${t}?${q}`,{method:'PATCH',headers:H,body:JSON.stringify(b)}); if(!r.ok)throw new Error(await r.text()); return r.json(); },
+  async del(t,q)       { const r=await fetch(`${SB_URL}/rest/v1/${t}?${q}`,{method:'DELETE',headers:H}); if(!r.ok)throw new Error(await r.text()); return true; },
+  async upload(bucket,path,file) {
+    const r=await fetch(`${SB_URL}/storage/v1/object/${bucket}/${path}`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':file.type},body:file});
+    if(!r.ok)throw new Error('Upload failed');
+    return `${SB_URL}/storage/v1/object/public/${bucket}/${path}`;
+  }
+};
+
+// ══════════════════════════════════════════════════
+//  APP STATE
+// ══════════════════════════════════════════════════
+const S = {
+  qty:      1,
+  step:     1,
+  cfg:      { event_name:'Reel to Deal', ticket_price:100, total_tickets:200, free_tickets:50, free_used:0, tickets_sold:0, upi_id:'rtd@upi', venue:'MBA Auditorium', event_date:'Feb 17, 2025 · 2:00 PM', booking_enabled:true },
+  booking:  null,
+  notifs:   [],
+  knownSt:  {},
+  tickets:  [],         // persisted local cache
+  isFreeBooking: false,
+};
+
+// ══════════════════════════════════════════════════
+//  BOOT
+// ══════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', async () => {
+  // Restore local ticket cache
+  try { const s=localStorage.getItem('rtd2_tickets'); if(s) S.tickets=JSON.parse(s); } catch(e){}
+
+  await syncSettings();
+  initPolling();
+
+  setTimeout(()=>document.getElementById('splash').classList.add('gone'), 1900);
 });
 
-function buildFilmStrips(){
-  ['fs1','fs2','fs3'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=Array(40).fill('<div class="fhole"></div>').join('');});
-  const hf=document.getElementById('heroFilm');if(hf){let h='';for(let i=0;i<55;i++)h+='<div class="hero-film-hole"></div>';hf.innerHTML=h;}
+// ══════════════════════════════════════════════════
+//  SETTINGS SYNC
+// ══════════════════════════════════════════════════
+async function syncSettings() {
+  try {
+    const [cfg] = await DB.get('settings','id=eq.1&select=*');
+    if (cfg) Object.assign(S.cfg, cfg);
+    setSync(true);
+  } catch(e) { setSync(false); }
+  applySettings();
 }
 
-function setSyncState(state,msg){
-  const b=document.getElementById('syncBar'),t=document.getElementById('syncTxt');
-  b.className='sync-bar '+(state==='live'||state==='ok'?'live':state==='err'||state==='error'?'err':'loading');
-  t.textContent=msg;
+function applySettings() {
+  const c = S.cfg;
+  const freeLeft = Math.max(0, c.free_tickets - c.free_used);
+  const remaining = Math.max(0, c.total_tickets - c.tickets_sold);
+  S.isFreeBooking = freeLeft > 0;
+
+  // Banner stats
+  animNum('bannerTotal', c.total_tickets);
+  animNum('bannerSold',  c.tickets_sold);
+  animNum('bannerFree',  freeLeft);
+
+  // Hero info
+  _t('herVenue', c.venue);
+  _t('herDate', c.event_date);
+
+  // Movie card price
+  const priceDisplay = S.isFreeBooking ? '₹0 <span class="free-badge-inline">✨ FREE</span>' : `₹${c.ticket_price}`;
+  document.getElementById('mc-name').textContent = c.event_name;
+  document.getElementById('mc-price').innerHTML = priceDisplay + '<small style="font-size:0.6rem;font-family:\'JetBrains Mono\',monospace;color:var(--muted)">/seat</small>';
+  document.getElementById('mc-price').className = 'movie-price' + (S.isFreeBooking ? ' free-price' : '');
+
+  // Free ribbon
+  const ribbon = document.getElementById('freeRibbon');
+  ribbon.classList.toggle('hidden', !S.isFreeBooking);
+  _t('ribbonCount', freeLeft);
+
+  // Sold out / disabled check
+  const soldout  = remaining <= 0;
+  const disabled = !c.booking_enabled;
+  _show('soldoutBanner',  soldout && !disabled);
+  _show('disabledBanner', disabled);
+  _show('bookingForm',    !soldout && !disabled);
+
+  // UPI
+  _t('upiIdTxt', c.upi_id);
+
+  updatePriceSummary();
 }
 
-async function loadConfig(){
-  setSyncState('loading','Fetching live settings...');
-  try{
-    const res=await fetch(`${SB_URL}/rest/v1/app_settings?id=eq.1&select=*`,{headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`}});
-    if(!res.ok)throw new Error('HTTP '+res.status);
-    const data=await res.json();
-    if(data&&data.length>0){
-      const s=data[0];
-      if(s.movie_name)         CFG.movieName        =s.movie_name;
-      if(s.venue)              CFG.venue            =s.venue;
-      if(s.event_date)         CFG.eventDate        =s.event_date;
-      if(s.event_date_display) CFG.eventDateDisplay =s.event_date_display;
-      if(s.ticket_price>0)     CFG.ticketPrice      =Number(s.ticket_price);
-      if(s.max_tickets>0)      CFG.maxTickets       =Number(s.max_tickets);
-      if(s.upi_id)             CFG.upiId            =s.upi_id;
-      if(s.payee_name)         CFG.payeeName        =s.payee_name;
-      CFG.autoApprove=s.auto_approve!=null?Boolean(s.auto_approve):CFG.autoApprove;
-      CFG.posterUrl=s.movie_poster_url||'';
-      if(s.event_description)  CFG.eventDescription =s.event_description;
+// ══════════════════════════════════════════════════
+//  POLLING — refresh settings + status changes
+// ══════════════════════════════════════════════════
+function initPolling() {
+  setInterval(async () => {
+    await syncSettings();
+    if (!S.tickets.length) return;
+    try {
+      const ids = S.tickets.map(t=>t.id).join(',');
+      const fresh = await DB.get('tickets', `id=in.(${ids})&select=id,status`);
+      fresh.forEach(row => {
+        const prev = S.knownSt[row.id];
+        if (prev && prev !== row.status) {
+          const tk = S.tickets.find(t=>t.id===row.id);
+          pushNotif(`🎫 Ticket ${tk?.ticket_id||row.id} → ${row.status.toUpperCase()}`);
+          const i = S.tickets.findIndex(t=>t.id===row.id);
+          if (i>=0) S.tickets[i].status = row.status;
+          saveTix();
+          if (_el('view-tickets').classList.contains('active')) renderTcards();
+        }
+        S.knownSt[row.id] = row.status;
+      });
+    } catch(e){}
+  }, 8000);
+}
+
+// ══════════════════════════════════════════════════
+//  VIEWS
+// ══════════════════════════════════════════════════
+function gotoView(name, btn) {
+  $$('.view').forEach(v=>v.classList.remove('active'));
+  _el(`view-${name}`).classList.add('active');
+  $$('.nav-pill').forEach(b=>b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  else document.querySelector(`[data-v="${name}"]`)?.classList.add('active');
+  if (name === 'tickets') loadMyTickets();
+}
+
+// ══════════════════════════════════════════════════
+//  WIZARD
+// ══════════════════════════════════════════════════
+function goStep(n) {
+  // Validate step 2
+  if (n === 3 && !validateStep2()) return;
+
+  $$('.step-pane').forEach(p=>p.classList.remove('active'));
+  _el(`step${n}`).classList.add('active');
+
+  for (let i=1; i<=4; i++) {
+    const ws = _el(`ws${i}`);
+    ws.classList.remove('active','done');
+    if (i < n) ws.classList.add('done');
+    else if (i === n) ws.classList.add('active');
+  }
+  S.step = n;
+
+  // Step 3 setup
+  if (n === 3) setupPaymentStep();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function setupPaymentStep() {
+  const total = calcTotal();
+  S.isFreeBooking = total === 0;
+
+  _show('freePaySection', S.isFreeBooking);
+  _show('paidPaySection', !S.isFreeBooking);
+
+  _el('upiAmt').textContent = '₹' + total;
+  _el('upiAmt').className = 'upi-amt' + (S.isFreeBooking ? ' free' : '');
+
+  // UTR label hint
+  _el('utrLabel').textContent = S.isFreeBooking
+    ? 'Reference Number (optional)'
+    : 'UTR / Transaction ID *';
+
+  _el('inUTR').placeholder = S.isFreeBooking
+    ? 'Optional reference (skip if none)'
+    : '12-digit transaction reference';
+}
+
+// ══════════════════════════════════════════════════
+//  QTY + PRICE
+// ══════════════════════════════════════════════════
+function chgQty(d) {
+  const max = Math.min(S.cfg.total_tickets - S.cfg.tickets_sold, 10);
+  S.qty = Math.max(1, Math.min(max, S.qty + d));
+  _t('qtyNum', S.qty);
+  updatePriceSummary();
+}
+
+function calcTotal() {
+  const c = S.cfg;
+  const freeLeft = Math.max(0, c.free_tickets - c.free_used);
+  const freeApplied = Math.min(S.qty, freeLeft);
+  const paidQty = S.qty - freeApplied;
+  return paidQty * c.ticket_price;
+}
+
+function updatePriceSummary() {
+  const c = S.cfg;
+  const freeLeft = Math.max(0, c.free_tickets - c.free_used);
+  const freeApplied = Math.min(S.qty, freeLeft);
+  const paidQty = S.qty - freeApplied;
+  const total = paidQty * c.ticket_price;
+  const isFree = total === 0;
+
+  _t('priceQty', S.qty);
+  _t('pricePer', isFree ? 'FREE ✨' : `₹${c.ticket_price}`);
+  _el('pricePer').style.color = isFree ? 'var(--green)' : '';
+
+  if (freeApplied > 0) {
+    _show('freeRow', true);
+    _t('freeSeats', `${freeApplied} seat${freeApplied>1?'s':''} FREE`);
+  } else {
+    _show('freeRow', false);
+  }
+
+  _el('priceTotal').textContent = isFree ? '₹0 — FREE! ✨' : `₹${total}`;
+  _el('priceTotal').style.color = isFree ? 'var(--green)' : '';
+}
+
+// ══════════════════════════════════════════════════
+//  FORM VALIDATION
+// ══════════════════════════════════════════════════
+function vf(id) {
+  const el = _el(id), v = el.value.trim();
+  let ok = true;
+  if (id==='inName')  ok = v.length >= 2;
+  if (id==='inEmail') ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  if (id==='inPhone') ok = /^[6-9]\d{9}$/.test(v);
+  if (id==='inUTR')   ok = v.length >= 6 || (S.isFreeBooking && v.length === 0);
+  el.classList.toggle('err', !ok && v.length>0);
+  const errMap = {inName:'eN',inEmail:'eE',inPhone:'eP',inUTR:'eU'};
+  if (errMap[id]) _el(errMap[id]).classList.toggle('show', !ok && v.length>0);
+  return ok;
+}
+function validateStep2() {
+  const ok = ['inName','inEmail','inPhone'].map(f=>vf(f)).every(Boolean);
+  if (!ok) toast('Please fill all required fields correctly', 'err');
+  return ok;
+}
+
+// ══════════════════════════════════════════════════
+//  PAYMENT HELPERS
+// ══════════════════════════════════════════════════
+function copyUPI() {
+  navigator.clipboard.writeText(S.cfg.upi_id).then(()=>toast('UPI ID copied! 📋'));
+}
+function openUPI(app) {
+  const amt = calcTotal();
+  window.location.href = `upi://pay?pa=${S.cfg.upi_id}&pn=Reel+to+Deal&am=${amt}&cu=INR`;
+}
+function onFileSelect(e) {
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    const img = _el('previewImg');
+    img.src=ev.target.result; img.style.display='block';
+    toast('Screenshot uploaded ✓','ok');
+  };
+  r.readAsDataURL(f);
+}
+
+// ══════════════════════════════════════════════════
+//  SUBMIT BOOKING
+// ══════════════════════════════════════════════════
+async function submitBooking() {
+  const total    = calcTotal();
+  const isFree   = total === 0;
+  const utrVal   = _el('inUTR').value.trim();
+
+  if (!isFree) {
+    if (!vf('inUTR')) { toast('Please enter UTR / Transaction ID','err'); return; }
+    const ss = _el('ssFile').files[0];
+    if (!ss) { toast('Please upload payment screenshot','err'); return; }
+  }
+
+  const btn  = _el('submitBtn');
+  const btxt = _el('submitTxt');
+  btn.disabled = true;
+  btxt.innerHTML = '<span class="spin"></span> Processing…';
+
+  try {
+    // Re-fetch fresh settings to check availability + free count
+    const [fresh] = await DB.get('settings','id=eq.1&select=*');
+    if (!fresh.booking_enabled) { toast('Bookings are currently paused','err'); return; }
+
+    const remaining = fresh.total_tickets - fresh.tickets_sold;
+    if (remaining < S.qty) { toast('Not enough tickets remaining!','err'); return; }
+
+    const freeLeft   = Math.max(0, fresh.free_tickets - fresh.free_used);
+    const freeApplied = Math.min(S.qty, freeLeft);
+    const finalAmount = (S.qty - freeApplied) * fresh.ticket_price;
+    const thisIsFree  = finalAmount === 0;
+
+    const ticketId = 'RTD-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2,4).toUpperCase();
+    const name   = _el('inName').value.trim();
+    const email  = _el('inEmail').value.trim();
+    const phone  = _el('inPhone').value.trim();
+    const college= _el('inCollege').value.trim();
+
+    // Duplicate UTR check (only for paid)
+    if (!thisIsFree && utrVal) {
+      const dup = await DB.get('tickets',`utr=eq.${utrVal}&select=id`);
+      if (dup.length) { toast('This UTR is already registered!','err'); return; }
     }
-    setSyncState('ok','Live · Settings synced ✓');
-    setTimeout(()=>{const sb=document.getElementById('syncBar');if(sb)sb.style.opacity='.5';},5000);
-  }catch(e){console.warn('Config load failed',e);setSyncState('error','Offline · Using default settings');}
-}
 
-function applyConfig(){
-  document.title=CFG.movieName+' — Ticket Booking';
-  const url=CFG.posterUrl||'';
-  const hpb=document.getElementById('heroPosterBg');if(hpb){hpb.style.backgroundImage=url?'url('+url+')':'none';hpb.style.opacity=url?'1':'0';}
-  const hpi=document.getElementById('heroPosterImg'),hpic=document.getElementById('heroPosterIcon');
-  if(hpi){if(url){hpi.src=url;hpi.style.display='block';}else hpi.style.display='none';}
-  if(hpic)hpic.style.display=url?'none':'flex';
-  const mpi=document.getElementById('miniPosterImg'),mpic=document.getElementById('miniPosterIcon');
-  if(mpi){if(url){mpi.src=url;mpi.style.display='block';}else mpi.style.display='none';}
-  if(mpic)mpic.style.display=url?'none':'block';
-  const tpi=document.getElementById('tktPosterImg'),tpic=document.getElementById('tktPosterIcon'),tpbg=document.getElementById('tktPosterBg');
-  if(tpi){if(url){tpi.src=url;tpi.style.display='block';}else tpi.style.display='none';}
-  if(tpic)tpic.style.display=url?'none':'flex';
-  if(tpbg){tpbg.style.backgroundImage=url?'url('+url+')':'none';tpbg.style.opacity=url?'1':'0';}
-  const mn=CFG.movieName,upper=mn.toUpperCase();
-  const hm=document.getElementById('heroMovieName');if(hm)hm.textContent=mn;
-  ['heroPosterName','infoMovieName2'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=upper;});
-  const bm=document.getElementById('badgeMovieName');if(bm)bm.textContent=mn;
-  const eb=document.getElementById('evBadge');if(eb)eb.textContent='🎬 '+upper;
-  const iv=document.getElementById('infoVenue');if(iv)iv.textContent=CFG.venue;
-  const iv2=document.getElementById('infoVenue2');if(iv2)iv2.textContent=CFG.venue;
-  const id2=document.getElementById('infoDate');if(id2)id2.textContent=CFG.eventDateDisplay;
-  const ip=document.getElementById('infoPrice');if(ip)ip.textContent='₹'+CFG.ticketPrice;
-  const ip2=document.getElementById('infoPrice2');if(ip2)ip2.textContent='₹'+CFG.ticketPrice;
-  const ppt=document.getElementById('ppt');if(ppt)ppt.textContent='₹'+CFG.ticketPrice;
-  updatePrice();
-  const upiEl=document.getElementById('upiD');if(upiEl)upiEl.textContent=CFG.upiId;
-  const payEl=document.getElementById('payeeD');if(payEl)payEl.textContent=CFG.payeeName;
-  const tt=document.getElementById('tktTitle');if(tt)tt.textContent=CFG.movieName;
-  const td=document.getElementById('tktDate');if(td)td.textContent=CFG.eventDateDisplay;
-  const tl=document.getElementById('tktLabel');if(tl)tl.textContent=CFG.movieName.toUpperCase()+' · MBA FEST';
-  const sm=document.getElementById('stepMeta');if(sm)sm.textContent=CFG.venue+' · '+CFG.eventDateDisplay;
-  if(CFG.eventDescription){const nb=document.getElementById('noticeBanner');if(nb){nb.textContent='📢 '+CFG.eventDescription;nb.classList.add('show');}}
-  const btnP=document.getElementById('btnP');if(btnP)btnP.disabled=(qty>=CFG.maxTickets);
-}
+    // Upload screenshot (paid only)
+    let ssURL = '';
+    if (!thisIsFree) {
+      const ssFile = _el('ssFile').files[0];
+      try {
+        const ext = (ssFile.name.split('.').pop()||'jpg').toLowerCase();
+        ssURL = await DB.upload('screenshots', `${ticketId}.${ext}`, ssFile);
+      } catch(e) { console.warn('Screenshot upload skipped:', e); }
+    }
 
-function startCd(){
-  const target=new Date(CFG.eventDate).getTime();
-  function tick(){
-    const diff=target-Date.now();
-    if(diff<=0){document.getElementById('cdCard').innerHTML='<div class="cd-live">🎬 EVENT IS LIVE NOW!</div>';return;}
-    const d=Math.floor(diff/86400000),h=Math.floor((diff%86400000)/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);
-    [['cdD',d],['cdH',h],['cdM',m],['cdS',s]].forEach(([id,v])=>{
-      const el=document.getElementById(id);const vs=String(v).padStart(2,'0');
-      if(el&&el.textContent!==vs){el.classList.remove('flip');void el.offsetWidth;el.classList.add('flip');el.textContent=vs;}
+    // Insert ticket
+    const [ticket] = await DB.post('tickets', {
+      ticket_id:     ticketId,
+      user_name:     name,
+      email, phone, college,
+      movie_name:    fresh.event_name,
+      quantity:      S.qty,
+      amount:        finalAmount,
+      is_free:       thisIsFree,
+      utr:           utrVal || null,
+      screenshot_url:ssURL || null,
+      status:        'pending',
+      event_date:    fresh.event_date,
+      venue:         fresh.venue,
     });
-    setTimeout(tick,1000);
-  }
-  tick();
-}
 
-async function sbPost(table,body){
-  const res=await fetch(`${SB_URL}/rest/v1/${table}`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(body)});
-  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||e.hint||'HTTP '+res.status);}
-  return res.json();
-}
-async function sbGet(ep){
-  const res=await fetch(`${SB_URL}/rest/v1/${ep}`,{headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`}});
-  if(!res.ok)throw new Error('HTTP '+res.status);
-  return res.json();
-}
-async function sbUpload(bucket,path,file){
-  const res=await fetch(`${SB_URL}/storage/v1/object/${bucket}/${path}`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':file.type,'x-upsert':'true'},body:file});
-  if(!res.ok)throw new Error('Upload failed '+res.status);
-  return`${SB_URL}/storage/v1/object/public/${bucket}/${path}`;
-}
+    // Atomically update counters in settings
+    await DB.patch('settings','id=eq.1',{
+      tickets_sold: fresh.tickets_sold + S.qty,
+      free_used:    fresh.free_used + freeApplied,
+    });
 
-function chgQty(d){
-  qty=Math.max(1,Math.min(CFG.maxTickets,qty+d));
-  const el=document.getElementById('tCnt');
-  el.textContent=qty;el.classList.remove('bump');void el.offsetWidth;el.classList.add('bump');
-  updatePrice();
-  document.getElementById('btnM').disabled=qty<=1;
-  document.getElementById('btnP').disabled=qty>=CFG.maxTickets;
-}
-function updatePrice(){
-  document.getElementById('qD').textContent=qty;
-  const tot=document.getElementById('totD');
-  tot.textContent='₹'+(qty*CFG.ticketPrice);
-  tot.classList.remove('pPop');void tot.offsetWidth;tot.classList.add('pPop');
-}
+    // Update local state + cache
+    S.cfg.tickets_sold = fresh.tickets_sold + S.qty;
+    S.cfg.free_used    = fresh.free_used + freeApplied;
+    S.booking = ticket;
+    S.knownSt[ticket.id] = 'pending';
+    S.tickets.unshift(ticket);
+    saveTix();
 
-function goStep(s){
-  document.querySelectorAll('.sec').forEach((el,i)=>el.classList.toggle('active',i+1===s));
-  for(let i=1;i<=4;i++){
-    const el=document.getElementById('s'+i);el.classList.remove('active','done');
-    if(i<s)el.classList.add('done');if(i===s)el.classList.add('active');
-  }
-  for(let i=1;i<=3;i++)document.getElementById('sc'+i).classList.toggle('done',i<s);
-  step=s;window.scrollTo({top:0,behavior:'smooth'});
-  if(s===4){launchConfetti();setTimeout(()=>drawCanvas(bData),600);}
-}
+    renderTicket(ticket, thisIsFree);
+    goStep(4);
+    applySettings(); // refresh banner counters
 
-function launchConfetti(){
-  const clrs=['#d4a853','#f0c46a','#3ec47a','#e8b840','#e05555','#4c82ff'];
-  for(let i=0;i<55;i++){
-    const p=document.createElement('div');p.className='cf';
-    const drift=(Math.random()-.5)*180,size=4+Math.random()*6;
-    p.style.cssText=`left:${Math.random()*100}vw;top:0;background:${clrs[i%clrs.length]};--dx:${drift}px;--dur:${.8+Math.random()*1.3}s;--del:${Math.random()*.6}s;width:${size}px;height:${size}px;border-radius:${Math.random()>.5?'50%':'2px'};`;
-    document.body.appendChild(p);setTimeout(()=>p.remove(),2500);
+    toast('Booking submitted! 🎉', 'ok');
+    pushNotif(`🎫 Booking ${ticketId} submitted — awaiting verification`);
+
+  } catch(e) {
+    console.error(e);
+    toast('Booking failed: ' + (e.message||'Unknown error'), 'err');
+  } finally {
+    btn.disabled = false;
+    btxt.textContent = 'Submit Booking';
   }
 }
 
-function valF(id){
-  const v=document.getElementById(id).value.trim();
-  let ok=false;
-  if(id==='fname')  ok=v.length>=2;
-  if(id==='femail') ok=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-  if(id==='fphone') ok=/^[6-9]\d{9}$/.test(v);
-  document.getElementById(id).classList.toggle('errf',!ok&&v.length>0);
-  document.getElementById(id).classList.toggle('okf',ok);
-  document.getElementById(id+'E').classList.toggle('show',!ok&&v.length>0);
-  return ok;
+// ══════════════════════════════════════════════════
+//  RENDER TICKET
+// ══════════════════════════════════════════════════
+function renderTicket(t, isFree) {
+  _t('tktBrand',  `🎬 ${t.movie_name} · MBA Fest 2025`);
+  _t('tktMovie',  t.movie_name);
+  _t('tktDate',   t.event_date||S.cfg.event_date);
+  _t('tktVenue',  t.venue||S.cfg.venue);
+  _t('tktQty',    t.quantity + ' Seat(s)');
+  _t('tktName',   t.user_name);
+  _t('tktEmail',  t.email);
+  _el('tktAmt').textContent = isFree ? 'FREE ✨' : '₹'+t.amount;
+  _el('tktAmt').className = 't-dv ' + (isFree ? 'green' : 'gold');
+  _el('tktType').innerHTML = isFree
+    ? '<span class="sbadge sb-free"><div class="sd"></div>Free Ticket</span>'
+    : '<span style="color:var(--gold2);font-family:JetBrains Mono,monospace;font-size:0.68rem">Paid</span>';
+  _t('tktTid', t.ticket_id);
+  setBadge('tktStatusBadge', t.status||'pending');
+
+  // Free stamp
+  _el('tktFreeStamp').style.display = isFree ? 'block' : 'none';
+
+  // Step4 sub
+  _el('s4sub').textContent = isFree
+    ? 'Free ticket confirmed · pending seat assignment'
+    : 'Payment under review by admin';
+
+  // QR
+  _el('qrDiv').innerHTML = '';
+  try {
+    new QRCode(_el('qrDiv'), {
+      text: `RTD|${t.ticket_id}|${t.user_name}|${isFree?'FREE':t.amount}`,
+      width: 88, height: 88,
+      colorDark: '#d4a843', colorLight: '#ffffff'
+    });
+  } catch(e) {}
 }
 
-function valUTR(){
-  const v=document.getElementById('utrI').value.trim();
-  const ok=isUTR(v);
-  document.getElementById('utrI').classList.toggle('errf',!ok&&v.length>0);
-  document.getElementById('utrI').classList.toggle('okf',ok);
-  document.getElementById('utrE').classList.toggle('show',!ok&&v.length>0);
-  document.getElementById('utrHelp').classList.toggle('show',!ok&&v.length>=3);
-  return ok;
-}
-function isUTR(v){
-  if(!v||/[^a-zA-Z0-9]/.test(v))return false;
-  if(/^T/i.test(v)&&v.length>=12)return true;
-  return/^\d{12,25}$/.test(v);
+function setBadge(id, status) {
+  const el = _el(id); if(!el) return;
+  const m = {
+    pending:  ['sb-pending','⏳ Pending'],
+    review:   ['sb-review','🔍 Review'],
+    approved: ['sb-approved','✅ Approved'],
+    rejected: ['sb-rejected','❌ Rejected'],
+  };
+  const [cls, lbl] = m[status]||m.pending;
+  el.className = 'sbadge '+cls;
+  el.innerHTML = `<div class="sd"></div>${lbl}`;
 }
 
-function validateDetails(){
-  const ok=valF('fname')&valF('femail')&valF('fphone');
-  if(ok){
-    bData.name=document.getElementById('fname').value.trim();
-    bData.email=document.getElementById('femail').value.trim();
-    bData.phone=document.getElementById('fphone').value.trim();
-    bData.qty=qty;bData.amount=qty*CFG.ticketPrice;
-    document.getElementById('payAmt').textContent='₹'+bData.amount;
-    document.getElementById('payInfo').textContent='for '+bData.qty+' ticket'+(bData.qty>1?'s':'');
-    buildApps();goStep(3);startTmr();
-  } else {showToast('Please fill all fields correctly','error');}
+// ══════════════════════════════════════════════════
+//  MY TICKETS
+// ══════════════════════════════════════════════════
+async function loadMyTickets() {
+  _show('skelCards', true);
+  _el('tcardList').style.display = 'none';
+
+  try {
+    const all = await DB.get('tickets','order=created_at.desc&select=*');
+    // Merge db data with local cache (prefer DB)
+    const dbIds = new Set(all.map(t=>t.id));
+    const localOnly = S.tickets.filter(t=>!dbIds.has(t.id));
+    S.tickets = [...all, ...localOnly];
+    S.tickets.forEach(t=>{ S.knownSt[t.id]=t.status; });
+    saveTix(); setSync(true);
+  } catch(e) { setSync(false); }
+
+  renderTcards();
+  _show('skelCards', false);
+  _el('tcardList').style.display = 'block';
 }
 
-function initDrag(){
-  const z=document.getElementById('upZone');
-  z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('drag');});
-  z.addEventListener('dragleave',()=>z.classList.remove('drag'));
-  z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('drag');const f=e.dataTransfer.files[0];if(f)processFile(f);});
+function renderTcards() {
+  const el = _el('tcardList');
+  if (!S.tickets.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-ico">🎟</div><div class="empty-ttl">No tickets yet</div><div class="empty-sub">Book your first ticket above</div></div>`;
+    return;
+  }
+  el.innerHTML = S.tickets.map(t => {
+    const isFree = t.is_free;
+    return `
+    <div class="tcard" id="tc-${t.id}">
+      ${isFree ? '<div class="tcard-free-strip"></div>' : ''}
+      <div class="tcard-head">
+        <div>
+          <div class="tcard-movie">${t.movie_name||'Reel to Deal'} ${isFree?'<span class="sbadge sb-free" style="font-size:0.55rem;padding:2px 7px"><div class="sd"></div>FREE</span>':''}</div>
+          <div class="tcard-id">${t.ticket_id}</div>
+        </div>
+        <div>${makeBadge(t.status)}</div>
+      </div>
+      <div class="tcard-body">
+        <div class="tc-col"><div class="tc-col-lbl">Amount</div><div class="tc-col-val ${isFree?'green':''}">${isFree?'FREE ✨':'₹'+t.amount}</div></div>
+        <div class="tc-col"><div class="tc-col-lbl">Seats</div><div class="tc-col-val">${t.quantity}</div></div>
+        <div class="tc-col"><div class="tc-col-lbl">Booked</div><div class="tc-col-val">${fmtDate(t.created_at)}</div></div>
+        <div class="tc-col"><div class="tc-col-lbl">Status</div><div class="tc-col-val">${t.status?.toUpperCase()||'—'}</div></div>
+      </div>
+      <div class="tcard-foot">
+        <button class="btn btn-ghost btn-sm" onclick="viewTix('${t.id}')">View</button>
+        <button class="btn btn-ghost btn-sm" onclick="dlTixPDF('${t.id}')">⬇ PDF</button>
+        <button class="btn btn-red btn-sm" onclick="delTix('${t.id}')">Delete</button>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-function buildApps(){
-  const apps=[{n:'Google Pay',i:'🟢'},{n:'PhonePe',i:'🟣'},{n:'Paytm',i:'🔵'},{n:'BHIM UPI',i:'🏛'},{n:'Amazon Pay',i:'🟠'},{n:'Any UPI',i:'💳'}];
-  document.getElementById('upiApps').innerHTML=apps.map((a,i)=>`<div class="app-btn" onclick="openApp()" style="animation:fup .3s ease ${i*.05}s both;"><span class="app-icon">${a.i}</span><span class="app-name">${a.n}</span></div>`).join('');
-}
-function openApp(){
-  const amt=bData.amount||qty*CFG.ticketPrice;
-  window.location.href=`upi://pay?pa=${CFG.upiId}&pn=${encodeURIComponent(CFG.payeeName)}&am=${amt}&cu=INR&tn=${encodeURIComponent('Ticket - '+CFG.movieName)}`;
-}
-function copyUPI(btn){
-  navigator.clipboard.writeText(CFG.upiId).then(()=>{
-    btn.textContent='COPIED!';btn.classList.add('copied');
-    showToast('UPI ID copied!','success');
-    setTimeout(()=>{btn.textContent='COPY';btn.classList.remove('copied');},2000);
-  });
+function makeBadge(status) {
+  const m = {pending:['sb-pending','⏳ Pending'],review:['sb-review','🔍 Review'],approved:['sb-approved','✅ Approved'],rejected:['sb-rejected','❌ Rejected']};
+  const [cls,lbl] = m[status]||m.pending;
+  return `<div class="sbadge ${cls}"><div class="sd"></div>${lbl}</div>`;
 }
 
-function startTmr(){
-  tmrSecs=600;clearInterval(tmrInt);
-  tmrInt=setInterval(()=>{
-    tmrSecs--;
-    const m=Math.floor(tmrSecs/60),s=tmrSecs%60;
-    const el=document.getElementById('tmrD');
-    el.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
-    el.classList.toggle('warn',tmrSecs<=60);
-    const prog=document.getElementById('tmrProg');
-    if(prog)prog.style.width=(tmrSecs/600*100)+'%';
-    if(tmrSecs<=0){clearInterval(tmrInt);setStatusMsg('⏰ Time expired. Please go back and restart the payment process.','error');document.getElementById('subBtn').disabled=true;}
-  },1000);
+async function delTix(id) {
+  if (!confirm('Delete this ticket?')) return;
+  try {
+    await DB.del('tickets',`id=eq.${id}`);
+    S.tickets = S.tickets.filter(t=>t.id!==id);
+    saveTix(); renderTcards();
+    toast('Ticket deleted','err');
+  } catch(e) { toast('Delete failed','err'); }
+}
+function viewTix(id) {
+  const t = S.tickets.find(t=>t.id===id);
+  if (!t) return;
+  S.booking = t;
+  renderTicket(t, t.is_free);
+  gotoView('book', null);
+  goStep(4);
 }
 
-function cancelPay(){
-  clearInterval(tmrInt);bData={};ssFile=null;ocrAmt=false;ocrUpi=false;
-  document.getElementById('utrI').value='';
-  document.getElementById('ssPrev').classList.remove('show');
-  document.getElementById('ocrBox').classList.remove('show');
-  document.getElementById('statusMsg').classList.remove('show');
-  document.getElementById('utrHelp').classList.remove('show');
-  document.getElementById('ssHelp').classList.remove('show');
+// ══════════════════════════════════════════════════
+//  PDF DOWNLOAD
+// ══════════════════════════════════════════════════
+function dlPDF() { if (S.booking) genPDF(S.booking); else toast('No ticket to download','err'); }
+function dlTixPDF(id) { const t=S.tickets.find(t=>t.id===id); if(t) genPDF(t); }
+
+function genPDF(t) {
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({orientation:'landscape',unit:'mm',format:[90,58]});
+    const isFree = t.is_free;
+
+    doc.setFillColor(14, 11, 5); doc.rect(0,0,90,58,'F');
+    // Gold stripe
+    doc.setFillColor(212,168,67); doc.rect(0,0,90,9,'F');
+    doc.setTextColor(14,11,5); doc.setFont('helvetica','bold'); doc.setFontSize(7);
+    doc.text((t.movie_name||'REEL TO DEAL').toUpperCase()+' · MBA FEST 2025', 45,6,{align:'center'});
+
+    if (isFree) {
+      doc.setFillColor(61,214,140); doc.rect(68,0,22,9,'F');
+      doc.setTextColor(14,11,5); doc.setFont('helvetica','bold'); doc.setFontSize(5.5);
+      doc.text('FREE TICKET', 79,5.8,{align:'center'});
+    }
+
+    doc.setTextColor(240,234,216); doc.setFont('helvetica','bold'); doc.setFontSize(11);
+    doc.text(t.movie_name||'Reel to Deal', 5,17);
+    doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(138,126,106);
+    doc.text(`${t.event_date||''} · ${t.venue||''}`, 5,22);
+
+    const rows=[
+      ['Ticket ID', t.ticket_id],['Name',t.user_name],['Email',t.email],
+      ['Seats',String(t.quantity)],['Amount',isFree?'FREE ✨':'₹'+t.amount],
+      ['Type',isFree?'Free Ticket':'Paid'],['Status',(t.status||'pending').toUpperCase()]
+    ];
+    let y=28;
+    doc.setFontSize(6.5);
+    rows.forEach(([k,v])=>{
+      doc.setTextColor(138,126,106); doc.text(k+':',5,y);
+      doc.setTextColor(isFree&&k==='Amount'?[61,214,140]:[240,234,216]); doc.text(String(v),32,y);
+      y+=4;
+    });
+
+    doc.setFillColor(30,22,8); doc.rect(0,51,90,7,'F');
+    doc.setTextColor(212,168,67); doc.setFontSize(4.5);
+    doc.text('Valid only with admin approval · Reel to Deal MBA Fest 2025', 45,55,{align:'center'});
+
+    doc.save(`RTD-${t.ticket_id}.pdf`);
+    toast('PDF downloaded ⬇','ok');
+  } catch(e) { toast('PDF error','err'); }
+}
+
+// ══════════════════════════════════════════════════
+//  BOOK ANOTHER
+// ══════════════════════════════════════════════════
+function bookAnother() {
+  S.qty=1; S.booking=null;
+  ['inName','inEmail','inPhone','inCollege','inUTR'].forEach(id=>_el(id).value='');
+  _el('ssFile').value=''; _el('previewImg').style.display='none';
+  _t('qtyNum','1');
   goStep(1);
 }
 
-function handleFile(e){const f=e.target.files[0];if(f)processFile(f);}
-function processFile(file){
-  if(file.size>5*1024*1024){showToast('File too large (max 5MB)','error');document.getElementById('ssHelp').classList.add('show');return;}
-  ssFile=file;
-  const r=new FileReader();
-  r.onload=e=>{const p=document.getElementById('ssPrev');p.src=e.target.result;p.classList.add('show');};
-  r.readAsDataURL(file);
-  document.getElementById('ssE').classList.remove('show');
-  document.getElementById('ssHelp').classList.remove('show');
-  runOCR(file);
+// ══════════════════════════════════════════════════
+//  NOTIFICATIONS
+// ══════════════════════════════════════════════════
+function pushNotif(msg) {
+  S.notifs.unshift({msg,t:new Date()});
+  renderNotifs();
+  const b=_el('bellBadge');
+  b.style.display='flex'; b.textContent=S.notifs.length;
+}
+function toggleNotif() { _el('notifPanel').classList.toggle('open'); }
+function clearNotifs() { S.notifs=[]; renderNotifs(); _el('bellBadge').style.display='none'; _el('notifPanel').classList.remove('open'); }
+function renderNotifs() {
+  const el=_el('notifList');
+  el.innerHTML = S.notifs.length ? S.notifs.map(n=>`
+    <div class="notif-item"><div class="ni-msg">${n.msg}</div><div class="ni-time">${n.t.toLocaleTimeString()}</div></div>
+  `).join('') : '<div class="notif-empty">No notifications</div>';
 }
 
-async function runOCR(file){
-  const box=document.getElementById('ocrBox'),oP=document.getElementById('ocrP'),oA=document.getElementById('ocrA'),oU=document.getElementById('ocrU');
-  box.classList.add('show');oP.style.display='flex';oA.style.display='none';oU.style.display='none';
-  ocrAmt=false;ocrUpi=false;
-  try{
-    const res=await Tesseract.recognize(file,'eng',{logger:()=>{}});
-    const txt=res.data.text;
-    oP.style.display='none';
-    const ea=bData.amount||qty*CFG.ticketPrice;
-    ocrAmt=new RegExp(`[₹Rs\\.]*\\s*${ea}([.\\s]|$)`,'i').test(txt)||new RegExp(`${ea}\\.?00`).test(txt);
-    const upiBase=CFG.upiId.split('@')[0].toLowerCase();
-    const upiDomain=CFG.upiId.split('@')[1]?.toLowerCase()||'';
-    ocrUpi=txt.toLowerCase().includes(upiBase)||txt.toLowerCase().includes(upiDomain);
-    oA.style.display='flex';oA.className=`ocr-item ${ocrAmt?'ok':'fail'}`;
-    oA.textContent=ocrAmt?`✓ Amount ₹${ea} found`:`✗ Amount ₹${ea} not detected — admin will verify`;
-    oU.style.display='flex';oU.className=`ocr-item ${ocrUpi?'ok':'fail'}`;
-    oU.textContent=ocrUpi?'✓ UPI ID verified':'✗ UPI ID not detected — admin will verify manually';
-    if(!ocrAmt||!ocrUpi){
-      setStatusMsg('⚠ Auto-verification partial. Admin will manually verify your UTR — you can still submit.','info');
-      document.getElementById('ssHelp').classList.add('show');
-    }
-  }catch(e){
-    oP.style.display='none';box.classList.remove('show');console.warn('OCR error:',e);
-  }
+// ══════════════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════════════
+function toast(msg, type='') {
+  const el=document.createElement('div');
+  el.className='toast'+(type?' '+type:'');
+  const icons={ok:'✓ ',err:'✕ ',warn:'⚠ '};
+  el.textContent=(icons[type]||'')+msg;
+  _el('toastWrap').appendChild(el);
+  setTimeout(()=>{ el.classList.add('bye'); setTimeout(()=>el.remove(),250); },3400);
 }
 
-function rateOk(){
-  const now=Date.now();rateTs=rateTs.filter(t=>now-t<60000);
-  if(rateTs.length>=3)return false;
-  rateTs.push(now);return true;
+// ══════════════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════════════
+function setSync(ok) {
+  _el('syncDot').className='sync-dot'+(ok?'':' off');
+  _t('syncLbl', ok?'Live':'Offline');
 }
-
-async function submitBooking(){
-  if(!rateOk()){setStatusMsg('Too many attempts. Please wait a minute.','error');return;}
-  const utr=document.getElementById('utrI').value.trim();
-  if(!isUTR(utr)){
-    document.getElementById('utrE').classList.add('show');
-    document.getElementById('utrHelp').classList.add('show');
-    showToast('Enter a valid UTR / Transaction ID','error');return;
-  }
-  if(!ssFile){
-    document.getElementById('ssE').classList.add('show');
-    document.getElementById('ssHelp').classList.add('show');
-    showToast('Upload your payment screenshot','error');return;
-  }
-  const btn=document.getElementById('subBtn');
-  btn.disabled=true;btn.innerHTML='<span class="spn"></span>Processing...';
-  try{
-    const existing=await sbGet(`bookings?utr=eq.${encodeURIComponent(utr)}&select=id`);
-    if(existing&&existing.length>0){
-      setStatusMsg('❌ This UTR has already been used. If this is an error, please contact admin.','error');
-      btn.disabled=false;btn.innerHTML='Submit Booking';return;
-    }
-    let ssUrl='';
-    try{
-      const ext=ssFile.name.split('.').pop().toLowerCase();
-      const fname=`${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
-      ssUrl=await sbUpload('payment-screenshots',fname,ssFile);
-    }catch(e){console.warn('Screenshot upload failed:',e.message);}
-    const bid='RTD-'+Date.now().toString(36).toUpperCase().slice(-6)+'-'+Math.random().toString(36).slice(2,6).toUpperCase();
-    const allVerified=ocrAmt&&ocrUpi&&ssUrl;
-    const status=(CFG.autoApprove&&allVerified)?'approved':'pending';
-    await sbPost('bookings',{
-      booking_id:bid,name:bData.name,email:bData.email,phone:bData.phone,
-      ticket_qty:bData.qty,amount:bData.amount,utr,screenshot_url:ssUrl,status,
-      ocr_verified:ocrAmt&&ocrUpi,ocr_amount_match:ocrAmt,ocr_upi_match:ocrUpi,
-      movie_name:CFG.movieName,event_date:CFG.eventDate
-    });
-    clearInterval(tmrInt);
-    bData.bookingId=bid;bData.status=status;bData.utr=utr;
-    renderTicket(bData);goStep(4);
-    const sm=document.getElementById('successMsg');
-    if(status==='approved'){sm.textContent='✅ Booking APPROVED! Your ticket is confirmed. Show this at the gate.';sm.className='smsg success show';}
-    else{sm.textContent='🎉 Booking submitted! Your ID is '+bid+'. Pending verification — admin will approve shortly.';sm.className='smsg info show';}
-  }catch(err){
-    console.error('Submit error:',err);
-    let msg='Error: '+err.message;
-    if(err.message.includes('duplicate')||err.message.includes('unique'))msg='This UTR is already used. Contact admin if this is wrong.';
-    else if(err.message.includes('network')||err.message.toLowerCase().includes('fetch'))msg='Network error — check your internet and try again.';
-    setStatusMsg(msg,'error');btn.disabled=false;btn.innerHTML='Submit Booking';
-  }
+function saveTix() { try{localStorage.setItem('rtd2_tickets',JSON.stringify(S.tickets));}catch(e){} }
+function fmtDate(iso) { try{return new Date(iso).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}catch(e){return iso||'—';} }
+function animNum(id, n) {
+  const el=_el(id); if(!el) return;
+  const old=parseInt(el.textContent)||0;
+  if (old===n) return;
+  el.textContent=n;
+  el.classList.add('flash');
+  setTimeout(()=>el.classList.remove('flash'),600);
 }
+const _el = id => document.getElementById(id);
+const _t  = (id,v) => { const e=_el(id); if(e) e.textContent=v; };
+const _show = (id,v) => { const e=_el(id); if(e) e.style.display=v?'':'none'; };
+const $$   = s => document.querySelectorAll(s);
 
-function renderTicket(d){
-  const url2=CFG.posterUrl||'';
-  const _tpi=document.getElementById('tktPosterImg'),_tpic=document.getElementById('tktPosterIcon'),_tpbg=document.getElementById('tktPosterBg');
-  if(_tpi){if(url2){_tpi.src=url2;_tpi.style.display='block';}else _tpi.style.display='none';}
-  if(_tpic)_tpic.style.display=url2?'none':'flex';
-  if(_tpbg){_tpbg.style.backgroundImage=url2?'url('+url2+')':'none';_tpbg.style.opacity=url2?'1':'0';}
-  const card=document.getElementById('tktCard');
-  if(d.status==='approved')card.classList.add('glow-green');
-  const badge=d.status==='approved'?'<span class="sbadge approved">✓ Approved</span>':'<span class="sbadge pending">⏳ Pending</span>';
-  document.getElementById('tktBody').innerHTML=[
-    ['Booking ID',`<span style="font-family:'Space Mono',monospace;font-size:.76rem;color:var(--gold)">${d.bookingId}</span>`],
-    ['Name',d.name],['Email',`<span style="font-size:.76rem">${d.email}</span>`],['Phone',d.phone],
-    ['Movie',CFG.movieName],['Date & Time',CFG.eventDateDisplay],['Venue',CFG.venue||'MBA Auditorium'],
-    ['Tickets',`${d.qty} × ₹${CFG.ticketPrice}`],
-    ['Total Paid',`<span style="color:var(--gold);font-size:1.05rem">₹${d.amount}</span>`],
-    ['UTR',`<span style="font-family:'Space Mono',monospace;font-size:.7rem">${d.utr}</span>`],
-    ['Status',badge],
-  ].map(([k,v],i)=>`<div class="tkt-row" style="animation-delay:${i*.04}s"><span class="tkt-k">${k}</span><span class="tkt-v">${v}</span></div>`).join('');
-  document.getElementById('qrDiv').innerHTML='';
-  new QRCode(document.getElementById('qrDiv'),{
-    text:`RTD|${d.bookingId}|${d.name}|${d.qty}|${d.amount}|${d.status}`,
-    width:100,height:100,colorDark:'#d4a853',colorLight:'#0a0806',correctLevel:QRCode.CorrectLevel.H
-  });
-}
-
-function drawCanvas(data){
-  const cv=document.getElementById('tktCanvas'),W=340,H=720,sc=2;
-  cv.width=W*sc;cv.height=H*sc;cv.style.width=W+'px';cv.style.height=H+'px';
-  const ctx=cv.getContext('2d');ctx.scale(sc,sc);
-  const bg=ctx.createLinearGradient(0,0,W,H);bg.addColorStop(0,'#100e08');bg.addColorStop(1,'#1a1610');
-  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
-  ctx.strokeStyle=data.status==='approved'?'rgba(62,196,122,.5)':'rgba(212,168,83,.45)';
-  ctx.lineWidth=1.5;rr(ctx,3,3,W-6,H-6,13);ctx.stroke();
-  const tl=ctx.createLinearGradient(0,0,W,0);
-  tl.addColorStop(0,'transparent');tl.addColorStop(.5,data.status==='approved'?'#3ec47a':'#d4a853');tl.addColorStop(1,'transparent');
-  ctx.fillStyle=tl;ctx.fillRect(0,0,W,2.5);
-  filmHoles(ctx,W,14);
-  if(CFG.posterUrl){var _cImg=new Image();_cImg.crossOrigin='anonymous';_cImg.onload=function(){ctx.save();rr(ctx,9,40,56,78,5);ctx.clip();ctx.drawImage(_cImg,9,40,56,78);ctx.restore();ctx.strokeStyle='rgba(212,168,83,.5)';ctx.lineWidth=1.5;rr(ctx,9,40,56,78,5);ctx.stroke();};_cImg.src=CFG.posterUrl;}
-  ctx.fillStyle='rgba(212,168,83,.06)';ctx.fillRect(0,28,W,85);
-  ctx.fillStyle='rgba(212,168,83,.35)';ctx.font='8px Space Mono,monospace';ctx.textAlign='center';ctx.fillText('REEL TO DEAL  ·  MBA FEST',W/2,46);
-  ctx.fillStyle='#d4a853';ctx.font='bold 20px Georgia,serif';ctx.fillText('🎬 '+CFG.movieName.toUpperCase(),W/2,70);
-  ctx.fillStyle='#7a6a5a';ctx.font='8px Space Mono,monospace';ctx.fillText(CFG.eventDateDisplay,W/2,87);ctx.fillText((CFG.venue||'MBA Auditorium').toUpperCase(),W/2,101);
-  ctx.setLineDash([4,5]);ctx.strokeStyle='rgba(212,168,83,.18)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(16,114);ctx.lineTo(W-16,114);ctx.stroke();ctx.setLineDash([]);
-  const rows=[['BOOKING ID',data.bookingId,'#d4a853'],['NAME',data.name,'#f2ead8'],['EMAIL',data.email,'#a89880'],['PHONE',data.phone,'#f2ead8'],['TICKETS',data.qty+' × ₹'+CFG.ticketPrice,'#f2ead8'],['TOTAL PAID','₹'+data.amount,'#d4a853'],['UTR',data.utr,'#a89880'],['STATUS',(data.status||'PENDING').toUpperCase(),data.status==='approved'?'#3ec47a':'#e8b840']];
-  let y=128;rows.forEach(([k,v,c])=>{ctx.fillStyle='#5a4a3a';ctx.font='7.5px Space Mono,monospace';ctx.textAlign='left';ctx.fillText(k,18,y);ctx.fillStyle=c;ctx.font='10.5px Space Mono,monospace';const vs=String(v||'');ctx.fillText(vs.length>34?vs.slice(0,32)+'…':vs,18,y+13);ctx.fillStyle='rgba(255,255,255,.03)';ctx.fillRect(14,y+18,W-28,1);y+=34;});
-  ctx.setLineDash([4,5]);ctx.strokeStyle='rgba(212,168,83,.18)';ctx.beginPath();ctx.moveTo(16,y+4);ctx.lineTo(W-16,y+4);ctx.stroke();ctx.setLineDash([]);
-  const qrEl=document.querySelector('#qrDiv img, #qrDiv canvas');
-  if(qrEl){const qs=85,qx=(W-qs)/2,qy=y+14;ctx.fillStyle='rgba(10,8,6,.95)';rr(ctx,qx-6,qy-6,qs+12,qs+12,7);ctx.fill();try{ctx.drawImage(qrEl,qx,qy,qs,qs);}catch(e){}ctx.fillStyle='#5a4a3a';ctx.font='7px Space Mono,monospace';ctx.textAlign='center';ctx.fillText('SCAN TO VERIFY',W/2,qy+qs+13);}
-  filmHoles(ctx,W,H-14);
-  ctx.save();ctx.globalAlpha=.03;ctx.fillStyle='#d4a853';ctx.font='bold 72px sans-serif';ctx.textAlign='center';ctx.translate(W/2,H/2);ctx.rotate(-.3);ctx.fillText('RTD',0,0);ctx.restore();
-}
-function filmHoles(ctx,W,y){ctx.fillStyle='rgba(212,168,83,.15)';for(let x=12;x<W-12;x+=19){rr(ctx,x,y-8,12,8,2);ctx.fill();}}
-function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();}
-
-function showSoftCopy(){drawCanvas(bData);openModal('softModal');}
-function closeSoftCopy(){closeModal('softModal');}
-function dlImage(){const a=document.createElement('a');a.download='ticket-'+(bData.bookingId||'RTD')+'.png';a.href=document.getElementById('tktCanvas').toDataURL('image/png',1);a.click();showToast('🎟 Image saved!','success');}
-function openModal(id){const m=document.getElementById(id);m.style.display='flex';void m.offsetWidth;m.classList.add('show');}
-function closeModal(id){const m=document.getElementById(id);m.classList.remove('show');setTimeout(()=>m.style.display='none',300);}
-function buildEmailBody(){return `Dear ${bData.name},\n\nThank you for booking!\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n🎟  TICKET DETAILS\n━━━━━━━━━━━━━━━━━━━━━━━━\n\nBooking ID : ${bData.bookingId}\nMovie      : ${CFG.movieName}\nDate & Time: ${CFG.eventDateDisplay}\nVenue      : ${CFG.venue||'MBA Auditorium'}\nTickets    : ${bData.qty} × ₹${CFG.ticketPrice}\nTotal Paid : ₹${bData.amount}\nUTR/TxnID  : ${bData.utr}\nStatus     : ${(bData.status||'PENDING').toUpperCase()}\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n${bData.status==='approved'?'✅ APPROVED — You are confirmed! Show ticket at entry.':'⏳ PENDING — Under verification. We\'ll notify you.'}\n\n— Reel to Deal · MBA Fest`;}
-function showEmailModal(){document.getElementById('emailPrev').textContent=buildEmailBody();openModal('emailModal');}
-function closeEmailModal(){closeModal('emailModal');}
-function sendEmail(){const s=encodeURIComponent(`Your ${CFG.movieName} Ticket – ${bData.bookingId}`);window.location.href=`mailto:${bData.email}?subject=${s}&body=${encodeURIComponent(buildEmailBody())}`;showToast('Opening email app...','success');closeEmailModal();}
-function shareWA(){const msg=`🎬 *${CFG.movieName}* Ticket\n\n🎟 ID: ${bData.bookingId}\n👤 ${bData.name}\n📅 ${CFG.eventDateDisplay}\n🎫 ${bData.qty} × ₹${CFG.ticketPrice} = ₹${bData.amount}\n✅ ${(bData.status||'PENDING').toUpperCase()}\n\n_Reel to Deal · MBA Fest_`;window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');}
-
-async function dlPDF(){
-  const ev=event;if(ev)ev.target.textContent='⏳...';
-  const{jsPDF}=window.jspdf;
-  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a5'});
-  doc.setFillColor(10,8,6);doc.rect(0,0,148,210,'F');
-  doc.setFillColor(20,16,10);doc.rect(0,0,148,42,'F');
-  doc.setTextColor(212,168,83);doc.setFontSize(18);doc.setFont('helvetica','bold');
-  doc.text('REEL TO DEAL',74,14,{align:'center'});
-  doc.setFontSize(7);doc.setTextColor(120,100,70);doc.text(CFG.eventDateDisplay,74,22,{align:'center'});
-  doc.setFontSize(10);doc.setTextColor(212,168,83);doc.text(CFG.movieName.toUpperCase(),74,32,{align:'center'});
-  doc.setDrawColor(212,168,83);doc.setLineWidth(.25);doc.line(10,42,138,42);
-  const rows2=[['BOOKING ID',bData.bookingId],['NAME',bData.name],['EMAIL',bData.email],['PHONE',bData.phone],['VENUE',CFG.venue||'MBA Auditorium'],['TICKETS',bData.qty+' × ₹'+CFG.ticketPrice],['TOTAL','₹'+bData.amount],['UTR',bData.utr],['STATUS',(bData.status||'PENDING').toUpperCase()]];
-  let y2=52;
-  rows2.forEach(([k,v])=>{doc.setFontSize(6);doc.setTextColor(100,80,50);doc.text(k,12,y2);doc.setFontSize(8);doc.setTextColor(242,234,216);doc.text(String(v||''),12,y2+5);doc.setDrawColor(40,30,20);doc.setLineWidth(.1);doc.line(10,y2+8.5,138,y2+8.5);y2+=15;});
-  const qrEl2=document.querySelector('#qrDiv img, #qrDiv canvas');
-  if(qrEl2){try{const tc=document.createElement('canvas');tc.width=150;tc.height=150;tc.getContext('2d').drawImage(qrEl2,0,0,150,150);doc.addImage(tc.toDataURL('image/png'),'PNG',59,y2+2,30,30);doc.setFontSize(5);doc.setTextColor(80,65,45);doc.text('SCAN TO VERIFY',74.5,y2+36,{align:'center'});}catch(e){}}
-  doc.setFontSize(5);doc.setTextColor(40,32,22);doc.text('Reel to Deal · MBA Fest · Valid for event entry only',74,206,{align:'center'});
-  doc.save('ticket-'+(bData.bookingId||'RTD')+'.pdf');
-  if(ev&&ev.target)ev.target.textContent='📄 PDF';
-  showToast('PDF downloaded!','success');
-}
-function printTkt(){window.print();}
-
-function setStatusMsg(msg,type){const el=document.getElementById('statusMsg');el.textContent=msg;el.className=`smsg ${type} show`;}
-function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast ${type} show`;setTimeout(()=>t.className=`toast ${type}`,3500);}
-
-async function lookupBooking(){
-  const q=document.getElementById('lookupInput').value.trim();
-  const res=document.getElementById('lookupResult');
-  if(!q){showToast('Enter a Booking ID or UTR','info');return;}
-  res.style.display='block';res.innerHTML='<span style="color:var(--muted)">Looking up...</span>';
-  try{
-    let data=await sbGet(`bookings?booking_id=eq.${encodeURIComponent(q)}&select=*`).catch(()=>[]);
-    if(!data||!data.length) data=await sbGet(`bookings?utr=eq.${encodeURIComponent(q)}&select=*`).catch(()=>[]);
-    if(!data||!data.length){res.innerHTML='<span style="color:var(--red)">❌ No booking found.</span><br><span style="color:var(--muted);font-size:.6rem">Check spelling or contact admin if you believe this is an error.</span>';return;}
-    const b=data[0];
-    const sc={approved:'var(--green)',pending:'var(--yellow)',rejected:'var(--red)'}[b.status]||'var(--muted)';
-    const icons={approved:'✅',pending:'⏳',rejected:'❌'};
-    res.style.color='var(--text)';
-    res.innerHTML=`<strong style="color:var(--gold)">${b.booking_id}</strong><br>👤 ${b.name} · ${b.email}<br>Status: <strong style="color:${sc}">${icons[b.status]||''} ${(b.status||'').toUpperCase()}</strong><br>💰 ₹${b.amount} · ${b.ticket_qty} ticket(s)<br><span style="font-size:.6rem;color:var(--muted)">Booked: ${new Date(b.created_at).toLocaleString('en-IN')}</span>`;
-  }catch(e){res.innerHTML=`<span style="color:var(--red)">Error: ${e.message}</span>`;}
-}
-
-function setPSS(n){for(let i=1;i<=4;i++){const el=document.getElementById('pss'+i);if(!el)continue;el.className='pss-item'+(i===n?' active':i<n?' done':'');const dot=el.querySelector('.pss-dot');if(dot)dot.textContent=i<n?'✓':i;if(i<4){const ln=document.getElementById('psl'+i);if(ln)ln.className='pss-line'+(i<n?' done':'');}}}
-
-function bookAnother(){
-  bData={};ssFile=null;ocrAmt=false;ocrUpi=false;qty=1;
-  document.getElementById('qrDiv').innerHTML='';
-  document.getElementById('tktCard').className='tkt-card';
-  ['fname','femail','fphone'].forEach(id=>{const el=document.getElementById(id);if(el){el.value='';el.className='';}});
-  document.getElementById('utrI').value='';
-  ['ssPrev','ocrBox','statusMsg','utrHelp','ssHelp'].forEach(id=>{
-    const el=document.getElementById(id);if(el)el.classList.remove('show');
-  });
-  chgQty(0);goStep(1);
-}
+// Close notif on outside click
+document.addEventListener('click', e => {
+  const p=_el('notifPanel');
+  if(p && !p.contains(e.target) && !_el('bellBtn').contains(e.target)) p.classList.remove('open');
+});
 </script>
 </body>
 </html>
