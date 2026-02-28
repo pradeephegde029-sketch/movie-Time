@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Reel to Deal — Admin Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=JetBrains+Mono:wght@300;400;500;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#05040a; --bg2:#09080f;
+  --s1:#100e18; --s2:#161422; --s3:#1d1b2a; --s4:#252233;
+  --bdr:rgba(255,255,255,0.07); --bdr2:rgba(255,255,255,0.12);
+  --gold:#d4a843; --g2:#f0c760; --g3:#fbe49a;
+  --gg:rgba(212,168,67,0.14); --gr:rgba(212,168,67,0.3);
+  --text:#ede8d8; --muted:#8a7e6a; --faint:#3a3530;
+  --grn:#3dd68c; --grndim:rgba(61,214,140,0.13);
+  --red:#f05252; --reddim:rgba(240,82,82,0.13);
+  --ylw:#fbbf24; --ylwdim:rgba(251,191,36,0.13);
+  --blu:#60a5fa; --bludim:rgba(96,165,250,0.13);
+  --prp:#a78bfa; --prpdim:rgba(167,139,250,0.13);
+  --sb:222px; --tap:44px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{font-size:15px;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;display:flex;overflow-x:hidden;}
+
+/* Performance: reduce on mobile */
+@media(max-width:768px){
+  .orb{display:none;}
+  #sb{backdrop-filter:none;-webkit-backdrop-filter:none;}
+}
+
+/* LOGIN */
+#login{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;}
+.lbox{background:var(--s1);border:1px solid var(--gr);border-radius:22px;padding:38px;width:min(420px,93vw);position:relative;overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,0.7);}
+.lbox::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--g2),var(--g3),var(--g2),transparent);}
+.l-logo{font-family:'Playfair Display',serif;font-size:1.85rem;font-weight:900;text-align:center;margin-bottom:4px;background:linear-gradient(135deg,var(--g3),var(--g2),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.l-logo em{font-style:italic;}
+.l-sub{text-align:center;font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--muted);margin-bottom:26px;}
+.l-lbl{display:block;font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.l-inp{width:100%;padding:11px 13px;background:var(--s3);border:1px solid var(--bdr);border-radius:9px;color:var(--text);font-family:'Outfit',sans-serif;font-size:0.9rem;outline:none;transition:all 0.2s;margin-bottom:14px;min-height:var(--tap);}
+.l-inp:focus{border-color:var(--gr);box-shadow:0 0 0 3px var(--gg);}
+.l-btn{width:100%;padding:12px;background:linear-gradient(135deg,var(--gold),var(--g2));border:none;border-radius:9px;color:var(--bg);font-family:'JetBrains Mono',monospace;font-size:0.76rem;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;cursor:pointer;transition:all 0.25s;min-height:var(--tap);}
+.l-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(212,168,67,0.3);}
+.l-err{font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--red);text-align:center;margin-top:8px;display:none;}
+.l-hint{font-family:'JetBrains Mono',monospace;font-size:0.54rem;color:var(--faint);text-align:center;margin-top:12px;line-height:1.6;}
+
+/* SIDEBAR */
+#sb{width:var(--sb);flex-shrink:0;position:fixed;left:0;top:0;bottom:0;background:var(--s1);border-right:1px solid var(--bdr);display:flex;flex-direction:column;z-index:100;transition:transform 0.3s cubic-bezier(0.16,1,0.3,1);}
+@media(max-width:768px){
+  #sb{transform:translateX(-100%);}
+  #sb.open{transform:translateX(0);box-shadow:16px 0 40px rgba(0,0,0,0.5);}
+  #main{margin-left:0!important;}
+  #sbOverlay{display:block;}
+}
+#sbOverlay{display:none;position:fixed;inset:0;z-index:99;background:rgba(0,0,0,0.6);}
+.sb-top{padding:18px 16px 14px;border-bottom:1px solid var(--bdr);}
+.sb-logo{font-family:'Playfair Display',serif;font-size:0.98rem;font-weight:700;color:var(--g2);}
+.sb-logo em{font-style:italic;color:var(--g3);}
+.sb-sub{font-family:'JetBrains Mono',monospace;font-size:0.5rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--faint);margin-top:2px;}
+.sb-nav{flex:1;padding:8px 7px;overflow-y:auto;}
+.nav-sec{font-family:'JetBrains Mono',monospace;font-size:0.5rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--faint);padding:10px 10px 4px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:9px;cursor:pointer;color:var(--muted);font-size:0.86rem;transition:all 0.2s;border:none;background:none;width:100%;text-align:left;font-family:'Outfit',sans-serif;min-height:var(--tap);}
+.nav-item:hover{background:rgba(255,255,255,0.04);color:var(--text);}
+.nav-item.active{background:var(--gg);color:var(--g2);}
+.nav-icon{font-size:0.95rem;flex-shrink:0;}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:0.52rem;font-family:'JetBrains Mono',monospace;padding:2px 5px;border-radius:100px;min-width:16px;text-align:center;animation:badgePulse 2s infinite;}
+@keyframes badgePulse{0%,100%{box-shadow:0 0 0 0 rgba(240,82,82,0.4)}50%{box-shadow:0 0 0 4px rgba(240,82,82,0)}}
+.sb-foot{padding:12px;border-top:1px solid var(--bdr);}
+.sync-row{display:flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:0.58rem;color:var(--muted);margin-bottom:8px;}
+.sdot{width:6px;height:6px;border-radius:50%;background:var(--grn);flex-shrink:0;}
+.sdot.off{background:var(--red);}
+.sdot:not(.off){animation:sdotPulse 2.5s infinite;}
+@keyframes sdotPulse{0%,100%{box-shadow:0 0 0 0 rgba(61,214,140,0.4)}50%{box-shadow:0 0 0 4px rgba(61,214,140,0)}}
+.logout-btn{width:100%;padding:8px;background:var(--reddim);border:1px solid rgba(240,82,82,0.2);color:var(--red);font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.08em;text-transform:uppercase;border-radius:7px;cursor:pointer;transition:all 0.2s;min-height:var(--tap);}
+.logout-btn:hover{background:rgba(240,82,82,0.2);}
+.sb-user-link{display:flex;align-items:center;gap:6px;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:0.54rem;text-decoration:none;padding:7px 11px;border-radius:8px;border:1px solid var(--bdr);transition:all 0.2s;margin-bottom:8px;}
+.sb-user-link:hover{border-color:var(--gr);color:var(--g2);}
+
+/* MAIN */
+#main{flex:1;margin-left:var(--sb);display:flex;flex-direction:column;min-height:100vh;position:relative;z-index:1;}
+.topnav{padding:12px 20px;background:rgba(5,4,10,0.94);border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;gap:10px;}
+@media(max-width:768px){
+  .topnav{backdrop-filter:none;padding:10px 14px;}
+  .tn-right-full{display:none;}
+}
+.tn-left{display:flex;align-items:center;gap:10px;}
+.tn-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;}
+.hamburger{display:none;background:none;border:none;color:var(--text);font-size:1.2rem;cursor:pointer;padding:6px;min-height:var(--tap);min-width:var(--tap);align-items:center;justify-content:center;}
+@media(max-width:768px){.hamburger{display:flex;}}
+.content{padding:20px;flex:1;max-width:1280px;width:100%;}
+@media(max-width:640px){.content{padding:14px 12px;}}
+.page{display:none;}
+.page.active{display:block;animation:pgIn 0.35s cubic-bezier(0.16,1,0.3,1) both;}
+@keyframes pgIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* STATS GRID */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px;margin-bottom:18px;}
+@media(max-width:480px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
+.sc{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:15px;position:relative;overflow:hidden;transition:all 0.25s;cursor:default;}
+.sc:hover{border-color:rgba(212,168,67,0.18);transform:translateY(-2px);}
+.sc::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:14px 14px 0 0;}
+.sc-gold::after{background:linear-gradient(90deg,var(--gold),var(--g2));}
+.sc-green::after{background:linear-gradient(90deg,#16a34a,var(--grn));}
+.sc-red::after{background:linear-gradient(90deg,#9b1c1c,var(--red));}
+.sc-blue::after{background:linear-gradient(90deg,#1e3a8a,var(--blu));}
+.sc-yellow::after{background:linear-gradient(90deg,#92400e,var(--ylw));}
+.sc-purple::after{background:linear-gradient(90deg,#4c1d95,var(--prp));}
+.sc-icon{font-size:1.2rem;margin-bottom:8px;}
+.sc-lbl{font-family:'JetBrains Mono',monospace;font-size:0.54rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+.sc-val{font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:700;color:var(--text);transition:all 0.4s;}
+.sc-val.bump{transform:scale(1.08);color:var(--g2);}
+.sc-sub{font-family:'JetBrains Mono',monospace;font-size:0.54rem;color:var(--faint);margin-top:2px;}
+.sc-bar{margin-top:7px;height:3px;background:var(--s3);border-radius:3px;overflow:hidden;}
+.sc-bar-fill{height:100%;border-radius:3px;transition:width 0.8s cubic-bezier(0.16,1,0.3,1);}
+
+/* PANELS */
+.panel{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;margin-bottom:16px;overflow:hidden;}
+.panel-head{padding:13px 17px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px;}
+.panel-title{font-family:'Playfair Display',serif;font-size:0.96rem;font-weight:700;display:flex;align-items:center;gap:8px;}
+.panel-body{padding:17px;}
+.charts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:16px;}
+@media(max-width:600px){.charts-grid{grid-template-columns:1fr;}}
+.chart-box{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:16px;}
+.chart-lbl{font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin-bottom:11px;}
+.chart-wrap{position:relative;height:172px;}
+
+/* FILTER BAR */
+.fbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.fbar-in{flex:1;min-width:160px;padding:9px 12px;background:var(--s3);border:1px solid var(--bdr);border-radius:8px;color:var(--text);font-family:'Outfit',sans-serif;font-size:0.85rem;outline:none;transition:all 0.2s;min-height:var(--tap);}
+.fbar-in:focus{border-color:var(--gr);}
+.fbar-btn{padding:0 12px;background:var(--s3);border:1px solid var(--bdr);border-radius:8px;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.05em;cursor:pointer;transition:all 0.2s;white-space:nowrap;min-height:var(--tap);display:flex;align-items:center;}
+.fbar-btn.active{background:var(--gg);border-color:var(--gr);color:var(--g2);}
+.fbar-btn:hover:not(.active){color:var(--g2);border-color:var(--gr);}
+
+/* TABLE — horizontally scrollable on mobile */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.tbl-wrap::-webkit-scrollbar{height:4px;}
+.tbl-wrap::-webkit-scrollbar-track{background:var(--s2);}
+.tbl-wrap::-webkit-scrollbar-thumb{background:var(--faint);border-radius:2px;}
+table{width:100%;border-collapse:collapse;font-size:0.82rem;min-width:620px;}
+thead th{padding:10px 12px;text-align:left;font-family:'JetBrains Mono',monospace;font-size:0.56rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--faint);border-bottom:1px solid var(--bdr);white-space:nowrap;background:var(--s1);position:sticky;top:0;z-index:2;}
+tbody tr{border-bottom:1px solid rgba(255,255,255,0.04);transition:background 0.15s;}
+tbody tr:last-child{border:none;}
+tbody tr:hover{background:rgba(255,255,255,0.025);}
+td{padding:11px 12px;vertical-align:middle;}
+.td-id{font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--gold);}
+.td-name{font-weight:500;}
+.td-email{font-family:'JetBrains Mono',monospace;font-size:0.63rem;color:var(--muted);}
+.td-amt{font-family:'Playfair Display',serif;font-size:0.9rem;color:var(--g2);}
+.td-amt.free{color:var(--grn);}
+.td-date{font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--muted);white-space:nowrap;}
+.cb{width:14px;height:14px;accent-color:var(--gold);cursor:pointer;}
+
+/* STATUS BADGES */
+.sbadge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:100px;font-family:'JetBrains Mono',monospace;font-size:0.56rem;letter-spacing:0.07em;text-transform:uppercase;font-weight:600;white-space:nowrap;}
+.sb-pending{background:var(--ylwdim);color:var(--ylw);border:1px solid rgba(251,191,36,0.22);}
+.sb-review{background:var(--bludim);color:var(--blu);border:1px solid rgba(96,165,250,0.22);}
+.sb-approved{background:var(--grndim);color:var(--grn);border:1px solid rgba(61,214,140,0.25);animation:sbGlow 2s infinite;}
+.sb-rejected{background:var(--reddim);color:var(--red);border:1px solid rgba(240,82,82,0.22);}
+.sb-free{background:var(--grndim);color:var(--grn);border:1px solid rgba(61,214,140,0.25);}
+@keyframes sbGlow{0%,100%{box-shadow:0 0 4px rgba(61,214,140,0.1)}50%{box-shadow:0 0 12px rgba(61,214,140,0.3)}}
+.sd{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0;}
+
+/* ACTIONS */
+.acts{display:flex;gap:4px;flex-wrap:wrap;}
+.act{padding:0 9px;border-radius:6px;border:none;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:0.56rem;letter-spacing:0.04em;transition:all 0.2s;font-weight:500;white-space:nowrap;min-height:34px;display:flex;align-items:center;}
+.act-app{background:var(--grndim);color:var(--grn);border:1px solid rgba(61,214,140,0.2);}
+.act-app:hover{background:rgba(61,214,140,0.2);}
+.act-rev{background:var(--bludim);color:var(--blu);border:1px solid rgba(96,165,250,0.2);}
+.act-rej{background:var(--reddim);color:var(--red);border:1px solid rgba(240,82,82,0.2);}
+.act-rej:hover{background:rgba(240,82,82,0.2);}
+.act-del{background:rgba(255,255,255,0.04);color:var(--muted);border:1px solid var(--bdr);}
+.act-del:hover{background:var(--reddim);color:var(--red);}
+.act-ss{background:var(--gg);color:var(--g2);border:1px solid var(--gr);}
+
+/* BULK BAR */
+#bulkBar{background:var(--s3);border:1px solid var(--gr);border-radius:10px;padding:10px 14px;display:none;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.bulk-cnt{font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--g2);margin-right:auto;}
+.bulk-btn{padding:0 12px;border-radius:7px;border:none;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.05em;text-transform:uppercase;transition:all 0.2s;min-height:34px;}
+.bulk-approve{background:var(--grndim);color:var(--grn);border:1px solid rgba(61,214,140,0.22);}
+.bulk-reject{background:var(--reddim);color:var(--red);border:1px solid rgba(240,82,82,0.22);}
+.bulk-delete{background:var(--reddim);color:var(--red);border:1px solid rgba(240,82,82,0.22);}
+.bulk-cancel{background:var(--s4);color:var(--muted);}
+
+/* SCREENSHOT MODAL */
+#ssModal{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.88);display:none;align-items:center;justify-content:center;padding:16px;}
+#ssModal.open{display:flex;animation:fadeIn 0.2s ease;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.ss-box{background:var(--s2);border:1px solid var(--bdr2);border-radius:16px;overflow:hidden;max-width:560px;width:100%;max-height:90vh;display:flex;flex-direction:column;}
+.ss-hd{padding:11px 16px;border-bottom:1px solid var(--bdr);display:flex;justify-content:space-between;align-items:center;font-family:'JetBrains Mono',monospace;font-size:0.66rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);}
+.ss-close{background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;transition:color 0.2s;padding:4px;min-height:var(--tap);display:flex;align-items:center;}
+.ss-close:hover{color:var(--red);}
+#ssImg{width:100%;object-fit:contain;flex:1;max-height:calc(90vh - 50px);}
+
+/* SETTINGS */
+.settings-layout{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;}
+@media(max-width:640px){.settings-layout{grid-template-columns:1fr;}}
+.s-group{margin-bottom:13px;}
+.s-lbl{display:block;font-family:'JetBrains Mono',monospace;font-size:0.56rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.s-inp{width:100%;padding:10px 12px;background:var(--s3);border:1px solid var(--bdr);border-radius:8px;color:var(--text);font-family:'Outfit',sans-serif;font-size:0.88rem;outline:none;transition:all 0.2s;min-height:var(--tap);}
+.s-inp:focus{border-color:var(--gr);box-shadow:0 0 0 3px var(--gg);}
+.s-inp-num{font-family:'JetBrains Mono',monospace;}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--bdr);}
+.toggle-row:last-child{border:none;}
+.tog-info h4{font-size:0.88rem;font-weight:500;margin-bottom:2px;}
+.tog-info p{font-family:'JetBrains Mono',monospace;font-size:0.56rem;color:var(--muted);}
+.tog{position:relative;width:40px;height:22px;flex-shrink:0;}
+.tog input{opacity:0;width:0;height:0;}
+.tog-sl{position:absolute;cursor:pointer;inset:0;background:var(--s4);border-radius:22px;transition:0.3s;}
+.tog-sl::before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:white;border-radius:50%;transition:0.3s;}
+.tog input:checked + .tog-sl{background:var(--grn);}
+.tog input:checked + .tog-sl::before{transform:translateX(18px);}
+
+/* AVAIL BAR */
+.avail-bar{background:var(--s3);border:1px solid var(--bdr);border-radius:10px;padding:14px 16px;margin-bottom:14px;}
+.avail-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;}
+.avail-row:last-child{margin:0;}
+.avail-k{font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--muted);letter-spacing:0.06em;}
+.avail-v{font-family:'JetBrains Mono',monospace;font-size:0.76rem;color:var(--text);font-weight:600;}
+.avail-v.green{color:var(--grn);}
+.avail-v.red{color:var(--red);}
+.avail-v.gold{color:var(--g2);}
+.avail-prog{margin-top:4px;height:4px;background:var(--s4);border-radius:4px;overflow:hidden;}
+.avail-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--gold),var(--g2));transition:width 0.6s cubic-bezier(0.16,1,0.3,1);}
+.avail-fill.free{background:linear-gradient(90deg,var(--grn),#20c770);}
+
+/* DANGER ZONE */
+.danger-zone{background:var(--reddim);border:1px solid rgba(240,82,82,0.18);border-radius:14px;padding:17px;margin-top:4px;}
+.danger-title{font-family:'JetBrains Mono',monospace;font-size:0.66rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--red);margin-bottom:11px;}
+.danger-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;}
+.danger-btn{padding:9px 12px;background:rgba(240,82,82,0.09);border:1px solid rgba(240,82,82,0.22);border-radius:8px;color:var(--red);font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.05em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;min-height:var(--tap);display:flex;align-items:center;justify-content:center;}
+.danger-btn:hover{background:rgba(240,82,82,0.18);}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 15px;border-radius:8px;border:none;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:0.66rem;letter-spacing:0.08em;text-transform:uppercase;transition:all 0.2s;min-height:var(--tap);}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--g2));color:var(--bg);font-weight:700;}
+.btn-gold:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(212,168,67,0.25);}
+.btn-ghost{background:transparent;border:1.5px solid var(--bdr2)!important;border:none;color:var(--muted);}
+.btn-ghost:hover{border-color:var(--gr)!important;color:var(--g2);}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,0.2);border-top-color:currentColor;border-radius:50%;animation:sp360 0.6s linear infinite;}
+@keyframes sp360{to{transform:rotate(360deg)}}
+
+/* TOASTS */
+#toasts{position:fixed;top:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:7px;pointer-events:none;max-width:320px;}
+@media(max-width:480px){#toasts{top:auto;bottom:16px;left:12px;right:12px;max-width:none;}}
+.toast{background:var(--s2);border:1px solid var(--bdr2);border-radius:10px;padding:11px 15px;font-family:'JetBrains Mono',monospace;font-size:0.66rem;letter-spacing:0.04em;color:var(--text);pointer-events:auto;animation:toastIn 0.3s cubic-bezier(0.16,1,0.3,1) both;box-shadow:0 8px 28px rgba(0,0,0,0.5);}
+.toast.ok{border-color:rgba(61,214,140,0.3);background:rgba(61,214,140,0.08);color:var(--grn);}
+.toast.err{border-color:rgba(240,82,82,0.3);background:rgba(240,82,82,0.08);color:var(--red);}
+.toast.inf{border-color:rgba(212,168,67,0.3);background:rgba(212,168,67,0.06);color:var(--g2);}
+@keyframes toastIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+.toast.bye{animation:toastOut 0.22s ease forwards;}
+@keyframes toastOut{to{opacity:0;transform:translateX(16px)}}
+
+/* EMPTY + SKEL */
+.empty{text-align:center;padding:44px 20px;}
+.empty-ico{font-size:2.2rem;margin-bottom:10px;opacity:0.3;}
+.empty-txt{font-family:'JetBrains Mono',monospace;font-size:0.66rem;letter-spacing:0.07em;text-transform:uppercase;color:var(--faint);}
+.skel{background:linear-gradient(90deg,var(--s2) 25%,var(--s3) 50%,var(--s2) 75%);background-size:400% 100%;animation:skel 1.4s infinite;border-radius:6px;}
+@keyframes skel{from{background-position:100%}to{background-position:-100%}}
+
+/* TICKET DETAIL MODAL */
+#detailModal{position:fixed;inset:0;z-index:1001;background:rgba(0,0,0,0.88);display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;}
+#detailModal.open{display:flex;animation:fadeIn 0.2s ease;}
+.dm-box{background:var(--s1);border:1px solid var(--bdr2);border-radius:18px;width:min(520px,100%);position:relative;overflow:hidden;margin:auto;}
+.dm-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gr),transparent);}
+.dm-head{padding:14px 18px;border-bottom:1px solid var(--bdr);display:flex;justify-content:space-between;align-items:center;}
+.dm-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;}
+.dm-close{background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;padding:4px;min-height:var(--tap);display:flex;align-items:center;}
+.dm-close:hover{color:var(--red);}
+.dm-body{padding:18px;}
+.dm-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.dm-row:last-child{border:none;}
+.dm-k{font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);}
+.dm-v{font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--text);text-align:right;word-break:break-all;max-width:60%;}
+.dm-v.gold{color:var(--g2);}
+.dm-v.green{color:var(--grn);}
+.dm-actions{display:flex;gap:7px;padding:14px 18px;border-top:1px solid var(--bdr);flex-wrap:wrap;}
+.dm-actions .act{min-height:38px;flex:1;justify-content:center;}
+
+/* CONFETTI */
+.confetti-piece{position:fixed;width:8px;height:8px;border-radius:2px;top:-10px;animation:confettiFall linear forwards;pointer-events:none;z-index:9998;}
+@keyframes confettiFall{to{transform:translateY(105vh) rotate(720deg);opacity:0;}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="lbox">
+    <div class="l-logo">Reel <em>to</em> Deal</div>
+    <div class="l-sub">Admin Dashboard</div>
+    <label class="l-lbl">Email Address</label>
+    <input class="l-inp" id="lu" type="email" placeholder="admin@rtd.com" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+    <label class="l-lbl">Password</label>
+    <input class="l-inp" id="lp" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="l-btn" id="loginBtn" onclick="doLogin()">Sign In →</button>
+    <div class="l-err" id="lerr">Invalid credentials. Please try again.</div>
+    <div class="l-hint">Credentials are verified securely against the database.<br>No hardcoded passwords.</div>
+  </div>
+</div>
+
+<!-- SCREENSHOT MODAL -->
+<div id="ssModal" onclick="if(event.target===this)closeSS()">
+  <div class="ss-box">
+    <div class="ss-hd"><span>Payment Screenshot</span><button class="ss-close" onclick="closeSS()">✕</button></div>
+    <img id="ssImg" alt="Payment Screenshot">
+  </div>
+</div>
+
+<!-- TICKET DETAIL MODAL -->
+<div id="detailModal" onclick="if(event.target===this)closeDetail()">
+  <div class="dm-box">
+    <div class="dm-box-inner">
+      <div class="dm-head"><div class="dm-title">🎟 Ticket Details</div><button class="dm-close" onclick="closeDetail()">✕</button></div>
+      <div class="dm-body" id="dmBody">Loading…</div>
+      <div class="dm-actions" id="dmActions"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+<div id="sbOverlay" onclick="closeSb()"></div>
+
+<!-- SIDEBAR -->
+<nav id="sb">
+  <div class="sb-top">
+    <div class="sb-logo">Reel <em>to</em> Deal</div>
+    <div class="sb-sub">Admin Panel v5</div>
+  </div>
+  <div class="sb-nav">
+    <div class="nav-sec">Main</div>
+    <button class="nav-item active" data-pg="dashboard" onclick="goPg('dashboard',this)">
+      <span class="nav-icon">📊</span>Dashboard
+    </button>
+    <button class="nav-item" data-pg="tickets" onclick="goPg('tickets',this)">
+      <span class="nav-icon">🎟</span>Tickets
+      <span class="nav-badge" id="pendBadge" style="display:none">0</span>
+    </button>
+    <div class="nav-sec" style="margin-top:4px">Config</div>
+    <button class="nav-item" data-pg="settings" onclick="goPg('settings',this)">
+      <span class="nav-icon">⚙️</span>Settings
+    </button>
+    <button class="nav-item" data-pg="analytics" onclick="goPg('analytics',this)">
+      <span class="nav-icon">📈</span>Analytics
+    </button>
+  </div>
+  <div class="sb-foot">
+    <a class="sb-user-link" href="reel-user-v5.html" target="_blank">🎬 User Site →</a>
+    <div class="sync-row"><div class="sdot" id="adSyncDot"></div><span id="adSyncLbl">Connecting…</span></div>
+    <button class="logout-btn" onclick="doLogout()">← Sign Out</button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main id="main" style="display:none">
+  <nav class="topnav">
+    <div class="tn-left">
+      <button class="hamburger" onclick="toggleSb()">☰</button>
+      <div class="tn-title" id="pgTitle">Dashboard</div>
+    </div>
+    <div class="tn-right-full" style="display:flex;gap:8px">
+      <button class="btn btn-ghost" onclick="refreshAll()">⟳ Refresh</button>
+      <button class="btn btn-ghost" onclick="exportCSV()">⬇ CSV</button>
+      <a href="reel-user-v5.html" target="_blank" class="btn btn-ghost">🎬 User Site</a>
+    </div>
+  </nav>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="pg-dashboard">
+      <div class="stats-grid">
+        <div class="sc sc-gold">
+          <div class="sc-icon">🎟</div><div class="sc-lbl">Tickets Sold</div>
+          <div class="sc-val" id="ds-sold">—</div>
+          <div class="sc-bar"><div class="sc-bar-fill" id="ds-sold-bar" style="background:linear-gradient(90deg,var(--gold),var(--g2));width:0%"></div></div>
+        </div>
+        <div class="sc sc-purple">
+          <div class="sc-icon">📋</div><div class="sc-lbl">Total Capacity</div>
+          <div class="sc-val" id="ds-total">—</div>
+          <div class="sc-sub" id="ds-remaining">— remaining</div>
+        </div>
+        <div class="sc sc-green">
+          <div class="sc-icon">✨</div><div class="sc-lbl">Free Used</div>
+          <div class="sc-val" id="ds-free-used">—</div>
+          <div class="sc-bar"><div class="sc-bar-fill" id="ds-free-bar" style="background:linear-gradient(90deg,var(--grn),#20c770);width:0%"></div></div>
+        </div>
+        <div class="sc sc-yellow">
+          <div class="sc-icon">⏳</div><div class="sc-lbl">Pending</div>
+          <div class="sc-val" id="ds-pending">—</div>
+        </div>
+        <div class="sc sc-red">
+          <div class="sc-icon">❌</div><div class="sc-lbl">Rejected</div>
+          <div class="sc-val" id="ds-rejected">—</div>
+        </div>
+        <div class="sc sc-blue">
+          <div class="sc-icon">💰</div><div class="sc-lbl">Revenue</div>
+          <div class="sc-val" id="ds-revenue">—</div>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-box">
+          <div class="chart-lbl">Status Breakdown</div>
+          <div class="chart-wrap"><canvas id="cStatus"></canvas></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-lbl">Daily Bookings (7 days)</div>
+          <div class="chart-wrap"><canvas id="cDaily"></canvas></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-lbl">Free vs Paid</div>
+          <div class="chart-wrap"><canvas id="cFreeVsPaid"></canvas></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">⏳ Pending Verification</div>
+          <button class="btn btn-ghost" onclick="goPg('tickets',document.querySelector('[data-pg=tickets]'))">View All →</button>
+        </div>
+        <div class="panel-body" style="padding:0">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Ticket ID</th><th>Name</th><th>Qty</th><th>Amount</th><th>Type</th><th>Date</th><th>Actions</th></tr></thead>
+              <tbody id="pendingBody"><tr><td colspan="7" style="text-align:center;padding:24px"><div class="spin" style="margin:auto;color:var(--gold)"></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TICKETS PAGE -->
+    <div class="page" id="pg-tickets">
+      <div id="bulkBar">
+        <span class="bulk-cnt" id="bulkCnt">0 selected</span>
+        <button class="bulk-btn bulk-approve" onclick="bulkDo('approved')">✅ Approve</button>
+        <button class="bulk-btn bulk-reject"  onclick="bulkDo('rejected')">❌ Reject</button>
+        <button class="bulk-btn bulk-delete"  onclick="bulkDo('delete')">🗑 Delete</button>
+        <button class="bulk-btn bulk-cancel"  onclick="clearSel()">Cancel</button>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">🎟 All Tickets</div>
+          <div class="fbar">
+            <input class="fbar-in" id="searchIn" placeholder="Search ID, name, email, UTR…" oninput="filterTix()">
+            <button class="fbar-btn active" onclick="setFilter('all',this)">All</button>
+            <button class="fbar-btn" onclick="setFilter('pending',this)">⏳ Pending</button>
+            <button class="fbar-btn" onclick="setFilter('review',this)">🔍 Review</button>
+            <button class="fbar-btn" onclick="setFilter('approved',this)">✅ Approved</button>
+            <button class="fbar-btn" onclick="setFilter('rejected',this)">❌ Rejected</button>
+            <button class="fbar-btn" onclick="setFilter('free',this)">✨ Free</button>
+          </div>
+        </div>
+        <div class="panel-body" style="padding:0">
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th><input type="checkbox" class="cb" id="selAll" onchange="toggleSelAll(this)"></th>
+                  <th>Ticket ID</th><th>Name / Email</th><th>Qty</th><th>Amount</th>
+                  <th>Type</th><th>Status</th><th>Date</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tixBody">
+                <tr><td colspan="9" style="text-align:center;padding:32px"><div class="spin" style="margin:auto;color:var(--gold)"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS PAGE -->
+    <div class="page" id="pg-analytics">
+      <div class="stats-grid" id="analyticsStats"></div>
+      <div class="charts-grid" style="grid-template-columns:1fr">
+        <div class="chart-box">
+          <div class="chart-lbl">Revenue Over Time (14 days)</div>
+          <div class="chart-wrap" style="height:200px"><canvas id="cRevenue"></canvas></div>
+        </div>
+      </div>
+      <div class="charts-grid">
+        <div class="chart-box">
+          <div class="chart-lbl">Ticket Type Split</div>
+          <div class="chart-wrap"><canvas id="cTypeSplit"></canvas></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-lbl">Bookings by Hour of Day</div>
+          <div class="chart-wrap"><canvas id="cHourly"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS PAGE -->
+    <div class="page" id="pg-settings">
+      <div class="avail-bar" id="availWidget">
+        <div class="avail-row"><span class="avail-k">Total Capacity</span><span class="avail-v gold" id="av-total">—</span></div>
+        <div class="avail-row"><span class="avail-k">Tickets Sold</span><span class="avail-v" id="av-sold">—</span></div>
+        <div class="avail-prog"><div class="avail-fill" id="av-soldBar" style="width:0%"></div></div>
+        <div class="avail-row" style="margin-top:10px"><span class="avail-k">Free Tickets Limit</span><span class="avail-v green" id="av-free">—</span></div>
+        <div class="avail-row"><span class="avail-k">Free Used</span><span class="avail-v" id="av-freeUsed">—</span></div>
+        <div class="avail-prog"><div class="avail-fill free" id="av-freeBar" style="width:0%"></div></div>
+        <div class="avail-row" style="margin-top:10px"><span class="avail-k">Remaining Seats</span><span class="avail-v" id="av-remaining">—</span></div>
+        <div class="avail-row"><span class="avail-k">Free Left</span><span class="avail-v" id="av-freeLeft">—</span></div>
+      </div>
+
+      <div class="settings-layout">
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">🎬 Event & Pricing</div></div>
+          <div class="panel-body">
+            <div class="s-group"><label class="s-lbl">Event Name</label><input class="s-inp" id="cfg-name" placeholder="Reel to Deal"></div>
+            <div class="s-group"><label class="s-lbl">Venue</label><input class="s-inp" id="cfg-venue" placeholder="MBA Auditorium"></div>
+            <div class="s-group"><label class="s-lbl">Event Date (Display)</label><input class="s-inp" id="cfg-date" placeholder="Feb 17, 2025 · 2:00 PM"></div>
+            <div class="s-group"><label class="s-lbl">Event Date (ISO for countdown)</label><input class="s-inp" id="cfg-date-iso" placeholder="2025-02-17T14:00:00"></div>
+            <div class="s-group"><label class="s-lbl">Ticket Price (₹)</label><input class="s-inp s-inp-num" id="cfg-price" type="number" min="0" placeholder="100"></div>
+            <div class="s-group"><label class="s-lbl">UPI ID</label><input class="s-inp" id="cfg-upi" placeholder="yourname@upi"></div>
+            <div class="s-group"><label class="s-lbl">Genre / Tags <small style="color:var(--muted)">(shown on poster)</small></label><input class="s-inp" id="cfg-genre" placeholder="Drama · Thriller"></div>
+            <div class="s-group"><label class="s-lbl">Duration <small style="color:var(--muted)">(shown on poster)</small></label><input class="s-inp" id="cfg-duration" placeholder="2h 15m"></div>
+            <div class="s-group">
+              <label class="s-lbl">Movie Poster URL <small style="color:var(--muted)">(optional — JPEG/PNG, blurred as background)</small></label>
+              <input class="s-inp" id="cfg-poster" placeholder="https://…/poster.jpg" oninput="previewPoster()">
+              <div id="posterPreviewWrap" style="margin-top:10px;display:none">
+                <img id="posterPreviewImg" alt="Poster preview" style="width:80px;height:114px;object-fit:cover;border-radius:8px;border:1.5px solid var(--gr);display:block;">
+              </div>
+            </div>
+            <button class="btn btn-gold" onclick="saveEventCfg()" style="width:100%">Save Event Config</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">🎫 Ticket Limits</div></div>
+          <div class="panel-body">
+            <div class="s-group"><label class="s-lbl">Total Ticket Capacity</label><input class="s-inp s-inp-num" id="cfg-total" type="number" min="1" placeholder="200"></div>
+            <div class="s-group"><label class="s-lbl">Free Tickets Limit</label><input class="s-inp s-inp-num" id="cfg-free" type="number" min="0" placeholder="50"></div>
+            <div class="s-group"><label class="s-lbl">Max Per User</label><input class="s-inp s-inp-num" id="cfg-max-user" type="number" min="1" max="20" placeholder="5"></div>
+            <div class="s-group"><label class="s-lbl">Free Used <small style="color:var(--muted)">(read-only)</small></label><input class="s-inp s-inp-num" id="cfg-free-used" type="number" readonly style="opacity:0.5"></div>
+            <div class="s-group"><label class="s-lbl">Tickets Sold <small style="color:var(--muted)">(read-only)</small></label><input class="s-inp s-inp-num" id="cfg-sold" type="number" readonly style="opacity:0.5"></div>
+            <button class="btn btn-gold" onclick="saveLimits()" style="width:100%">Save Limits</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">🔧 Booking Controls</div></div>
+          <div class="panel-body">
+            <div class="toggle-row">
+              <div class="tog-info"><h4>Accept Bookings</h4><p>Enable/disable all ticket booking</p></div>
+              <label class="tog"><input type="checkbox" id="tog-booking" checked><span class="tog-sl"></span></label>
+            </div>
+            <div class="toggle-row">
+              <div class="tog-info"><h4>Free Tickets</h4><p>Allow free ticket redemption</p></div>
+              <label class="tog"><input type="checkbox" id="tog-free" checked><span class="tog-sl"></span></label>
+            </div>
+            <div class="toggle-row">
+              <div class="tog-info"><h4>Auto Approve</h4><p>Skip manual verification</p></div>
+              <label class="tog"><input type="checkbox" id="tog-auto"><span class="tog-sl"></span></label>
+            </div>
+            <div class="toggle-row">
+              <div class="tog-info"><h4>Require Roll No.</h4><p>Show roll number field in booking</p></div>
+              <label class="tog"><input type="checkbox" id="tog-roll"><span class="tog-sl"></span></label>
+            </div>
+            <div class="toggle-row">
+              <div class="tog-info"><h4>Require Department</h4><p>Show department field</p></div>
+              <label class="tog"><input type="checkbox" id="tog-dept"><span class="tog-sl"></span></label>
+            </div>
+            <div class="toggle-row">
+              <div class="tog-info"><h4>Require Year & Section</h4><p>Show year and section fields</p></div>
+              <label class="tog"><input type="checkbox" id="tog-year"><span class="tog-sl"></span></label>
+            </div>
+            <div class="toggle-row">
+              <div class="tog-info"><h4>Free Ticket Access Code</h4><p>Leave blank to allow anyone · Set a code to restrict</p></div>
+            </div>
+            <div class="s-group" style="margin-top:4px">
+              <label class="s-lbl">Access Code <small style="color:var(--muted)">(case-insensitive, max 20 chars)</small></label>
+              <input class="s-inp" id="cfg-free-code" placeholder="e.g. MBA2025 (leave blank = open to all)" maxlength="20" style="font-family:'JetBrains Mono',monospace;letter-spacing:0.12em;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+            </div>
+            <button class="btn btn-gold" onclick="saveToggles()" style="width:100%;margin-top:14px">Save Controls</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">🔐 Change Password</div></div>
+          <div class="panel-body">
+            <div class="s-group"><label class="s-lbl">New Password (min. 8 chars)</label><input class="s-inp" id="newpw" type="password" placeholder="New secure password"></div>
+            <div class="s-group"><label class="s-lbl">Confirm Password</label><input class="s-inp" id="conpw" type="password" placeholder="Confirm password"></div>
+            <div style="background:var(--s3);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-family:'JetBrains Mono',monospace;font-size:0.58rem;color:var(--muted);line-height:1.7">
+              🔒 Passwords are SHA-256 hashed before storage.<br>
+              Admin credentials are stored in the <strong>admins</strong> table — no hardcoded passwords.
+            </div>
+            <button class="btn btn-gold" onclick="changePw()" style="width:100%">Update Password</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="danger-zone">
+        <div class="danger-title">⚠ Danger Zone — Irreversible Actions</div>
+        <div class="danger-grid">
+          <button class="danger-btn" onclick="dangerOp('reset-free')">🔄 Reset Free Counter</button>
+          <button class="danger-btn" onclick="dangerOp('reset-sold')">🔄 Reset Sold Counter</button>
+          <button class="danger-btn" onclick="dangerOp('clear-pending')">🗑 Clear Pending</button>
+          <button class="danger-btn" onclick="dangerOp('clear-rejected')">🗑 Clear Rejected</button>
+          <button class="danger-btn" onclick="dangerOp('clear-all')">💥 Delete ALL Tickets</button>
+          <button class="danger-btn" onclick="exportCSV()" style="background:rgba(212,168,67,0.08);border-color:var(--gr);color:var(--g2)">📤 Export CSV</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+'use strict';
+// ═══════════════════════════════════════════════════════
+//  SUPABASE — single instance, retry wrapper
+// ═══════════════════════════════════════════════════════
+const SB_URL = 'https://yhrfpcwehtqsppoifhog.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlocmZwY3dlaHRxc3Bwb2lmaG9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1NzQ5MDAsImV4cCI6MjA4NzE1MDkwMH0.Ml1V2zc8j3XCZIuILuapy2Cs4jcBl0i6sHKxFFl6Sqo';
+const H = {'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'};
+
+async function sbFetch(url, opts, attempt=0) {
+  try {
+    const r = await fetch(url, opts);
+    if (!r.ok) { const txt = await r.text().catch(()=>''); throw new Error(txt||r.status); }
+    return r;
+  } catch(e) {
+    if (attempt >= 2) throw e;
+    await new Promise(r => setTimeout(r, 600*(attempt+1)));
+    return sbFetch(url, opts, attempt+1);
+  }
+}
+
+const DB = {
+  get:   (t,q='') => sbFetch(`${SB_URL}/rest/v1/${t}?${q}`,{headers:H}).then(r=>r.json()),
+  post:  (t,b)    => sbFetch(`${SB_URL}/rest/v1/${t}`,{method:'POST',headers:H,body:JSON.stringify(b)}).then(r=>r.json()),
+  patch: (t,q,b)  => sbFetch(`${SB_URL}/rest/v1/${t}?${q}`,{method:'PATCH',headers:H,body:JSON.stringify(b)}).then(r=>r.json()),
+  del:   (t,q)    => sbFetch(`${SB_URL}/rest/v1/${t}?${q}`,{method:'DELETE',headers:H}).then(()=>true)
+};
+
+// ═══════════════════════════════════════════════════════
+//  STATE — pure in-memory, no localStorage
+// ═══════════════════════════════════════════════════════
+const G = {
+  cfg:{}, tickets:[], filtered:[],
+  filter:'all', search:'',
+  selected: new Set(),
+  charts:{},
+  session: null,        // logged-in admin email
+  pollTimer: null,      // single interval reference
+  pollRunning: false,   // prevents overlapping poll cycles
+  chartsRendered: {}    // lazy-chart tracking
+};
+
+// ═══════════════════════════════════════════════════════
+//  LOGIN RATE-LIMITER — max 5 attempts per 2 minutes
+// ═══════════════════════════════════════════════════════
+const _loginAttempts = { count:0, resetAt:0 };
+function _checkLoginRate() {
+  const now = Date.now();
+  if (now > _loginAttempts.resetAt) { _loginAttempts.count=0; _loginAttempts.resetAt=now+120_000; }
+  _loginAttempts.count++;
+  if (_loginAttempts.count > 5) {
+    const wait = Math.round((_loginAttempts.resetAt - now)/1000);
+    showErr(`Too many attempts. Try again in ${wait}s.`);
+    return false;
+  }
+  return true;
+}
+
+// ═══════════════════════════════════════════════════════
+//  PASSWORD HASHING (SHA-256 via Web Crypto)
+// ═══════════════════════════════════════════════════════
+async function hashPw(pw) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+//  AUTH — Supabase-verified, rate-limited, session safe
+// ═══════════════════════════════════════════════════════
+async function doLogin() {
+  if (!_checkLoginRate()) return;
+  const email = (_el('lu').value||'').trim().toLowerCase();
+  const pw    = _el('lp').value||'';
+  if (!email || !pw) { showErr('Please enter email and password.'); return; }
+
+  const btn=_el('loginBtn');
+  btn.disabled=true; btn.innerHTML='<span class="spin" style="color:var(--bg)"></span> Verifying…';
+
+  // ── Hardcoded fallback credentials ──────────────────
+  const ADMIN_EMAIL = 'admin@rtd.com';
+  const ADMIN_PASS  = 'admin123';
+  // ────────────────────────────────────────────────────
+
+  try {
+    // Check hardcoded credentials first (works offline too)
+    const hardcodedOk = (email === ADMIN_EMAIL && pw === ADMIN_PASS);
+
+    if (!hardcodedOk) {
+      // Fall back to DB lookup if hardcoded doesn't match
+      try {
+        const hash = await hashPw(pw);
+        const rows = await DB.get('admins',`email=eq.${encodeURIComponent(email)}&select=email,password_hash`);
+        if (!rows?.length || rows[0].password_hash !== hash) {
+          showErr('Invalid credentials. Please try again.'); return;
+        }
+      } catch(dbErr) {
+        // DB unreachable and hardcoded didn't match
+        showErr('Invalid credentials. Please try again.'); return;
+      }
+    }
+
+    // Reset attempt counter on success
+    _loginAttempts.count = 0;
+    G.session = email;
+    // Save session to sessionStorage (survives refresh within same tab, clears on close)
+    try { sessionStorage.setItem('rtd_admin', email); } catch(e){}
+    _el('login').style.display='none';
+    _el('main').style.display='flex';
+    _el('main').style.flexDirection='column';
+    await init();
+  } catch(e) {
+    console.error('Login error:',e);
+    showErr('Login failed — check network connection.');
+  } finally {
+    btn.disabled=false; btn.textContent='Sign In →';
+  }
+}
+
+function showErr(msg) {
+  const el=_el('lerr'); el.textContent=msg; el.style.display='block';
+  clearTimeout(showErr._t);
+  showErr._t = setTimeout(()=>el.style.display='none', 4000);
+}
+
+function doLogout() {
+  G.session=null;
+  try { sessionStorage.removeItem('rtd_admin'); } catch(e){}
+  if (G.pollTimer) { clearInterval(G.pollTimer); G.pollTimer=null; }
+  _el('login').style.display='flex';
+  _el('main').style.display='none';
+  _el('lp').value='';
+}
+
+// ═══════════════════════════════════════════════════════
+//  BOOT — restore session then init, {once:true} prevents duplicates
+// ═══════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', async () => {
+  // Restore session from sessionStorage (same-tab refresh only)
+  try {
+    const saved = sessionStorage.getItem('rtd_admin');
+    if (saved) {
+      G.session = saved;
+      _el('login').style.display='none';
+      _el('main').style.display='flex';
+      _el('main').style.flexDirection='column';
+      await init();
+    }
+  } catch(e) { /* sessionStorage unavailable */ }
+}, {once:true});
+
+// ═══════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════
+async function init() {
+  // Stop any existing poll before starting fresh
+  if (G.pollTimer) { clearInterval(G.pollTimer); G.pollTimer=null; }
+  await loadAll();
+  loadSettingsForm();
+  startPoll();
+}
+
+async function loadAll() {
+  try {
+    // Parallel fetch: faster on weak network
+    const [settingsRows, tickets] = await Promise.all([
+      DB.get('settings','id=eq.1&select=*'),
+      DB.get('tickets','order=created_at.desc&select=*')
+    ]);
+    if (settingsRows && settingsRows[0]) G.cfg = settingsRows[0];
+    G.tickets = tickets || [];
+    setSync(true);
+  } catch(e) {
+    setSync(false);
+    console.warn('loadAll failed:', e);
+    toast('Could not load data — retrying…','err');
+  }
+  renderDash();
+  renderTixTable();
+  updatePendBadge();
+  updateAvailWidget();
+}
+
+function refreshAll() { loadAll().then(()=>toast('Refreshed ✓','ok')); }
+
+// ═══════════════════════════════════════════════════════
+//  POLLING — single timer, non-overlapping, debounced render
+// ═══════════════════════════════════════════════════════
+function startPoll() {
+  if (G.pollTimer) clearInterval(G.pollTimer);  // safety: never double-register
+  G.pollTimer = setInterval(async () => {
+    if (!G.session || G.pollRunning) return;
+    G.pollRunning = true;
+    try {
+      const [settingsRows, fresh] = await Promise.all([
+        DB.get('settings','id=eq.1&select=*'),
+        DB.get('tickets','order=created_at.desc&select=*')
+      ]);
+      if (settingsRows && settingsRows[0]) G.cfg = settingsRows[0];
+
+      const prevLen     = G.tickets.length;
+      const prevDigest  = G.tickets.map(t=>t.id+t.status).join('|');
+      const nextDigest  = (fresh||[]).map(t=>t.id+t.status).join('|');
+
+      if (nextDigest !== prevDigest) {
+        // Only re-render when data actually changed
+        G.tickets = fresh || [];
+        renderDash();
+        renderTixTable();
+        updatePendBadge();
+        if ((fresh||[]).length > prevLen) toast(`📩 ${fresh.length-prevLen} new booking(s)`,'inf');
+      }
+      updateAvailWidget();
+      setSync(true);
+    } catch(e) { setSync(false); }
+    finally { G.pollRunning = false; }
+  }, 7000);
+}
+
+function setSync(ok) {
+  _el('adSyncDot').className='sdot'+(ok?'':' off');
+  _el('adSyncLbl').textContent=ok?'Live ✓':'Offline';
+}
+
+// ═══════════════════════════════════════════════════════
+//  NAVIGATION — body scroll locked when sidebar open
+// ═══════════════════════════════════════════════════════
+function goPg(name, btn) {
+  $$('.page').forEach(p=>p.classList.remove('active'));
+  _el(`pg-${name}`).classList.add('active');
+  $$('.nav-item').forEach(b=>b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const titles={dashboard:'Dashboard',tickets:'Ticket Management',settings:'Settings & Controls',analytics:'Analytics'};
+  _t('pgTitle', titles[name]||name);
+  if (name === 'analytics') renderAnalytics();
+  if (name === 'settings')  loadSettingsForm();
+  closeSb();
+}
+
+function toggleSb() {
+  const open = _el('sb').classList.toggle('open');
+  _el('sbOverlay').style.display = open ? 'block' : 'none';
+  // Prevent body scroll behind sidebar on mobile
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+function closeSb() {
+  _el('sb').classList.remove('open');
+  _el('sbOverlay').style.display='none';
+  document.body.style.overflow='';
+}
+
+// ═══════════════════════════════════════════════════════
+//  DASHBOARD — renders only visible stats + pending table
+// ═══════════════════════════════════════════════════════
+function renderDash() {
+  const t=G.tickets, c=G.cfg;
+  const pending  = t.filter(x=>x.status==='pending').length;
+  const review   = t.filter(x=>x.status==='review').length;
+  const approved = t.filter(x=>x.status==='approved').length;
+  const rejected = t.filter(x=>x.status==='rejected').length;
+  const freeUsed = c.free_used||0;
+  const revenue  = t.filter(x=>x.status==='approved'&&!x.is_free).reduce((s,x)=>s+(+x.amount||0),0);
+  const remaining= Math.max(0,(c.total_tickets||200)-(c.tickets_sold||0));
+  const soldPct  = Math.min(100,Math.round(((c.tickets_sold||0)/(c.total_tickets||200))*100));
+  const freePct  = Math.min(100,Math.round((freeUsed/Math.max(1,c.free_tickets||50))*100));
+
+  bumpVal('ds-sold',      c.tickets_sold||0);
+  bumpVal('ds-total',     c.total_tickets||200);
+  bumpVal('ds-free-used', freeUsed);
+  bumpVal('ds-pending',   pending);
+  bumpVal('ds-rejected',  rejected);
+  _t('ds-revenue',   '₹'+revenue.toLocaleString('en-IN'));
+  _t('ds-remaining', remaining+' remaining');
+  _el('ds-sold-bar').style.width = soldPct+'%';
+  _el('ds-free-bar').style.width = freePct+'%';
+
+  // Pending table (top 7)
+  const pend=t.filter(x=>x.status==='pending').slice(0,7);
+  _el('pendingBody').innerHTML=pend.length
+    ?pend.map(tk=>`<tr>
+      <td class="td-id">${esc(tk.ticket_id)}</td>
+      <td><div class="td-name">${esc(tk.user_name)}</div><div class="td-email">${esc(tk.email)}</div></td>
+      <td style="text-align:center">${tk.quantity}</td>
+      <td class="td-amt ${tk.is_free?'free':''}">${tk.is_free?'FREE ✨':'₹'+tk.amount}</td>
+      <td>${tk.is_free?'<span class="sbadge sb-free"><div class="sd"></div>Free</span>':'<span style="font-family:JetBrains Mono,monospace;font-size:0.63rem;color:var(--muted)">Paid</span>'}</td>
+      <td class="td-date">${fmtDate(tk.created_at)}</td>
+      <td><div class="acts">
+        <button class="act act-app" onclick="updStatus('${tk.id}','approved')" title="Approve">✅</button>
+        <button class="act act-rev" onclick="updStatus('${tk.id}','review')" title="Review">🔍</button>
+        <button class="act act-rej" onclick="updStatus('${tk.id}','rejected')" title="Reject">❌</button>
+        ${tk.screenshot_url?`<button class="act act-ss" onclick="viewSS('${esc(tk.screenshot_url)}')">📸</button>`:''}
+        <button class="act" onclick="viewDetail('${tk.id}')" style="background:var(--gg);color:var(--g2);border:1px solid var(--gr)">👁</button>
+      </div></td>
+    </tr>`).join('')
+    :'<tr><td colspan="7"><div class="empty"><div class="empty-ico">✅</div><div class="empty-txt">No pending tickets</div></div></td></tr>';
+
+  // Lazy-render charts: only when dashboard is visible
+  if (_el('pg-dashboard').classList.contains('active')) {
+    renderStatusChart(pending, review, approved, rejected);
+    renderDailyChart();
+    renderFreeVsPaidChart();
+  }
+}
+
+// Charts — always destroy before re-create to prevent resize artifacts
+function renderStatusChart(p,rv,a,rj) {
+  const ctx=_el('cStatus'); if(!ctx) return;
+  if (G.charts.status) { G.charts.status.destroy(); G.charts.status=null; }
+  G.charts.status = new Chart(ctx, {
+    type:'doughnut',
+    data:{labels:['Pending','Review','Approved','Rejected'],datasets:[{data:[p,rv,a,rj],backgroundColor:['rgba(251,191,36,0.7)','rgba(96,165,250,0.7)','rgba(61,214,140,0.7)','rgba(240,82,82,0.7)'],borderColor:'#09080f',borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:300},plugins:{legend:{labels:{color:'#8a7e6a',font:{family:'JetBrains Mono',size:10}}}}}
+  });
+}
+function renderDailyChart() {
+  const days=Array.from({length:7},(_,i)=>{const d=new Date();d.setDate(d.getDate()-i);return d.toISOString().slice(0,10);}).reverse();
+  const counts=days.map(day=>G.tickets.filter(t=>t.created_at?.startsWith(day)).length);
+  const ctx=_el('cDaily'); if(!ctx) return;
+  if (G.charts.daily) { G.charts.daily.destroy(); G.charts.daily=null; }
+  G.charts.daily = new Chart(ctx, {
+    type:'bar',
+    data:{labels:days.map(d=>new Date(d).toLocaleDateString('en-IN',{month:'short',day:'numeric'})),datasets:[{label:'Bookings',data:counts,backgroundColor:'rgba(212,168,67,0.45)',borderColor:'rgba(212,168,67,0.8)',borderRadius:5,borderWidth:1}]},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:300},plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8a7e6a',font:{family:'JetBrains Mono',size:9}},grid:{color:'rgba(255,255,255,0.03)'}},y:{ticks:{color:'#8a7e6a',font:{family:'JetBrains Mono',size:9},stepSize:1},grid:{color:'rgba(255,255,255,0.03)'}}}}
+  });
+}
+function renderFreeVsPaidChart() {
+  const freeC=G.tickets.filter(t=>t.is_free).length, paidC=G.tickets.filter(t=>!t.is_free).length;
+  const ctx=_el('cFreeVsPaid'); if(!ctx) return;
+  if (G.charts.fvp) { G.charts.fvp.destroy(); G.charts.fvp=null; }
+  G.charts.fvp = new Chart(ctx, {
+    type:'doughnut',
+    data:{labels:['Free','Paid'],datasets:[{data:[freeC,paidC],backgroundColor:['rgba(61,214,140,0.7)','rgba(212,168,67,0.7)'],borderColor:'#09080f',borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:300},plugins:{legend:{labels:{color:'#8a7e6a',font:{family:'JetBrains Mono',size:11}}}}}
+  });
+}
+
+// Fix chart resize on orientation change
+window.addEventListener('resize', _debounce(()=>{
+  Object.values(G.charts).forEach(c=>{try{c?.resize();}catch(e){}});
+}, 250));
+
+// ═══════════════════════════════════════════════════════
+//  TICKETS TABLE
+// ═══════════════════════════════════════════════════════
+function renderTixTable() {
+  let list=G.tickets;
+  if      (G.filter==='free') list=list.filter(t=>t.is_free);
+  else if (G.filter!=='all')  list=list.filter(t=>t.status===G.filter);
+  if (G.search) {
+    const q=G.search.toLowerCase();
+    list=list.filter(t=>
+      t.ticket_id?.toLowerCase().includes(q)||
+      t.user_name?.toLowerCase().includes(q)||
+      t.email?.toLowerCase().includes(q)||
+      t.utr?.toLowerCase().includes(q)
+    );
+  }
+  G.filtered=list;
+  const el=_el('tixBody');
+  if (!list.length) {
+    el.innerHTML='<tr><td colspan="9"><div class="empty"><div class="empty-ico">🎟</div><div class="empty-txt">No tickets found</div></div></td></tr>';
+    return;
+  }
+  el.innerHTML=list.map(tk=>`<tr id="tr-${tk.id}">
+    <td><input type="checkbox" class="cb row-cb" data-id="${tk.id}" onchange="toggleSel('${tk.id}',this.checked)"></td>
+    <td class="td-id">${esc(tk.ticket_id)}</td>
+    <td><div class="td-name">${esc(tk.user_name)}</div><div class="td-email">${esc(tk.email)}</div></td>
+    <td style="text-align:center">${tk.quantity}</td>
+    <td class="td-amt ${tk.is_free?'free':''}">${tk.is_free?'FREE ✨':'₹'+tk.amount}</td>
+    <td>${tk.is_free?'<span class="sbadge sb-free"><div class="sd"></div>Free</span>':'<span style="font-family:JetBrains Mono,monospace;font-size:0.63rem;color:var(--g2)">Paid</span>'}</td>
+    <td>${makeBadge(tk.status)}</td>
+    <td class="td-date">${fmtDate(tk.created_at)}</td>
+    <td><div class="acts">
+      <button class="act act-app" onclick="updStatus('${tk.id}','approved')" title="Approve">✅</button>
+      <button class="act act-rev" onclick="updStatus('${tk.id}','review')" title="Review">🔍</button>
+      <button class="act act-rej" onclick="updStatus('${tk.id}','rejected')" title="Reject">❌</button>
+      ${tk.screenshot_url?`<button class="act act-ss" onclick="viewSS('${esc(tk.screenshot_url)}')">📸</button>`:''}
+      <button class="act" onclick="viewDetail('${tk.id}')" style="background:var(--gg);color:var(--g2);border:1px solid var(--gr)">👁</button>
+      <button class="act act-del" onclick="delTix('${tk.id}')">🗑</button>
+    </div></td>
+  </tr>`).join('');
+}
+
+function makeBadge(s) {
+  const m={pending:['sb-pending','⏳ Pending'],review:['sb-review','🔍 Review'],approved:['sb-approved','✅ Approved'],rejected:['sb-rejected','❌ Rejected']};
+  const [c,l]=m[s]||m.pending;
+  return `<div class="sbadge ${c}"><div class="sd"></div>${l}</div>`;
+}
+function setFilter(f,btn) {
+  G.filter=f; $$('.fbar-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderTixTable();
+}
+// Debounce search to prevent rapid re-renders
+const _debouncedFilter = _debounce(()=>{ G.search=_v('searchIn'); renderTixTable(); }, 200);
+function filterTix() { _debouncedFilter(); }
+
+// ═══════════════════════════════════════════════════════
+//  STATUS UPDATES — optimistic UI + DB write verification
+// ═══════════════════════════════════════════════════════
+async function updStatus(id, status) {
+  // Optimistic update: update UI immediately
+  const i=G.tickets.findIndex(t=>t.id===id);
+  const prevStatus = i>=0 ? G.tickets[i].status : null;
+  if (i>=0) G.tickets[i].status=status;
+  renderDash(); renderTixTable(); updatePendBadge();
+
+  try {
+    await DB.patch('tickets',`id=eq.${id}`,{status});
+    if (status==='approved') launchConfetti();
+    toast(`Ticket ${status} ✓`,'ok');
+  } catch(e) {
+    // Rollback optimistic update on failure
+    if (i>=0 && prevStatus) G.tickets[i].status=prevStatus;
+    renderDash(); renderTixTable();
+    toast('Update failed — rolled back. Try again.','err');
+  }
+}
+
+async function delTix(id) {
+  // Use confirmation modal instead of window.confirm
+  const confirmed = await showConfirm('Delete this ticket? This cannot be undone.');
+  if (!confirmed) return;
+  try {
+    await DB.del('tickets',`id=eq.${id}`);
+    G.tickets=G.tickets.filter(t=>t.id!==id);
+    renderDash(); renderTixTable(); updatePendBadge();
+    toast('Ticket deleted','err');
+  } catch(e) { toast('Delete failed','err'); }
+}
+
+// ═══════════════════════════════════════════════════════
+//  CONFIRMATION MODAL — replaces window.confirm
+// ═══════════════════════════════════════════════════════
+function showConfirm(msg) {
+  return new Promise(resolve => {
+    // Re-use detail modal shell as confirm dialog
+    const box=_el('detailModal');
+    _el('dmBody').innerHTML=`<div style="text-align:center;padding:20px 0">
+      <div style="font-size:2rem;margin-bottom:10px">⚠️</div>
+      <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;margin-bottom:8px">Confirm Action</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:0.66rem;color:var(--muted);line-height:1.6">${esc(msg)}</div>
+    </div>`;
+    _el('dmActions').innerHTML=`
+      <button class="act act-rej" style="flex:1" id="_cfmNo">Cancel</button>
+      <button class="act act-app" style="flex:1" id="_cfmYes">Confirm</button>`;
+    box.classList.add('open');
+    const cleanup=()=>{ box.classList.remove('open'); };
+    _el('_cfmYes').onclick=()=>{ cleanup(); resolve(true); };
+    _el('_cfmNo').onclick=()=>{ cleanup(); resolve(false); };
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+//  TICKET DETAIL MODAL
+// ═══════════════════════════════════════════════════════
+function viewDetail(id) {
+  const t=G.tickets.find(t=>t.id===id); if(!t) return;
+  const fields=[
+    ['Ticket ID',esc(t.ticket_id),'gold'],['Name',esc(t.user_name),''],['Email',esc(t.email),''],
+    ['Phone',esc(t.phone||'—'),''],['College',esc(t.college||'—'),''],['Movie',esc(t.movie_name||'—'),''],
+    ['Quantity',t.quantity,''],['Amount',t.is_free?'FREE ✨':'₹'+t.amount,t.is_free?'green':'gold'],
+    ['Type',t.is_free?'Free Ticket':'Paid',''],['Status',(t.status||'pending').toUpperCase(),''],
+    ['UTR',esc(t.utr||'—'),''],['Date',fmtDate(t.created_at),''],
+    ['Venue',esc(t.venue||'—'),''],['Event Date',esc(t.event_date||'—'),''],
+  ];
+  _el('dmBody').innerHTML=fields.map(([k,v,cls])=>`<div class="dm-row"><span class="dm-k">${k}</span><span class="dm-v ${cls}">${v}</span></div>`).join('');
+  _el('dmActions').innerHTML=`
+    <button class="act act-app" style="flex:1" onclick="updStatus('${id}','approved');closeDetail()">✅ Approve</button>
+    <button class="act act-rev" style="flex:1" onclick="updStatus('${id}','review');closeDetail()">🔍 Review</button>
+    <button class="act act-rej" style="flex:1" onclick="updStatus('${id}','rejected');closeDetail()">❌ Reject</button>
+    ${t.screenshot_url?`<button class="act act-ss" style="flex:1" onclick="viewSS('${esc(t.screenshot_url)}')">📸 Screenshot</button>`:''}
+  `;
+  _el('detailModal').classList.add('open');
+}
+function closeDetail() { _el('detailModal').classList.remove('open'); }
+
+// ═══════════════════════════════════════════════════════
+//  BULK ACTIONS — atomic with proper error handling
+// ═══════════════════════════════════════════════════════
+function toggleSel(id,checked) { if(checked) G.selected.add(id); else G.selected.delete(id); updBulkBar(); }
+function toggleSelAll(cb) {
+  G.filtered.forEach(t=>{
+    if(cb.checked) G.selected.add(t.id); else G.selected.delete(t.id);
+    const el=document.querySelector(`.row-cb[data-id="${t.id}"]`); if(el) el.checked=cb.checked;
+  });
+  updBulkBar();
+}
+function updBulkBar() {
+  const n=G.selected.size;
+  _el('bulkBar').style.display=n?'flex':'none';
+  _t('bulkCnt',`${n} ticket${n>1?'s':''} selected`);
+}
+function clearSel() {
+  G.selected.clear(); $$('.row-cb').forEach(cb=>cb.checked=false);
+  const sa=_el('selAll'); if(sa) sa.checked=false;
+  updBulkBar();
+}
+
+async function bulkDo(action) {
+  if (!G.selected.size) return;
+  const label=action==='delete'?'delete':'update';
+  const confirmed=await showConfirm(`${action.toUpperCase()} ${G.selected.size} ticket(s)? This cannot be undone.`);
+  if (!confirmed) return;
+
+  // Disable bulk buttons while processing
+  $$('.bulk-btn').forEach(b=>{b.disabled=true;});
+  let done=0, failed=0;
+  // Process all in parallel for speed
+  const promises=[...G.selected].map(id=>
+    (action==='delete' ? DB.del('tickets',`id=eq.${id}`) : DB.patch('tickets',`id=eq.${id}`,{status:action}))
+      .then(()=>done++) .catch(()=>failed++)
+  );
+  await Promise.allSettled(promises);
+  clearSel();
+  await loadAll();
+  $$('.bulk-btn').forEach(b=>{b.disabled=false;});
+  toast(`${done} updated${failed?`, ${failed} failed`:''}${done>0?' ✓':''}`,'ok');
+}
+
+function updatePendBadge() {
+  const n=G.tickets.filter(t=>t.status==='pending').length;
+  const el=_el('pendBadge'); el.textContent=n; el.style.display=n?'inline':'none';
+}
+
+// ═══════════════════════════════════════════════════════
+//  SCREENSHOT MODAL
+// ═══════════════════════════════════════════════════════
+function viewSS(url) { _el('ssImg').src=url; _el('ssModal').classList.add('open'); }
+function closeSS()   { _el('ssModal').classList.remove('open'); }
+
+// ═══════════════════════════════════════════════════════
+//  ANALYTICS — lazy render only when page visible
+// ═══════════════════════════════════════════════════════
+function renderAnalytics() {
+  const t=G.tickets, c=G.cfg;
+  const revenue      = t.filter(x=>x.status==='approved'&&!x.is_free).reduce((s,x)=>s+(+x.amount||0),0);
+  const freeApproved = t.filter(x=>x.status==='approved'&&x.is_free).length;
+  const paidApproved = t.filter(x=>x.status==='approved'&&!x.is_free).length;
+  const remaining    = Math.max(0,(c.total_tickets||200)-(c.tickets_sold||0));
+
+  _el('analyticsStats').innerHTML=`
+    <div class="sc sc-blue"><div class="sc-icon">💰</div><div class="sc-lbl">Total Revenue</div><div class="sc-val">₹${revenue.toLocaleString('en-IN')}</div></div>
+    <div class="sc sc-green"><div class="sc-icon">✨</div><div class="sc-lbl">Free Approved</div><div class="sc-val">${freeApproved}</div></div>
+    <div class="sc sc-gold"><div class="sc-icon">🎫</div><div class="sc-lbl">Paid Approved</div><div class="sc-val">${paidApproved}</div></div>
+    <div class="sc sc-purple"><div class="sc-icon">📊</div><div class="sc-lbl">Seats Left</div><div class="sc-val">${remaining}</div></div>
+    <div class="sc sc-yellow"><div class="sc-icon">📧</div><div class="sc-lbl">Unique Emails</div><div class="sc-val">${new Set(t.map(x=>x.email)).size}</div></div>
+    <div class="sc sc-red"><div class="sc-icon">🔢</div><div class="sc-lbl">Avg Order</div><div class="sc-val">₹${t.length?Math.round(t.reduce((s,x)=>s+(+x.amount||0),0)/t.length):0}</div></div>
+  `;
+
+  const days=Array.from({length:14},(_,i)=>{const d=new Date();d.setDate(d.getDate()-i);return d.toISOString().slice(0,10);}).reverse();
+  const revDay=days.map(day=>t.filter(x=>x.created_at?.startsWith(day)&&x.status==='approved'&&!x.is_free).reduce((s,x)=>s+(+x.amount||0),0));
+  const rCtx=_el('cRevenue');
+  if (rCtx) {
+    if (G.charts.rev) { G.charts.rev.destroy(); G.charts.rev=null; }
+    G.charts.rev=new Chart(rCtx,{type:'line',data:{labels:days.map(d=>new Date(d).toLocaleDateString('en-IN',{month:'short',day:'numeric'})),datasets:[{label:'Revenue (₹)',data:revDay,borderColor:'rgba(212,168,67,0.8)',backgroundColor:'rgba(212,168,67,0.06)',borderWidth:2,pointBackgroundColor:'rgba(212,168,67,0.8)',tension:0.4,fill:true}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:300},plugins:{legend:{labels:{color:'#8a7e6a',font:{family:'JetBrains Mono',size:10}}}},scales:{x:{ticks:{color:'#8a7e6a',font:{family:'JetBrains Mono',size:9}},grid:{color:'rgba(255,255,255,0.03)'}},y:{ticks:{color:'#8a7e6a',font:{family:'JetBrains Mono',size:9}},grid:{color:'rgba(255,255,255,0.03)'}}}}});
+  }
+  const fCtx=_el('cTypeSplit');
+  if (fCtx) {
+    if (G.charts.split) { G.charts.split.destroy(); G.charts.split=null; }
+    G.charts.split=new Chart(fCtx,{type:'pie',data:{labels:['Free','Paid'],datasets:[{data:[t.filter(x=>x.is_free).length,t.filter(x=>!x.is_free).length],backgroundColor:['rgba(61,214,140,0.7)','rgba(212,168,67,0.7)'],borderColor:'#09080f',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:300},plugins:{legend:{labels:{color:'#8a7e6a',font:{family:'JetBrains Mono',size:11}}}}}});
+  }
+  const hours=Array.from({length:24},(_,i)=>i);
+  const hCtx=_el('cHourly');
+  if (hCtx) {
+    if (G.charts.hourly) { G.charts.hourly.destroy(); G.charts.hourly=null; }
+    G.charts.hourly=new Chart(hCtx,{type:'bar',data:{labels:hours.map(h=>`${h}h`),datasets:[{label:'Bookings',data:hours.map(h=>t.filter(x=>new Date(x.created_at).getHours()===h).length),backgroundColor:'rgba(96,165,250,0.45)',borderColor:'rgba(96,165,250,0.7)',borderRadius:4,borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:300},plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8a7e6a',font:{family:'JetBrains Mono',size:8}},grid:{color:'rgba(255,255,255,0.03)'}},y:{ticks:{color:'#8a7e6a',font:{family:'JetBrains Mono',size:9},stepSize:1},grid:{color:'rgba(255,255,255,0.03)'}}}}});
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  SETTINGS
+// ═══════════════════════════════════════════════════════
+function loadSettingsForm() {
+  const c=G.cfg;
+  _sv('cfg-name',    c.event_name||''); _sv('cfg-venue',   c.venue||'');
+  _sv('cfg-date',    c.event_date||''); _sv('cfg-date-iso',c.event_date_iso||'');
+  _sv('cfg-price',   c.ticket_price||''); _sv('cfg-upi',  c.upi_id||'');
+  _sv('cfg-genre',   c.genre||''); _sv('cfg-duration', c.movie_duration||'');
+  _sv('cfg-poster',  c.movie_poster_url||''); previewPoster();
+  _sv('cfg-total',   c.total_tickets||''); _sv('cfg-free', c.free_tickets||'');
+  _sv('cfg-max-user',c.max_per_user||5);
+  _sv('cfg-free-used',c.free_used||0); _sv('cfg-sold',c.tickets_sold||0);
+  _el('tog-booking').checked = c.booking_enabled !== false;
+  _el('tog-free').checked    = c.free_enabled    !== false;
+  _el('tog-auto').checked    = c.auto_approval   === true;
+  _el('tog-roll').checked    = c.require_roll    === true;
+  _el('tog-dept').checked    = c.require_dept    === true;
+  _el('tog-year').checked    = c.require_year    === true;
+  _sv('cfg-free-code', (c.free_code||'').toUpperCase());
+  updateAvailWidget();
+}
+
+function updateAvailWidget() {
+  const c=G.cfg;
+  const remaining=Math.max(0,(c.total_tickets||200)-(c.tickets_sold||0));
+  const freeLeft =Math.max(0,(c.free_tickets||50)-(c.free_used||0));
+  const soldPct  =Math.min(100,Math.round(((c.tickets_sold||0)/(c.total_tickets||200))*100));
+  const freePct  =Math.min(100,Math.round(((c.free_used||0)/Math.max(1,c.free_tickets||50))*100));
+  _t('av-total',    c.total_tickets||'—'); _t('av-sold',    c.tickets_sold||0);
+  _t('av-free',     c.free_tickets||'—'); _t('av-freeUsed',c.free_used||0);
+  _t('av-remaining',remaining);           _t('av-freeLeft', freeLeft);
+  _el('av-soldBar').style.width=soldPct+'%';
+  _el('av-freeBar').style.width=freePct+'%';
+  _el('av-remaining').className='avail-v '+(remaining>0?'green':'red');
+  _el('av-freeLeft').className ='avail-v '+(freeLeft>0?'green':'');
+}
+
+// Live poster preview in settings
+function previewPoster() {
+  const url = _v('cfg-poster').trim();
+  const wrap = _el('posterPreviewWrap'), img = _el('posterPreviewImg');
+  if (!wrap || !img) return;
+  if (url) {
+    img.src = url;
+    img.onerror = () => { wrap.style.display='none'; };
+    img.onload  = () => { wrap.style.display='block'; };
+  } else {
+    wrap.style.display = 'none';
+  }
+}
+
+async function saveEventCfg() {
+  const body={event_name:_v('cfg-name'),venue:_v('cfg-venue'),event_date:_v('cfg-date'),event_date_iso:_v('cfg-date-iso'),ticket_price:+_v('cfg-price')||100,upi_id:_v('cfg-upi'),genre:_v('cfg-genre'),movie_duration:_v('cfg-duration'),movie_poster_url:_v('cfg-poster')};
+  try { await DB.patch('settings','id=eq.1',body); Object.assign(G.cfg,body); toast('Event config saved ✓','ok'); }
+  catch(e) { toast('Save failed','err'); }
+}
+async function saveLimits() {
+  const body={total_tickets:+_v('cfg-total')||200,free_tickets:+_v('cfg-free')||50,max_per_user:+_v('cfg-max-user')||5};
+  try { await DB.patch('settings','id=eq.1',body); Object.assign(G.cfg,body); updateAvailWidget(); toast('Limits saved ✓','ok'); }
+  catch(e) { toast('Save failed','err'); }
+}
+async function saveToggles() {
+  const rawCode=_v('cfg-free-code').trim().toUpperCase();
+  const body={booking_enabled:_el('tog-booking').checked,free_enabled:_el('tog-free').checked,auto_approval:_el('tog-auto').checked,require_roll:_el('tog-roll').checked,require_dept:_el('tog-dept').checked,require_year:_el('tog-year').checked,require_section:_el('tog-year').checked,free_code:rawCode};
+  try { await DB.patch('settings','id=eq.1',body); Object.assign(G.cfg,body); toast('Controls saved ✓','ok'); }
+  catch(e) { toast('Save failed','err'); }
+}
+
+// ═══════════════════════════════════════════════════════
+//  CHANGE PASSWORD
+// ═══════════════════════════════════════════════════════
+async function changePw() {
+  const np=_v('newpw'), cp=_v('conpw');
+  if (!np||np!==cp) { toast('Passwords do not match','err'); return; }
+  if (np.length<8)  { toast('Minimum 8 characters required','err'); return; }
+  try {
+    const hash=await hashPw(np);
+    const rows=await DB.get('admins',`email=eq.${encodeURIComponent(G.session)}&select=email`);
+    if (!rows.length) { toast('Admin record not found','err'); return; }
+    await DB.patch('admins',`email=eq.${encodeURIComponent(G.session)}`,{password_hash:hash});
+    toast('Password updated securely ✓','ok');
+    _el('newpw').value=''; _el('conpw').value='';
+  } catch(e) { toast('Password update failed','err'); }
+}
+
+// ═══════════════════════════════════════════════════════
+//  DANGER ZONE — all ops use confirmation modal
+// ═══════════════════════════════════════════════════════
+async function dangerOp(op) {
+  if (op==='export-csv') { exportCSV(); return; }
+  const msgs={'reset-free':'Reset free ticket counter to 0?','reset-sold':'Reset sold counter to 0?','clear-pending':'Delete ALL pending tickets?','clear-rejected':'Delete ALL rejected tickets?','clear-all':'DELETE ALL TICKETS? This is PERMANENT and CANNOT be undone!'};
+  const confirmed=await showConfirm(msgs[op]||'Confirm this action?');
+  if (!confirmed) return;
+  try {
+    if (op==='reset-free')       await DB.patch('settings','id=eq.1',{free_used:0});
+    else if(op==='reset-sold')   await DB.patch('settings','id=eq.1',{tickets_sold:0});
+    else if(op==='clear-pending')   await DB.del('tickets','status=eq.pending');
+    else if(op==='clear-rejected')  await DB.del('tickets','status=eq.rejected');
+    else if(op==='clear-all')       await DB.del('tickets','id=gte.00000000-0000-0000-0000-000000000000');
+    await loadAll(); loadSettingsForm();
+    toast('Done ✓','ok');
+  } catch(e) { toast('Operation failed','err'); }
+}
+
+// ═══════════════════════════════════════════════════════
+//  CSV EXPORT
+// ═══════════════════════════════════════════════════════
+function exportCSV() {
+  const t=G.tickets; if(!t.length){toast('No tickets to export','err');return;}
+  const hdr='Ticket ID,Name,Email,Phone,College,Movie,Qty,Amount,Free,Status,UTR,Date,Venue';
+  const rows=t.map(r=>[r.ticket_id,r.user_name,r.email,r.phone||'',r.college||'',r.movie_name||'',r.quantity,r.amount,r.is_free?'Yes':'No',r.status,r.utr||'',r.created_at,r.venue||''].map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(','));
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([[hdr,...rows].join('\n')],{type:'text/csv'}));
+  a.download='rtd-tickets-'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+  toast('CSV exported ✓','ok');
+}
+
+// ═══════════════════════════════════════════════════════
+//  CONFETTI — memory-safe (bounded elements)
+// ═══════════════════════════════════════════════════════
+function launchConfetti() {
+  const colors=['#d4a843','#f0c760','#fbe49a','#3dd68c','#60a5fa','#f05252'];
+  for(let i=0;i<50;i++) setTimeout(()=>{
+    const el=document.createElement('div');
+    el.className='confetti-piece';
+    el.style.cssText=`left:${Math.random()*100}vw;background:${colors[Math.floor(Math.random()*colors.length)]};animation-duration:${0.7+Math.random()*1.2}s;`;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),2200);
+  },i*22);
+}
+
+// ═══════════════════════════════════════════════════════
+//  TOAST — deduplicated within 800ms
+// ═══════════════════════════════════════════════════════
+const _toastKeys=new Map();
+function toast(msg,type='') {
+  const key=type+'|'+msg;
+  if(_toastKeys.has(key)) return;
+  _toastKeys.set(key,true); setTimeout(()=>_toastKeys.delete(key),800);
+  const el=document.createElement('div');
+  el.className='toast'+(type?' '+type:'');
+  el.textContent=({ok:'✓ ',err:'✕ ',inf:'ℹ '}[type]||'')+msg;
+  _el('toasts').appendChild(el);
+  setTimeout(()=>{el.classList.add('bye');setTimeout(()=>el.remove(),240);},3200);
+}
+
+// ═══════════════════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════════════════
+function _debounce(fn, ms) { let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; }
+
+function fmtDate(iso) {
+  try{return new Date(iso).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch{return iso||'—';}
+}
+function bumpVal(id,n) {
+  const el=_el(id); if(!el) return;
+  if(el.textContent===String(n)) return;
+  el.textContent=n; el.classList.add('bump'); setTimeout(()=>el.classList.remove('bump'),400);
+}
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+const _el  = id=>document.getElementById(id);
+const _t   = (id,v)=>{const e=_el(id);if(e)e.textContent=v;};
+const _v   = id=>(_el(id)||{}).value||'';
+const _sv  = (id,v)=>{const e=_el(id);if(e)e.value=v;};
+const $$   = s=>document.querySelectorAll(s);
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape'){ closeSS(); closeDetail(); closeSb(); }
+});
+</script>
+</body>
+</html>
