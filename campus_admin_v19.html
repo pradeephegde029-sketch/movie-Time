@@ -10,6 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root{
+  color-scheme:dark;
   --bg:#05040a;--bg2:#09080f;
   --s1:#100e18;--s2:#161422;--s3:#1d1b2a;--s4:#252233;
   --bdr:rgba(255,255,255,0.07);--bdr2:rgba(255,255,255,0.12);
@@ -83,10 +84,18 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
 /* ═══ MAIN ═══ */
 #main{flex:1;margin-left:var(--sb);display:flex;flex-direction:column;min-height:100vh;position:relative;}
 .topnav{padding:12px 20px;background:rgba(5,4,10,0.96);border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;gap:10px;}
+.tn-brand{font-family:'Playfair Display',serif;font-size:.82rem;font-weight:700;color:var(--gold);white-space:nowrap;letter-spacing:.01em;}
+.tn-brand em{font-style:italic;color:var(--gold2);}
+.tn-sep{width:1px;height:16px;background:var(--bdr2);margin:0 4px;}
+.tn-btn{display:flex;align-items:center;gap:5px;padding:6px 10px;background:rgba(255,255,255,.04);border:1px solid var(--bdr);border-radius:8px;color:var(--fg2);cursor:pointer;font-size:.68rem;font-family:'JetBrains Mono',monospace;letter-spacing:.03em;transition:all .2s;white-space:nowrap;}
+.tn-btn:hover{background:rgba(255,255,255,.09);border-color:var(--bdr2);color:var(--fg);}
+.tn-btn-gold{background:rgba(212,168,67,.1);border-color:rgba(212,168,67,.3);color:var(--gold);}
+.tn-btn-gold:hover{background:rgba(212,168,67,.18);border-color:var(--gold);}
+
 @media(max-width:768px){.topnav{padding:10px 14px;}.tn-right{display:none;}}
 .tn-left{display:flex;align-items:center;gap:10px;}
 .tn-title{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;}
-.hamburger{display:none;background:none;border:none;color:var(--text);font-size:1.2rem;cursor:pointer;min-height:var(--tap);min-width:var(--tap);align-items:center;justify-content:center;border-radius:8px;transition:background 0.2s;}
+.hamburger{background:none;border:none;color:var(--fg2);cursor:pointer;padding:6px;border-radius:6px;display:flex;align-items:center;justify-content:center;transition:color .2s;}.hamburger:hover{color:var(--gold);}
 .hamburger:hover{background:rgba(255,255,255,0.05);}
 @media(max-width:768px){.hamburger{display:flex;}}
 .content{padding:22px;flex:1;max-width:1300px;width:100%;}
@@ -117,8 +126,10 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
 
 /* ═══ PANELS ═══ */
 .panel{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;margin-bottom:16px;overflow:hidden;}
-.panel-head{padding:13px 17px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px;}
-.panel-title{font-family:'Playfair Display',serif;font-size:0.96rem;font-weight:700;display:flex;align-items:center;gap:8px;}
+.panel-head{padding:13px 17px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px;
+  background:linear-gradient(135deg,rgba(212,168,67,.06),rgba(255,255,255,.02));
+}
+.panel-title{font-family:'Playfair Display',serif;font-size:.88rem;font-weight:700;color:var(--fg);letter-spacing:.01em;}
 .panel-body{padding:17px;}
 .charts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:16px;}
 @media(max-width:600px){.charts-grid{grid-template-columns:1fr;}}
@@ -205,7 +216,7 @@ td{padding:11px 12px;vertical-align:middle;}
 .s-inp[readonly]{opacity:0.5;cursor:not-allowed;}
 .s-inp-num{font-family:'JetBrains Mono',monospace;}
 .s-textarea{resize:vertical;min-height:80px;font-family:'Outfit',sans-serif;}
-.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--bdr);}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.04);gap:12px;}
 .toggle-row:last-child{border:none;}
 .tog-info h4{font-size:0.86rem;font-weight:500;margin-bottom:2px;}
 .tog-info p{font-family:'JetBrains Mono',monospace;font-size:0.54rem;color:var(--muted);}
@@ -237,10 +248,11 @@ td{padding:11px 12px;vertical-align:middle;}
 .sf-input{
   width:100%;
   box-sizing:border-box;
-  background:rgba(255,255,255,.04);
+  background:rgba(20,18,32,.9);
   border:1px solid rgba(255,255,255,.1);
   border-radius:8px;
   color:var(--fg);
+  color-scheme:dark;
   font-family:'JetBrains Mono',monospace;
   font-size:.72rem;
   padding:10px 12px;
@@ -286,6 +298,9 @@ textarea.sf-input{
   border-bottom:1px solid var(--bdr);
   margin-bottom:16px;
   flex-wrap:wrap;
+
+  border-bottom:1px solid rgba(212,168,67,.12);
+  padding-bottom:16px;
 }
 .pg-header-left h2{font-size:1.1rem;margin-bottom:2px;}
 .pg-header-left p{font-family:'JetBrains Mono',monospace;font-size:.52rem;color:var(--muted);letter-spacing:.06em;}
@@ -453,6 +468,45 @@ input[type=number].sf-input::-webkit-inner-spin-button{-webkit-appearance:none;m
 .l-sub{font-size:.52rem!important;letter-spacing:.18em!important}
 
 .sc.sc-gold{border-color:rgba(212,168,67,.25)!important}.sc.sc-gold .sc-val{color:var(--gold)!important}
+
+/* ── Enhanced Settings UI ───────────────────────────── */
+.panel{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;margin-bottom:16px;overflow:hidden;transition:border-color .2s;}
+.panel:hover{border-color:rgba(212,168,67,.2);}
+.panel-head{padding:14px 18px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px;background:linear-gradient(135deg,rgba(212,168,67,.06),rgba(255,255,255,.02));}
+.panel-title{font-family:'Playfair Display',serif;font-size:.9rem;font-weight:700;color:var(--fg);letter-spacing:.01em;display:flex;align-items:center;gap:8px;}
+.panel-body{padding:4px 18px 14px;}
+.sf-row{display:flex;flex-direction:column;gap:6px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.sf-row:last-child{border-bottom:none;}
+.sf-lbl{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--fg2);letter-spacing:.06em;text-transform:uppercase;}
+.sf-input{width:100%;box-sizing:border-box;background:rgba(18,16,28,.95);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:var(--fg);color-scheme:dark;font-family:'JetBrains Mono',monospace;font-size:.72rem;padding:10px 12px;outline:none;transition:border-color .2s;-webkit-appearance:none;}
+.sf-input:focus{border-color:rgba(212,168,67,.5);box-shadow:0 0 0 3px rgba(212,168,67,.07);}
+select.sf-input{background:rgba(18,16,28,.98) !important;cursor:pointer;}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.04);gap:12px;}
+.toggle-row:last-child{border-bottom:none;}
+.tog-info h4{font-size:.86rem;font-weight:500;margin-bottom:2px;color:var(--fg);}
+.tog-info p{font-size:.72rem;color:var(--fg2);line-height:1.5;margin:0;}
+/* Settings layout grid */
+.settings-layout{display:grid;gap:0;}
+@media(min-width:900px){.settings-layout{grid-template-columns:1fr 1fr;gap:14px;}}
+/* topnav */
+.topnav{padding:0 20px;background:rgba(5,4,10,0.97);border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;gap:10px;height:52px;}
+.tn-left{display:flex;align-items:center;gap:8px;}
+.tn-right{display:flex;align-items:center;gap:6px;}
+.tn-brand{font-family:'Playfair Display',serif;font-size:.85rem;font-weight:700;color:var(--gold);white-space:nowrap;letter-spacing:.01em;}
+.tn-brand em{font-style:italic;color:var(--gold2);}
+.tn-sep{width:1px;height:16px;background:var(--bdr2);margin:0 4px;}
+.tn-title{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--fg2);letter-spacing:.08em;text-transform:uppercase;}
+.tn-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;background:rgba(255,255,255,.04);border:1px solid var(--bdr);border-radius:8px;color:var(--fg2);cursor:pointer;font-size:.65rem;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;transition:all .18s;white-space:nowrap;text-decoration:none;}
+.tn-btn:hover{background:rgba(255,255,255,.09);border-color:var(--bdr2);color:var(--fg);}
+.tn-btn-gold{background:rgba(212,168,67,.1);border-color:rgba(212,168,67,.3);color:var(--gold);}
+.tn-btn-gold:hover{background:rgba(212,168,67,.18);border-color:var(--gold);}
+.hamburger{background:none;border:none;color:var(--fg2);cursor:pointer;padding:6px;border-radius:6px;display:flex;align-items:center;justify-content:center;transition:color .18s;}
+.hamburger:hover{color:var(--gold);}
+/* pg-header */
+.pg-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:20px 0 16px;border-bottom:1px solid rgba(212,168,67,.12);margin-bottom:18px;flex-wrap:wrap;}
+.pg-header h2{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--fg);margin:0 0 3px;}
+.pg-header p{font-family:'JetBrains Mono',monospace;font-size:.55rem;color:var(--fg2);letter-spacing:.1em;text-transform:uppercase;margin:0;}
+
 </style>
 </head>
 <body>
@@ -501,7 +555,7 @@ input[type=number].sf-input::-webkit-inner-spin-button{-webkit-appearance:none;m
   <div class="sb-nav">
     <div class="nav-sec">Overview</div>
     <button class="nav-item active" onclick="goPg('dashboard',this)">
-      <span class="nav-icon">📊</span>Dashboard
+      <span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>Dashboard
     </button>
     <button class="nav-item" onclick="goPg('analytics',this)">
       <span class="nav-icon">📈</span>Analytics
@@ -546,13 +600,24 @@ input[type=number].sf-input::-webkit-inner-spin-button{-webkit-appearance:none;m
 <main id="main" style="display:none">
   <nav class="topnav">
     <div class="tn-left">
-      <button class="hamburger" onclick="toggleSb()">☰</button>
+      <button class="hamburger" onclick="toggleSb()" title="Menu">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="tn-brand">Campus<em>Pass</em></div>
+      <div class="tn-sep"></div>
       <div class="tn-title" id="pgTitle">Dashboard</div>
     </div>
-    <div class="tn-right" style="display:flex;gap:6px;align-items:center;">
-      <button class="btn btn-ghost btn-sm" onclick="refreshAll()">⟳ Refresh</button>
-      <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ CSV</button>
-      <a href="campus_user_v19.html" target="_blank" class="btn btn-ghost btn-sm">🎬 User Site</a>
+    <div class="tn-right">
+      <button class="tn-btn" onclick="refreshAll()" title="Refresh">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      </button>
+      <button class="tn-btn" onclick="exportCSV()" title="Export CSV">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+      <a href="campus_user_v19.html" target="_blank" class="tn-btn tn-btn-gold" title="View User Site">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        <span>User Site</span>
+      </a>
     </div>
   </nav>
 
@@ -1091,6 +1156,47 @@ id="availWidget">
             </div>
           </div>
 
+
+          <!-- AI Chatbot Assistant -->
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">💬 AI Booking Assistant</div></div>
+            <div class="panel-body">
+              <div class="toggle-row"><div class="tog-info"><h4>Enable AI Chat</h4><p>Floating chatbot that answers booking questions and FAQs</p></div><label class="tog"><input type="checkbox" id="aiChatEnabled" checked><span class="tog-sl"></span></label></div>
+              <div class="sf-row"><label class="sf-lbl">Assistant Persona Name</label><input class="sf-input" id="aiChatName" type="text" placeholder="CineBot" value="CineBot"></div>
+              <div class="sf-row"><label class="sf-lbl">Welcome Message</label><input class="sf-input" id="aiChatWelcome" type="text" placeholder="Hi! Ask me anything about the event 🎬"></div>
+              <div class="toggle-row"><div class="tog-info"><h4>Proactive Suggestions</h4><p>Bot suggests seat picks and deals based on availability</p></div><label class="tog"><input type="checkbox" id="aiProactive"><span class="tog-sl"></span></label></div>
+            </div>
+          </div>
+
+          <!-- Smart Notifications -->
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">🔔 Predictive Notifications</div></div>
+            <div class="panel-body">
+              <div class="toggle-row"><div class="tog-info"><h4>Scarcity Alerts</h4><p>Alert users when &lt;20% tickets remain to drive urgency</p></div><label class="tog"><input type="checkbox" id="aiScarcity" checked><span class="tog-sl"></span></label></div>
+              <div class="sf-row"><label class="sf-lbl">Scarcity Threshold (%)</label><input class="sf-input" id="aiScarcityPct" type="number" min="5" max="50" value="20" placeholder="20"></div>
+              <div class="toggle-row"><div class="tog-info"><h4>Last-Minute Push</h4><p>Send a reminder notification 2h before event to pending users</p></div><label class="tog"><input type="checkbox" id="aiLastMinute"><span class="tog-sl"></span></label></div>
+              <div class="toggle-row"><div class="tog-info"><h4>Waitlist AI</h4><p>Auto-notify first waitlist member when a ticket is cancelled</p></div><label class="tog"><input type="checkbox" id="aiWaitlist"><span class="tog-sl"></span></label></div>
+            </div>
+          </div>
+
+          <!-- Sentiment & Insights -->
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">📊 AI Insights Dashboard</div></div>
+            <div class="panel-body">
+              <div class="toggle-row"><div class="tog-info"><h4>Booking Velocity Tracker</h4><p>AI tracks booking speed and predicts if event will sell out</p></div><label class="tog"><input type="checkbox" id="aiVelocity" checked><span class="tog-sl"></span></label></div>
+              <div class="toggle-row"><div class="tog-info"><h4>Anomaly Detection</h4><p>Flag suspicious bulk bookings or payment patterns automatically</p></div><label class="tog"><input type="checkbox" id="aiAnomaly" checked><span class="tog-sl"></span></label></div>
+              <div class="toggle-row"><div class="tog-info"><h4>Smart Export Reports</h4><p>AI-generated summary insights added to CSV exports</p></div><label class="tog"><input type="checkbox" id="aiReports"><span class="tog-sl"></span></label></div>
+              <div class="sf-row"><label class="sf-lbl">Peak Booking Time Window</label>
+                <select class="sf-input" id="aiPeakWindow">
+                  <option value="morning">Morning (9am–12pm)</option>
+                  <option value="afternoon" selected>Afternoon (12pm–5pm)</option>
+                  <option value="evening">Evening (5pm–10pm)</option>
+                  <option value="auto">Auto-detect</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -1135,6 +1241,7 @@ id="availWidget">
 </main>
 
 <script>
+'use strict';
 
 // ── Safe storage: works on content://, file://, http:// ──────────────────────
 const _mem = {};
@@ -1144,12 +1251,6 @@ const _ss = {
   removeItem: k   => { try { sessionStorage.removeItem(k);        } catch(e) { delete _mem[k]; } }
 };
 
-
-
-
-
-
-'use strict';
 
 // HIDDEN ACCESS GATE
 // Trigger: type  #open  in browser address bar
@@ -1786,7 +1887,7 @@ function filterTix(){_debouncedFilter();}
 // ═══════════════════════════════════════════════════════
 //  STATUS UPDATES
 // ═══════════════════════════════════════════════════════
-async async function updStatus(id,status,note){
+async function updStatus(id,status,note){
   try{
     var body={status:status};
     if(note!==undefined)body.admin_note=note;
