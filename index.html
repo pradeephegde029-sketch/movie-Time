@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>CampusPass v19</title>
+<title>CampusPass v20</title>
 <meta name="description" content="Reel to Deal — Premium Cinema Ticket Booking · MBA Fest 2025">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=JetBrains+Mono:wght@300;400;500;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -792,6 +793,303 @@ min-height:var(--bnav-h);}
 .chat-send-btn{width:34px;height:34px;border-radius:50%;background:var(--gold);border:none;color:var(--bg);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 @media(min-width:480px){.chat-panel{left:auto;width:340px;}}
 
+/* ══════════════════════════════════════════════════════
+   ABOUT PAGE — Cinematic redesign
+══════════════════════════════════════════════════════ */
+
+/* ── Hero ─────────────────────────────────────────── */
+.ab-hero{
+  position:relative;
+  height:260px;
+  border-radius:20px;
+  overflow:hidden;
+  margin-bottom:0;
+  background:var(--sur2);
+}
+.ab-hero-blur{
+  position:absolute;inset:0;
+  background-size:cover;background-position:center;
+  filter:blur(22px) brightness(0.22) saturate(1.6);
+  transform:scale(1.15);
+  transition:background-image .6s ease;
+}
+/* subtle film-grain overlay */
+.ab-hero::after{
+  content:'';position:absolute;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity:.35;pointer-events:none;z-index:1;
+}
+.ab-hero-gradient{
+  position:absolute;inset:0;z-index:2;
+  background:
+    linear-gradient(to top, rgba(6,5,10,.98) 0%, rgba(6,5,10,.6) 45%, transparent 80%),
+    linear-gradient(to right, rgba(6,5,10,.5) 0%, transparent 60%);
+}
+.ab-hero-content{
+  position:absolute;inset:0;z-index:3;
+  display:flex;align-items:flex-end;
+  padding:20px 18px 22px;
+  gap:16px;
+}
+
+/* ── Poster ───────────────────────────────────────── */
+.ab-poster{
+  width:80px;height:114px;
+  border-radius:12px;
+  border:2px solid rgba(212,168,67,0.45);
+  overflow:hidden;flex-shrink:0;
+  background:var(--sur3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:2rem;
+  box-shadow:0 12px 36px rgba(0,0,0,.75), 0 0 0 1px rgba(212,168,67,0.1);
+  transform:translateY(0);
+  transition:transform .3s var(--ease);
+}
+.ab-poster:hover{transform:translateY(-3px);}
+.ab-poster img{width:100%;height:100%;object-fit:cover;display:block;}
+
+/* ── Hero text ────────────────────────────────────── */
+.ab-hero-info{flex:1;min-width:0;}
+.ab-eyebrow{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.5rem;color:var(--gold);
+  letter-spacing:.18em;text-transform:uppercase;
+  margin-bottom:7px;
+  display:inline-flex;align-items:center;gap:6px;
+}
+.ab-eyebrow::before{
+  content:'';width:16px;height:1px;
+  background:linear-gradient(90deg,var(--gold),transparent);
+}
+.ab-movie-title{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(1.15rem,5vw,1.5rem);
+  font-weight:900;
+  color:var(--text);
+  line-height:1.15;
+  margin-bottom:8px;
+  text-shadow:0 2px 12px rgba(0,0,0,.6);
+}
+.ab-hero-desc{
+  font-size:.76rem;color:rgba(237,232,216,.65);
+  line-height:1.55;margin-bottom:10px;
+  font-family:'Outfit',sans-serif;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.ab-hero-meta{display:flex;gap:6px;flex-wrap:wrap;}
+.ab-chip{
+  font-family:'JetBrains Mono',monospace;font-size:.48rem;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.13);
+  border-radius:20px;padding:3px 10px;color:rgba(237,232,216,.8);
+  backdrop-filter:blur(6px);
+}
+.ab-chip-gold{
+  background:rgba(212,168,67,.14);border-color:rgba(212,168,67,.38);
+  color:var(--gold);
+}
+
+/* ── Booking CTA strip ────────────────────────────── */
+.ab-cta-strip{
+  display:flex;align-items:center;justify-content:space-between;
+  background:linear-gradient(135deg,rgba(212,168,67,.1),rgba(212,168,67,.04));
+  border:1px solid rgba(212,168,67,.2);
+  border-radius:16px;
+  padding:14px 18px;
+  margin:14px 0 12px;
+  gap:12px;
+}
+.ab-cta-price{
+  display:flex;flex-direction:column;gap:2px;
+}
+.ab-cta-amount{
+  font-family:'Playfair Display',serif;
+  font-size:1.5rem;font-weight:900;
+  color:var(--gold);line-height:1;
+}
+.ab-cta-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.44rem;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted);
+}
+.ab-book-btn{
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  color:var(--bg);border:none;border-radius:12px;
+  padding:10px 22px;
+  font-family:'JetBrains Mono',monospace;font-size:.6rem;
+  font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  cursor:pointer;
+  box-shadow:0 4px 18px rgba(212,168,67,.35);
+  transition:transform .18s,box-shadow .18s;
+  white-space:nowrap;
+}
+.ab-book-btn:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(212,168,67,.45);}
+.ab-book-btn:active{transform:scale(.97);}
+
+/* ── Info grid ────────────────────────────────────── */
+.ab-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:8px;margin-bottom:12px;
+}
+.ab-info-card{
+  background:var(--sur2);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:14px 16px;
+  position:relative;overflow:hidden;
+  transition:border-color .2s,background .2s;
+}
+.ab-info-card::before{
+  content:'';position:absolute;
+  top:0;left:0;right:0;height:1.5px;
+  background:linear-gradient(90deg,transparent,rgba(212,168,67,.2),transparent);
+}
+.ab-info-card:hover{border-color:var(--border2);background:var(--sur3);}
+.ab-info-icon{font-size:1.1rem;margin-bottom:6px;display:block;}
+.ab-info-lbl{
+  font-family:'JetBrains Mono',monospace;font-size:.44rem;
+  color:var(--muted);letter-spacing:.1em;text-transform:uppercase;
+  margin-bottom:5px;
+}
+.ab-info-val{
+  font-family:'Outfit',sans-serif;font-size:.82rem;
+  color:var(--text);font-weight:600;line-height:1.3;
+}
+.ab-info-val.gold{color:var(--gold);}
+.ab-info-val.green{color:var(--green);}
+
+/* ── Stats bar ────────────────────────────────────── */
+.ab-stats-bar{
+  display:flex;
+  background:var(--sur2);border:1px solid var(--border);
+  border-radius:14px;padding:14px 16px;
+  margin-bottom:12px;gap:0;
+}
+.ab-stat{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  position:relative;
+}
+.ab-stat+.ab-stat::before{
+  content:'';position:absolute;left:0;top:15%;height:70%;
+  width:1px;background:var(--border);
+}
+.ab-stat-val{
+  font-family:'Playfair Display',serif;
+  font-size:1.3rem;font-weight:900;color:var(--text);
+  line-height:1;
+}
+.ab-stat-val.gold{color:var(--gold);}
+.ab-stat-val.green{color:var(--green);}
+.ab-stat-lbl{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.42rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted);
+}
+
+/* ── Notice banner ────────────────────────────────── */
+.ab-notice{
+  display:flex;align-items:flex-start;gap:10px;
+  background:linear-gradient(135deg,rgba(212,168,67,.08),rgba(212,168,67,.03));
+  border:1px solid rgba(212,168,67,.25);
+  border-radius:12px;padding:12px 16px;
+  margin-bottom:12px;
+  font-size:.78rem;color:var(--gold);
+  font-family:'Outfit',sans-serif;line-height:1.55;
+}
+.ab-notice::before{
+  content:'📢';flex-shrink:0;font-size:.9rem;margin-top:1px;
+}
+
+/* ── Trailer card ─────────────────────────────────── */
+.ab-trailer-box{
+  background:var(--sur2);border:1px solid var(--border2);
+  border-radius:18px;padding:0;
+  margin-bottom:12px;cursor:pointer;
+  transition:border-color .22s,transform .22s,box-shadow .22s;
+  position:relative;overflow:hidden;
+}
+.ab-trailer-box::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(212,168,67,.06),transparent 60%);
+  pointer-events:none;
+}
+.ab-trailer-box:hover{
+  border-color:var(--goldrim);
+  transform:translateY(-2px);
+  box-shadow:0 8px 32px rgba(0,0,0,.4);
+}
+.ab-trailer-box:active{transform:scale(.99);}
+.ab-trailer-inner{
+  display:flex;align-items:center;gap:0;
+  padding:15px 18px;
+}
+/* filmstrip left accent */
+.ab-trailer-film{
+  display:flex;flex-direction:column;gap:3px;
+  margin-right:16px;flex-shrink:0;
+  opacity:.4;
+}
+.ab-trailer-film span{
+  display:block;width:6px;height:4px;
+  border-radius:1px;
+  background:var(--gold);
+}
+.ab-trailer-play{
+  width:46px;height:46px;border-radius:50%;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;margin-right:14px;
+  box-shadow:0 4px 20px rgba(212,168,67,.4);
+  transition:transform .2s,box-shadow .2s;
+}
+.ab-trailer-box:hover .ab-trailer-play{
+  transform:scale(1.08);
+  box-shadow:0 6px 28px rgba(212,168,67,.55);
+}
+.ab-trailer-text{flex:1;}
+.ab-trailer-label{
+  font-family:'Playfair Display',serif;
+  font-size:.95rem;font-weight:700;
+  color:var(--text);margin-bottom:2px;
+}
+.ab-trailer-sub{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.48rem;color:var(--muted);
+  letter-spacing:.05em;
+}
+.ab-trailer-badge{
+  margin-left:auto;
+  background:#ff0000;color:#fff;
+  font-family:'JetBrains Mono',monospace;
+  font-size:.48rem;font-weight:700;
+  border-radius:5px;padding:3px 7px;
+  letter-spacing:.04em;flex-shrink:0;
+}
+
+/* ── Section divider label ────────────────────────── */
+.ab-section-lbl{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.46rem;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--muted);
+  margin:16px 0 8px;
+  display:flex;align-items:center;gap:10px;
+}
+.ab-section-lbl::after{
+  content:'';flex:1;height:1px;
+  background:var(--border);
+}
+
+/* ── Entrance animations ──────────────────────────── */
+@keyframes abFadeUp{
+  from{opacity:0;transform:translateY(18px)}
+  to{opacity:1;transform:translateY(0)}
+}
+#view-about.active .ab-hero       { animation:abFadeUp .4s var(--ease) both; }
+#view-about.active .ab-cta-strip  { animation:abFadeUp .4s .06s var(--ease) both; }
+#view-about.active .ab-stats-bar  { animation:abFadeUp .4s .1s var(--ease) both; }
+#view-about.active .ab-grid       { animation:abFadeUp .4s .14s var(--ease) both; }
+#view-about.active .ab-notice     { animation:abFadeUp .4s .18s var(--ease) both; }
+#view-about.active .ab-trailer-box{ animation:abFadeUp .4s .22s var(--ease) both; }
+
 </style>
 </head>
 <body>
@@ -1260,13 +1558,15 @@ min-height:var(--bnav-h);}
 <!-- ══ ABOUT VIEW ════════════════════════════════ -->
 <div class="view" id="view-about">
 
-  <!-- Hero section with blurred poster bg -->
+  <!-- ── Cinematic Hero ─────────────────────────── -->
   <div class="ab-hero" id="aboutBg">
     <div class="ab-hero-blur" id="aboutBgImg"></div>
+    <div class="ab-hero-gradient"></div>
     <div class="ab-hero-content">
       <div class="ab-poster" id="aboutPoster">🎬</div>
       <div class="ab-hero-info">
         <div class="ab-eyebrow" id="aboutGenre">Drama · Thriller</div>
+        <div class="ab-movie-title" id="aboutHeroTitle">Reel to Deal</div>
         <div class="ab-hero-desc" id="aboutDescription"></div>
         <div class="ab-hero-meta">
           <span class="ab-chip" id="aboutDuration">2h 15m</span>
@@ -1276,59 +1576,94 @@ min-height:var(--bnav-h);}
     </div>
   </div>
 
-  <!-- Info grid -->
-  <div class="ab-grid">
-    <div class="ab-info-card">
-      <div class="ab-info-lbl">📅 Date & Time</div>
-      <div class="ab-info-val" id="aboutDate">—</div>
+  <!-- ── Book CTA strip ────────────────────────── -->
+  <div class="ab-cta-strip">
+    <div class="ab-cta-price">
+      <div class="ab-cta-amount" id="aboutCtaPrice">₹100</div>
+      <div class="ab-cta-label">per seat · MBA Fest 2025</div>
     </div>
-    <div class="ab-info-card">
-      <div class="ab-info-lbl">📍 Venue</div>
-      <div class="ab-info-val" id="aboutVenue">—</div>
+    <button class="ab-book-btn" onclick="goView('view-book')">Book Now →</button>
+  </div>
+
+  <!-- ── Stats bar ──────────────────────────────── -->
+  <div class="ab-stats-bar">
+    <div class="ab-stat">
+      <div class="ab-stat-val gold" id="aboutStatSeats">—</div>
+      <div class="ab-stat-lbl">Seats Left</div>
     </div>
-    <div class="ab-info-card">
-      <div class="ab-info-lbl">🎟 Seats Left</div>
-      <div class="ab-info-val" id="aboutSeatsLeft">—</div>
+    <div class="ab-stat">
+      <div class="ab-stat-val" id="aboutStatDur">—</div>
+      <div class="ab-stat-lbl">Duration</div>
     </div>
-    <div class="ab-info-card">
-      <div class="ab-info-lbl">💳 UPI</div>
-      <div class="ab-info-val" id="aboutUpi">—</div>
+    <div class="ab-stat">
+      <div class="ab-stat-val green" id="aboutStatFree">—</div>
+      <div class="ab-stat-lbl">Free Left</div>
     </div>
   </div>
 
-  <!-- Notice banner -->
+  <!-- ── Info cards grid ───────────────────────── -->
+  <div class="ab-grid">
+    <div class="ab-info-card">
+      <span class="ab-info-icon">📅</span>
+      <div class="ab-info-lbl">Date &amp; Time</div>
+      <div class="ab-info-val" id="aboutDate">—</div>
+    </div>
+    <div class="ab-info-card">
+      <span class="ab-info-icon">📍</span>
+      <div class="ab-info-lbl">Venue</div>
+      <div class="ab-info-val" id="aboutVenue">—</div>
+    </div>
+    <div class="ab-info-card">
+      <span class="ab-info-icon">💳</span>
+      <div class="ab-info-lbl">UPI ID</div>
+      <div class="ab-info-val gold" id="aboutUpi">—</div>
+    </div>
+    <div class="ab-info-card">
+      <span class="ab-info-icon">🎟</span>
+      <div class="ab-info-lbl">Seats Left</div>
+      <div class="ab-info-val green" id="aboutSeatsLeft">—</div>
+    </div>
+  </div>
+
+  <!-- ── Notice banner ─────────────────────────── -->
   <div id="aboutNoticeBanner" class="ab-notice" style="display:none">
     <span id="aboutNoticeText"></span>
   </div>
 
-  <!-- Trailer embed placeholder -->
-  <div class="ab-trailer-box" onclick="openTrailer()" style="cursor:pointer">
+  <!-- ── Trailer card ───────────────────────────── -->
+  <div class="ab-trailer-box" onclick="openTrailer()">
     <div class="ab-trailer-inner">
-      <div class="ab-trailer-icon">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="var(--gold)" stroke="none"><polygon points="5,3 19,12 5,21"/></svg>
+      <div class="ab-trailer-film">
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+      <div class="ab-trailer-play">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--bg)" stroke="none"><polygon points="6,3 20,12 6,21"/></svg>
       </div>
       <div class="ab-trailer-text">
         <div class="ab-trailer-label">Watch Trailer</div>
-        <div class="ab-trailer-sub">Official movie preview</div>
+        <div class="ab-trailer-sub">Official movie preview · YouTube</div>
       </div>
       <div class="ab-trailer-badge">YT</div>
     </div>
   </div>
 
-  <!-- AI Recommendations -->
+  <!-- ── AI Recommendations ────────────────────── -->
   <div id="recPanel" style="margin:0 0 12px"></div>
 
-  <!-- Loyalty / collectible / social cards -->
+  <!-- ── Loyalty / collectible / social cards ──── -->
   <div id="loyaltyCardWrap"></div>
   <div id="collectibleWrap"></div>
   <div id="socialCountWrap"></div>
   <div id="arBadgeWrap"></div>
 
-  <!-- hidden title for _doApply -->
+  <!-- hidden anchors for _doApply -->
   <div id="aboutTitle" style="display:none"></div>
   <div id="aboutMovieName" style="display:none"></div>
 
-id="view-faq">
+</div><!-- /view-about -->
+
+<!-- ══ FAQ VIEW ════════════════════════════════ -->
+<div class="view" id="view-faq">
   <div style="padding:22px 0 16px">
     <div style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;margin-bottom:4px">FAQ</div>
     <div style="font-family:'JetBrains Mono',monospace;font-size:0.54rem;color:var(--muted)">Frequently asked questions</div>
@@ -1351,7 +1686,6 @@ id="view-faq">
 
 
 'use strict';
-window._apb = '';
 function doThemeToggle(){
   const html=document.documentElement;
   const isD=html.getAttribute('data-theme')!=='light';
@@ -1447,15 +1781,13 @@ document.addEventListener('DOMContentLoaded',async()=>{
 },{once:true});
 
 
-// ── Secret 5-tap admin access (invisible to users) ──
+// ── Admin access (tap brand 7x or 5x) ──
 const _ldTaps={n:0,t:0};
-// Secret: tap brand 7x fast → PIN pad → opens admin
-// Same PIN as admin panel
 function ldBrandTap(){
   var now=Date.now();
   if(now-_ldTaps.t>1200)_ldTaps.n=0;
   _ldTaps.t=now;_ldTaps.n++;
-  if(_ldTaps.n>=7){_ldTaps.n=0;_openAdminPin();}
+  if(_ldTaps.n>=7){_ldTaps.n=0;window.open('campus_admin_v20.html','_blank');}
 }
 const _tbTaps={n:0,t:0};
 function tbBrandTap(){
@@ -1463,71 +1795,8 @@ function tbBrandTap(){
   if(now-_tbTaps.t>1200)_tbTaps.n=0;
   _tbTaps.t=now;_tbTaps.n++;
   if(_tbTaps.n===1)goLanding();
-  if(_tbTaps.n>=5){_tbTaps.n=0;_openAdminPin();}
+  if(_tbTaps.n>=5){_tbTaps.n=0;window.open('campus_admin_v20.html','_blank');}
 }
-const _APH='f7a3c1e5b8d2f4a6c9e1b3d5f8a2c4e7b1d3f6a8c2e4b7d1f3a5c8e2b4d6f9a3';
-async function _calcAH(p){
-  var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('RTD#PIN#'+p));
-  return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0');}).join('');
-}
-var _apSty=null;
-function _openAdminPin(){
-  if(document.getElementById('_apov'))return;
-  if(!_apSty){
-    _apSty=document.createElement('style');
-    _apSty.textContent='._adot{display:inline-block;width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.1);transition:background .12s}'
-      +'._apk{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:#bbb;font-size:1rem;border-radius:10px;padding:13px 0;cursor:pointer;transition:all .12s}'
-      +'._apk:hover{background:rgba(212,168,67,.15);border-color:rgba(212,168,67,.25);color:#d4a843}'
-      +'._apk:active{transform:scale(.93)}'
-      +'@keyframes _ash{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}'
-    document.head.appendChild(_apSty);
-  }
-  var ov=document.createElement('div');ov.id='_apov';
-  ov.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.96);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(14px)';
-  var box=document.createElement('div');box.id='_apb2';
-  box.style.cssText='background:#0e0c1a;border:1px solid rgba(255,255,255,.07);border-radius:22px;padding:32px 26px;width:256px;text-align:center';
-  var drow=document.createElement('div');
-  drow.style.cssText='display:flex;justify-content:center;gap:12px;margin-bottom:20px';
-  for(var di=0;di<4;di++){var sp=document.createElement('span');sp.className='_adot';drow.appendChild(sp);}
-  box.appendChild(drow);
-  var g1=document.createElement('div');
-  g1.style.cssText='display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px';
-  for(var n=1;n<=9;n++)(function(nn){
-    var btn=document.createElement('button');btn.className='_apk';btn.textContent=nn;
-    btn.addEventListener('click',function(){_akp(''+nn);});g1.appendChild(btn);
-  })(n);
-  box.appendChild(g1);
-  var g2=document.createElement('div');g2.style.cssText='display:grid;grid-template-columns:repeat(3,1fr);gap:8px';
-  g2.appendChild(document.createElement('div'));
-  var b0=document.createElement('button');b0.className='_apk';b0.textContent='0';b0.addEventListener('click',function(){_akp('0');});g2.appendChild(b0);
-  var bdel=document.createElement('button');bdel.className='_apk';bdel.textContent='<';bdel.style.color='#555';bdel.addEventListener('click',function(){_akp('x');});g2.appendChild(bdel);
-  box.appendChild(g2);
-  var esbtn=document.createElement('button');
-  esbtn.style.cssText='margin-top:14px;background:none;border:none;color:#2a2a2a;font-size:.45rem;cursor:pointer';
-  esbtn.textContent='ESC';esbtn.addEventListener('click',_closeAPin);box.appendChild(esbtn);
-  ov.appendChild(box);document.body.appendChild(ov);
-  window._apb='';_updADots();
-}
-window._apb='';
-async function _akp(k){
-  if(k==='x'){window._apb=window._apb.slice(0,-1);_updADots();return;}
-  if(window._apb.length>=4)return;
-  window._apb+=k;_updADots();
-  if(window._apb.length===4){
-    var h=await _calcAH(window._apb);var ok=(h===_APH);
-    window._apb='';_updADots();
-    if(ok){_closeAPin();window.open('campus_admin_v19.html','_blank');}
-    else{var b=document.getElementById('_apb2');if(b){b.style.animation='_ash .4s';setTimeout(function(){b.style.animation='';},400);}}
-  }
-}
-function _updADots(){document.querySelectorAll('._adot').forEach(function(d,i){d.style.background=i<window._apb.length?'#d4a843':'rgba(255,255,255,.1)';});}
-function _closeAPin(){window._apb='';var v=document.getElementById('_apov');if(v)v.remove();}
-document.addEventListener('keydown',function(e){
-  var v=document.getElementById('_apov');if(!v)return;
-  if(e.key>='0'&&e.key<='9')_akp(e.key);
-  else if(e.key==='Backspace')_akp('x');
-  else if(e.key==='Escape')_closeAPin();
-});
 
 function enterApp(){
   const ld=_el('landing');
@@ -1676,17 +1945,22 @@ function _doApply(){
 
   // ── About page ────────────────────────────────────────
   const _ta=(id,v)=>{const e=_el(id);if(e)e.textContent=v;};
+  const seatsLeft=Math.max(0,(c.total_tickets||200)-(c.tickets_sold||0));
+  const freeLeft=Math.max(0,(c.free_tickets||0)-(c.free_used||0));
   _ta('aboutTitle',       c.event_name||'Reel to Deal');
   _ta('aboutMovieName',   c.event_name||'Reel to Deal');
+  _ta('aboutHeroTitle',   c.event_name||'Reel to Deal');
   _ta('aboutGenre',       c.genre||'Drama · Thriller');
   _ta('aboutDate',        c.event_date||'—');
   _ta('aboutVenue',       c.venue||'—');
   _ta('aboutDuration',    c.movie_duration||'—');
-  _ta('aboutPrice','₹'+(c.ticket_price||100));
-  var _asr=document.getElementById('aboutSeatsLeft');
-  if(_asr)_asr.textContent=Math.max(0,(c.total_tickets||200)-(c.tickets_sold||0));
-
+  _ta('aboutPrice',       '₹'+(c.ticket_price||100));
+  _ta('aboutCtaPrice',    '₹'+(c.ticket_price||100));
   _ta('aboutUpi',         c.upi_id||'—');
+  _ta('aboutSeatsLeft',   seatsLeft);
+  _ta('aboutStatSeats',   seatsLeft);
+  _ta('aboutStatDur',     c.movie_duration||'—');
+  _ta('aboutStatFree',    freeLeft>0?freeLeft:'—');
   const aboutDesc=_el('aboutDescription');
   if(aboutDesc)aboutDesc.textContent=c.event_description||'A premium cinema experience at MBA Fest 2025. Book your seat and enjoy the show!';
   const aboutP=_el('aboutPoster'),aboutBI=_el('aboutBgImg');
@@ -2361,39 +2635,7 @@ function genPDF(t){
       +'.valid{font-family:JetBrains Mono,monospace;font-size:7.5px;color:#6a6070}'
       +'.hint{margin-top:13px;text-align:center;font-family:JetBrains Mono,monospace;font-size:9.5px;color:#6a6070;letter-spacing:0.06em}'
       +'@media print{.hint{display:none}}'
-      +'
-/* ── About Page ─────────────────────────────────────── */
-.ab-hero{position:relative;height:200px;border-radius:16px;overflow:hidden;margin-bottom:14px;background:var(--sur2);}
-.ab-hero-blur{position:absolute;inset:0;background-size:cover;background-position:center;filter:blur(18px) brightness(0.25);transform:scale(1.12);}
-.ab-hero-content{position:absolute;inset:0;display:flex;align-items:flex-end;padding:18px;gap:14px;background:linear-gradient(to top,rgba(0,0,0,0.7) 0%,transparent 60%);}
-.ab-poster{width:72px;height:100px;border-radius:10px;border:2px solid var(--goldrim);overflow:hidden;flex-shrink:0;background:var(--sur3);display:flex;align-items:center;justify-content:center;font-size:1.8rem;box-shadow:0 8px 24px rgba(0,0,0,.5);}
-.ab-poster img{width:100%;height:100%;object-fit:cover;}
-.ab-hero-info{flex:1;min-width:0;}
-.ab-eyebrow{font-family:'JetBrains Mono',monospace;font-size:.52rem;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
-.ab-hero-desc{font-size:.78rem;color:rgba(255,255,255,.75);line-height:1.6;margin-bottom:8px;font-family:'Outfit',sans-serif;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.ab-hero-meta{display:flex;gap:6px;flex-wrap:wrap;}
-.ab-chip{font-family:'JetBrains Mono',monospace;font-size:.52rem;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:3px 9px;color:var(--text);}
-.ab-chip-gold{background:rgba(212,168,67,.15);border-color:rgba(212,168,67,.35);color:var(--gold);}
-
-.ab-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
-.ab-info-card{background:var(--sur2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;}
-.ab-info-lbl{font-family:'JetBrains Mono',monospace;font-size:.48rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px;}
-.ab-info-val{font-family:'Outfit',sans-serif;font-size:.8rem;color:var(--text);font-weight:500;line-height:1.3;}
-
-.ab-notice{background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.2);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:.78rem;color:var(--gold);font-family:'Outfit',sans-serif;}
-
-.ab-trailer-box{background:var(--sur2);border:1px solid var(--border2);border-radius:14px;padding:14px 16px;margin-bottom:14px;cursor:pointer;transition:border-color .2s,background .2s;position:relative;overflow:hidden;}
-.ab-trailer-box::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(212,168,67,.04),transparent);pointer-events:none;}
-.ab-trailer-box:hover{border-color:var(--goldrim);background:var(--sur3);}
-.ab-trailer-inner{display:flex;align-items:center;gap:14px;}
-.ab-trailer-icon{width:44px;height:44px;border-radius:50%;background:rgba(212,168,67,.12);border:1.5px solid var(--goldrim);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.ab-trailer-label{font-family:'Playfair Display',serif;font-size:.92rem;font-weight:700;color:var(--text);margin-bottom:2px;}
-.ab-trailer-sub{font-family:'JetBrains Mono',monospace;font-size:.5rem;color:var(--muted);}
-.ab-trailer-badge{margin-left:auto;background:#ff0000;color:#fff;font-family:'JetBrains Mono',monospace;font-size:.5rem;font-weight:700;border-radius:4px;padding:2px 5px;letter-spacing:.05em;}
-
-
-#liveClockTb,#syncBtn,#themeBtn,.sync-chip{display:none !important;}
-</style></head><body>'
+      +'</style></head><body>'
       +'<div class="wrap"><div class="ticket">'
       +'<div class="hero">'+posterHtml+'<div class="hero-overlay"></div>'
       +'<div class="hero-inner">'+posterThumb
