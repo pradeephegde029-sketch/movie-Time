@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<title>CampusPass Admin v19</title>
+<title>CampusPass Admin v20</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=JetBrains+Mono:wght@300;400;500;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -590,7 +591,7 @@ select.sf-input{background:rgba(18,16,28,.98) !important;cursor:pointer;}
     </button>
   </div>
   <div class="sb-foot">
-    <a class="sb-ext-link" href="campus_user_v19.html" target="_blank">🎬 Open User Site →</a>
+    <a class="sb-ext-link" href="campus_user_v20.html" target="_blank">🎬 Open User Site →</a>
     <div class="sync-row"><div class="sdot" id="adSyncDot"></div><span id="adSyncLbl">Connecting…</span><span id="adLastSync" style="margin-left:auto;font-size:0.46rem;color:var(--faint)"></span></div>
     <button class="logout-btn" onclick="doLogout()">← Sign Out</button>
   </div>
@@ -614,7 +615,7 @@ select.sf-input{background:rgba(18,16,28,.98) !important;cursor:pointer;}
       <button class="tn-btn" onclick="exportCSV()" title="Export CSV">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       </button>
-      <a href="campus_user_v19.html" target="_blank" class="tn-btn tn-btn-gold" title="View User Site">
+      <a href="campus_user_v20.html" target="_blank" class="tn-btn tn-btn-gold" title="View User Site">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
         <span>User Site</span>
       </a>
@@ -860,7 +861,7 @@ select.sf-input{background:rgba(18,16,28,.98) !important;cursor:pointer;}
       </div>
 
       <div class="avail-bar"><div id="rlsHelpBox" style="display:none;background:rgba(240,82,82,.08);border:1px solid rgba(240,82,82,.3);border-radius:12px;padding:14px;margin-bottom:14px"><b style="color:#f05252;font-size:.65rem">&#x26A0; RLS Blocking Writes</b><br><span style="font-size:.56rem;color:var(--muted)">Supabase &rarr; Auth &rarr; Policies &rarr; settings &rarr; add INSERT/UPDATE for authenticated, then re-login.</span></div>
-id="availWidget">
+      <div id="availWidget">
         <div class="avail-row"><span class="avail-k">Ticket Capacity</span><span class="avail-v gold" id="av-total">—</span></div>
         <div class="avail-row"><span class="avail-k">Tickets Sold</span><span class="avail-v" id="av-sold">—</span></div>
         <div class="avail-prog"><div class="avail-fill" id="av-soldBar" style="width:0%"></div></div>
@@ -1096,7 +1097,7 @@ id="availWidget">
   </div><!-- /content -->
 
       <!-- AI FEATURES PAGE -->
-      <div class="pg" id="pg-ai">
+      <div class="page" id="pg-ai">
         <div class="pg-header">
           <div class="pg-header-left"><h2>🤖 AI &amp; Smart Features</h2><p>RECOMMENDATIONS · AR · COLLECTIBLES · SOCIAL PLANS</p></div>
           <div class="pg-header-right"><button class="btn btn-gold" onclick="saveAISettings()">💾 Save AI Settings</button></div>
@@ -1201,7 +1202,7 @@ id="availWidget">
       </div>
 
       <!-- LOYALTY & REWARDS PAGE -->
-      <div class="pg" id="pg-loyalty">
+      <div class="page" id="pg-loyalty">
         <div class="pg-header">
           <div class="pg-header-left"><h2>🏆 Loyalty &amp; Rewards</h2><p>POINTS · TIERS · CINEMA LOYALTY SYSTEM</p></div>
           <div class="pg-header-right"><button class="btn btn-gold" onclick="saveLoyaltySettings()">💾 Save Loyalty Settings</button></div>
@@ -1637,7 +1638,7 @@ function setSync(ok) {
 //  NAVIGATION
 // ═══════════════════════════════════════════════════════
 function goPg(name, btn) {
-  $$('.pg').forEach(p=>p.classList.remove('active'));
+  $$('.page').forEach(p=>p.classList.remove('active'));
   _el(`pg-${name}`)?.classList.add('active');
   $$('.nav-item').forEach(b=>b.classList.remove('active'));
   if (btn) btn.classList.add('active');
@@ -1952,7 +1953,6 @@ function viewDetail(id){
     ['Department',esc(t.department||'—'),''],['Year',esc(t.year_study||'—'),''],
     ['Date',fmtDate(t.created_at),''],['Venue',esc(t.venue||'—'),''],
     ['Collectible #',t.collectible_num||'—',''],['Loyalty Pts',t.loyalty_points||0,'gold'],
-    ['Collectible #',t.collectible_num||'—',''],['Loyalty Pts',t.loyalty_points||0,'gold'],
   ];
   _el('dmBody').innerHTML=fields.map(([k,v,cls])=>`<div class="dm-row"><span class="dm-k">${k}</span><span class="dm-v ${cls}">${v}</span></div>`).join('');
   _el('dmActions').innerHTML=`
@@ -2266,7 +2266,6 @@ async function saveControls(){
     ticker_message:_v('cfg-ticker').trim(),
     ticker_text:_v('cfg-ticker').trim(),
     notice_banner:_v('cfg-notice').trim(),
-    announcements:_v('cfg-notice').trim(),
     announcements:_v('cfg-notice').trim(),
   };
   await _saveSettings(body,'Controls saved ✓');
